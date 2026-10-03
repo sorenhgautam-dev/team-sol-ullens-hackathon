@@ -430,7 +430,7 @@ export const en = {
   'hub.expand': 'Show the street',
 
   'money.forecast': 'Forecast',
-  'money.forecastHint': 'Solid line: so far. Dotted: what the bills and paydays say comes next. Shaded: 500 possible months.',
+  'money.forecastHint': 'Each day shows the cash that evening as a coin stack. Days you have lived are solid; later days are the plan, from known pay and bills only. Red days are short.',
   'money.dangerZone': 'Danger zone: the balance dips below zero on day {day}.',
   'money.safe': 'The forecast stays above zero.',
   'money.openBridge': 'Open the Gap Bridge',
@@ -1060,6 +1060,16 @@ export const en = {
   'conseq.next.verify': 'Next time, check through a channel you open yourself: the cooperative, or the official app.',
   'conseq.next.compare': 'At the cooperative, compare every option: what you get, what you repay, and when.',
   'conseq.next.story': 'Relationship effects are this story’s rules, not a rule about asking for help.',
+
+  'cal.thisMonth': 'This month',
+  'cal.dayLabel': 'Day {day}: balance {balance}',
+  'cal.short': 'short day',
+  'cal.pending': 'pending, not spendable yet',
+  'cal.legendCoins': 'coins = cash that evening',
+  'cal.legendIncome': 'money in',
+  'cal.legendBill': 'bill due',
+  'fix.rowNow': 'Now',
+  'fix.rowAfter': 'With change',
 
   'debug.title': 'Engine debug',
   'debug.profile': 'Profile',
