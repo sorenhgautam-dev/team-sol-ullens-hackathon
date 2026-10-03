@@ -143,6 +143,15 @@ export function roundIds(round: number, first: string[], second: string[], seed:
   return all.slice(0, 5)
 }
 
+/**
+ * Scams start one at a time, in the payday's fixed order: the current one is the first
+ * not yet faced this payday. Null once every scam of the payday is done.
+ */
+export function currentEncounter<T extends { id: string }>(thisRound: T[], answers: Answer[], round: number): T | null {
+  const done = new Set(firstAnswers(answers, round).map((a) => a.encounterId))
+  return thisRound.find((e) => !done.has(e.id)) ?? null
+}
+
 /** The gauntlet gets faster: each payday the countdowns shrink, down to 60%. */
 export function timerFactor(round: number): number {
   return Math.max(0.6, 1 - 0.15 * (round - 1))

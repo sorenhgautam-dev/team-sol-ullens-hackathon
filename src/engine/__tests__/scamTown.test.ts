@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { immunity, roundIds, shuffledChoices, timerFactor, townLedger, type Answer } from '../scamTown'
+import { currentEncounter, immunity, roundIds, shuffledChoices, timerFactor, townLedger, type Answer } from '../scamTown'
 import { FIRST_PAYDAY, SECOND_PAYDAY, localEncounters, REAL_MESSAGES } from '@/content/scamTown'
 import { CHARACTERS } from '@/content/characters'
 import { ECONOMIES, paydayFor } from '@/content/economy'
@@ -141,6 +141,22 @@ describe('the gauntlet loop: paydays as rounds', () => {
     expect(r3).toHaveLength(5)
     expect(new Set(r3).size).toBe(5)
     expect(roundIds(3, FIRST_PAYDAY, SECOND_PAYDAY, 9)).toEqual(r3)
+  })
+
+  it('scams start one at a time, in a fixed order, on every payday', () => {
+    const list = (ids: string[]) => ids.map((id) => ({ id }))
+    const first = list(FIRST_PAYDAY)
+    const safe = (id: string, round = 1): Answer => ({ encounterId: id, choiceId: `${id}_safe`, round })
+    expect(currentEncounter(first, [], 1)?.id).toBe('bank')
+    expect(currentEncounter(first, [safe('bank')], 1)?.id).toBe('market')
+    expect(currentEncounter(first, FIRST_PAYDAY.slice(0, 4).map((id) => safe(id)), 1)?.id).toBe('invest')
+    expect(currentEncounter(first, FIRST_PAYDAY.map((id) => safe(id)), 1)).toBeNull()
+    // A practice replay of a done scam does not move the order on.
+    expect(currentEncounter(first, [safe('bank'), safe('bank')], 1)?.id).toBe('market')
+    // Next payday starts again from the top of its own list.
+    const second = list(SECOND_PAYDAY)
+    expect(currentEncounter(second, FIRST_PAYDAY.map((id) => safe(id)), 2)?.id).toBe('home')
+    expect(currentEncounter(second, [safe('home', 2)], 2)?.id).toBe('cafe')
   })
 
   it('timers get faster each payday, down to 60%', () => {
