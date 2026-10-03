@@ -16,9 +16,7 @@
     "@fontsource/pixelify-sans": "^5.3.0",
     "@fontsource/silkscreen": "^5.3.0",
     "@number-flow/react": "^0.5.5",
-    "@use-gesture/react": "^10.3.1",
     "canvas-confetti": "^1.9.3",
-    "d3-delaunay": "^6.0.4",
     "framer-motion": "^11.11.0",
     "pixelarticons": "^2.4.1",
     "react": "^18.3.1",
@@ -28,7 +26,6 @@
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.6.4",
-    "@types/d3-delaunay": "^6.0.4",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
