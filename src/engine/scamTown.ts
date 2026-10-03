@@ -7,7 +7,14 @@
  * the balance carries over, so what you keep adds up.
  */
 import { subRng } from './rng'
-import type { Posting } from './types'
+/** The accounts of a payday's double-entry ledger. */
+export type Account = 'Wallet' | 'Income' | 'ScamLoss'
+
+export interface Posting {
+  account: Account
+  /** Signed amount: money in the wallet grows with +, income is recorded as − so each entry nets to 0. */
+  delta: number
+}
 
 export type Verdict = 'fall' | 'tempted' | 'safe'
 

@@ -56,6 +56,18 @@ export const ENCOUNTER_SPECS: EncounterSpec[] = [
   { id: 'shop', building: 'shop', scammer: 'phisher', channel: 'chat', lines: 3, timerSeconds: 20, money: { price: 0.1, small: 0.05 }, loss: { fall: 'price', tempted: 'small' } },
 ]
 
+/** Each scammer's colour in the reveal scene. */
+export const SCAMMER_COLOUR: Record<string, string> = {
+  phisher: '#b23a30',
+  loan_shark: '#6e6a80',
+  impersonator: '#d9734e',
+  otp_snatcher: '#2b4566',
+  fine_print: '#f5c26b',
+  prize_ghost: '#9bb58a',
+  job_recruiter: '#3f7fa6',
+  investment_guru: '#5fae5f',
+}
+
 /**
  * Each character's first payday: five everyday scams that fit their life, each teaching
  * its own rule. Always in building order (bank, market, post office, job centre, kiosk),

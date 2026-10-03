@@ -10,8 +10,8 @@ import type { ChoiceDef, EncounterDef } from '@/engine/scamTown'
 import { firstAnswers, shuffledChoices, timerFactor, townLedger } from '@/engine/scamTown'
 import { useEncounters } from './useEncounters'
 import { useGame } from '@/state/gameStore'
-import { SCAMS_BY_ID } from '@/content/enemies'
 import { useScam } from '@/state/scamStore'
+import { SCAMMER_COLOUR } from '@/content/scamTown'
 import { Sheet } from '@/ui/Sheet'
 import { Button } from '@/ui/Button'
 import { Balance } from '@/ui/Balance'
@@ -91,7 +91,6 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
   if (!e) return null
   const choices = shuffledChoices(e, seed, attempt)
   const ready = linesShown >= e.lineKeys.length
-  const scam = SCAMS_BY_ID[e.scammer]
 
   const choose = (c: ChoiceDef) => {
     if (answered) return
@@ -179,7 +178,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
 
           {step === 'reveal' && picked && (
             <motion.div key="reveal" className="flex flex-1 flex-col items-center justify-center gap-3 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <RevealStage color={scam?.color ?? '#b23a30'} verdict={picked.verdict} lost={picked.loss > 0} />
+              <RevealStage color={SCAMMER_COLOUR[e.scammer] ?? '#b23a30'} verdict={picked.verdict} lost={picked.loss > 0} />
               <p className="font-pixel text-lg">{t(`town.verdict.${picked.verdict}`)}</p>
               <Button variant="primary" size="lg" className="w-full" onClick={() => setStep('rule')}>
                 {t('town.ruleTitle')}
