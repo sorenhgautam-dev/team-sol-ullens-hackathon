@@ -1,3 +1,27 @@
+# NEXT PAYDAY — v4: global scam-awareness game (current)
+
+**This section overrides everything below it.** The game was simplified on 2026-10-03.
+
+**Pitch:** Next Payday: walk through town on payday and survive five of the world's most common scams. Every trap teaches one rule that protects your money.
+
+**Core loop:** Title → Character select → Payday Town → five scam encounters (bank, market, post office, job centre, investment kiosk) in any order → Results.
+
+- HUD shows only: portrait and name, balance, "Scams faced X/5", phone.
+- Each encounter: a short thought, then the scam as a realistic call, text, chat or payment screen with no villain shown, a countdown and personal details; three shuffled choices (fall / tempted / safe); the balance changes (ScamLoss in the ledger); then the scammer is revealed in the pixel battle scene; then a rule card (why it was a trap, the rule, one money tip) with **Try again** as practice (first answer counts). The building dims with a tick.
+- At least two real messages arrive on the phone; they are safe to act on.
+- Results: final vs starting balance, Scam Immunity Score (safe 20, tempted 10, fall 0; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), the five rule cards, and a Family Warning Card with Share and Copy.
+- Phone: Scam Checker, a five-question checklist (code or PIN? rushing? contacted you first? upfront fee? guaranteed money?) that always ends with "Verify through an official number or website" and says it can miss new scams. Pasted text is never stored.
+- Global: USD by default (EUR, GBP, INR, NPR in Settings), generic senders, no real brands, no Nepal place names or institutions on screen. Text at about a 12-year-old reading level.
+- Demo mode: one character, first scam within 20 seconds.
+
+**Code map:** `src/engine/scamTown.ts` (ledger, score, shuffle), `src/content/scamTown.ts` (encounters, real messages), `src/content/characters.ts`, `src/screens/paytown/*`, `src/config/features.ts`.
+
+**The budgeting game below is kept, not deleted.** It is hidden behind `FEATURES.budgeting = false` in `src/config/features.ts`: Money Calendar, forecast, Monte Carlo, buffer days, bills list, Plan Your Week, Gap Bridge, Twin Wallets, Town Mode, Fix My Dates, Impact Lab, energy and hearts. Its engine and tests still run. The spec below describes that game.
+
+Rules that still apply: the master prompt (22,000-line limit, small commits, tests and build before each commit, no API keys, Section 3b code of conduct, AI disclosure), English only.
+
+---
+
 # NEXT PAYDAY — Build Spec for Claude Code (v3.1: Life Sim + Town Strategy + Cozy Layer)
 
 ---
