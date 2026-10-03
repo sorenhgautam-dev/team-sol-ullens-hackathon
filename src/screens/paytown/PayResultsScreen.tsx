@@ -7,8 +7,8 @@ import { motion } from 'framer-motion'
 import { useGameShallow } from '@/state/gameStore'
 import { useScam } from '@/state/scamStore'
 import { immunity, townLedger } from '@/engine/scamTown'
-import { ENCOUNTERS } from '@/content/scamTown'
-import { CHARACTERS_BY_ID } from '@/content/characters'
+import { useEncounters } from './useEncounters'
+import type { EncounterDef } from '@/engine/scamTown'
 import { Button } from '@/ui/Button'
 import { PxIcon } from '@/ui/PxIcon'
 import { Toasts } from '@/ui/Toasts'
@@ -19,18 +19,18 @@ import { t } from '@/i18n'
 import { play } from '@/audio/sfx'
 import confetti from 'canvas-confetti'
 
-export function familyWarningText(): string {
-  return [t('results2.familyTitle'), ...ENCOUNTERS.map((e, i) => `${i + 1}. ${t(e.rule.ruleKey)}`), t('results2.familyFooter')].join('\n')
+export function familyWarningText(encounters: EncounterDef[]): string {
+  return [t('results2.familyTitle'), ...encounters.map((e, i) => `${i + 1}. ${t(e.rule.ruleKey)}`), t('results2.familyFooter')].join('\n')
 }
 
 export function PayResultsScreen() {
   const { go, toast, reduced } = useGameShallow((s) => ({ go: s.go, toast: s.toast, reduced: s.settings.reducedMotion }))
-  const { characterId, answers } = useScam()
-  const ch = CHARACTERS_BY_ID[characterId]
+  const { answers } = useScam()
   const cash = useCash()
+  const { encounters, payday } = useEncounters()
   const params = usePersonaParams()
-  const ledger = useMemo(() => townLedger(ch.payday, answers, ENCOUNTERS), [ch.payday, answers])
-  const imm = useMemo(() => immunity(answers, ENCOUNTERS), [answers])
+  const ledger = useMemo(() => townLedger(payday, answers, encounters), [payday, answers, encounters])
+  const imm = useMemo(() => immunity(answers, encounters), [answers, encounters])
   const [shown, setShown] = useState(0)
 
   // The score counts up; a celebration only for "Scam-proof".
@@ -53,7 +53,7 @@ export function PayResultsScreen() {
   }, [imm.score, imm.tier, reduced])
 
   const share = async () => {
-    const text = familyWarningText()
+    const text = familyWarningText(encounters)
     try {
       if (navigator.share) await navigator.share({ title: t('results2.familyTitle'), text })
       else {
@@ -66,7 +66,7 @@ export function PayResultsScreen() {
   }
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(familyWarningText())
+      await navigator.clipboard.writeText(familyWarningText(encounters))
       toast(t('results2.copied'), 'good')
     } catch {
       toast(t('results2.copyFailed'), 'bad')
@@ -92,7 +92,7 @@ export function PayResultsScreen() {
           {ledger.accounts.ScamLoss > 0 ? t('results2.lost', { amount: cash(ledger.accounts.ScamLoss) }) : t('results2.keptAll')}
         </p>
         <ul className="mt-3 grid grid-cols-5 gap-1 text-[11px]">
-          {ENCOUNTERS.map((e) => {
+          {encounters.map((e) => {
             const v = imm.verdicts[e.id]
             return (
               <li key={e.id} className={`p-1 ${v === 'safe' ? 'bg-teal text-white' : v === 'tempted' ? 'bg-marigold' : 'bg-danger text-white'}`}>
@@ -111,7 +111,7 @@ export function PayResultsScreen() {
 
       <h2 className="mt-5 text-[14px]">{t('results2.rules')}</h2>
       <div className="mt-2 space-y-2">
-        {ENCOUNTERS.map((e) => (
+        {encounters.map((e) => (
           <RuleCard key={e.id} encounter={e} params={params} compact />
         ))}
       </div>
@@ -123,7 +123,7 @@ export function PayResultsScreen() {
           <h2 className="text-[15px]">{t('results2.familyTitle')}</h2>
         </div>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-[15px] leading-snug">
-          {ENCOUNTERS.map((e) => (
+          {encounters.map((e) => (
             <li key={e.id}>{t(e.rule.ruleKey)}</li>
           ))}
         </ol>

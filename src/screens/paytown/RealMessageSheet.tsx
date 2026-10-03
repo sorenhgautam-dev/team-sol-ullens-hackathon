@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import type { RealMessage } from '@/content/scamTown'
 import { useScam } from '@/state/scamStore'
-import { CHARACTERS_BY_ID } from '@/content/characters'
+import { useEncounters } from './useEncounters'
 import { Sheet } from '@/ui/Sheet'
 import { Button } from '@/ui/Button'
 import { PxIcon } from '@/ui/PxIcon'
@@ -13,9 +13,9 @@ import { play } from '@/audio/sfx'
 
 export function RealMessageSheet({ message: m, onClose }: { message: RealMessage | null; onClose: () => void }) {
   const handleReal = useScam((s) => s.handleReal)
-  const ch = CHARACTERS_BY_ID[useScam((s) => s.characterId)]
   const cash = useCash()
-  const params = { ...usePersonaParams(), payday: cash(ch.payday) }
+  const { payday } = useEncounters()
+  const params = { ...usePersonaParams(), payday: cash(payday) }
   const [picked, setPicked] = useState<RealMessage['choices'][number] | null>(null)
   useEffect(() => setPicked(null), [m?.id])
   return (

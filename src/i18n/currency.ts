@@ -1,18 +1,20 @@
 /**
- * The one currency helper. The budgeting engine works in NPR; the scam game works in
- * US dollars. Both are converted here for display. Rates are illustrative, not live.
+ * The one currency helper. The budgeting engine works in NPR and is converted for display
+ * (illustrative rates). The scam game is not converted: it uses realistic local amounts for
+ * each currency (content/economy.ts) and formats them here.
  */
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'INR' | 'NPR'
 export const CURRENCIES: Currency[] = ['USD', 'EUR', 'GBP', 'INR', 'NPR']
-/** Which currency an amount was written in. */
-export type Base = 'NPR' | 'USD'
+/** Which currency an amount was written in. The scam game writes local amounts, so base = display currency. */
+export type Base = Currency
 
 /** Illustrative display rates per US$1. */
 const PER_USD: Record<Currency, number> = { USD: 1, EUR: 0.92, GBP: 0.79, INR: 83, NPR: 133 }
 const SYMBOLS: Record<Currency, string> = { USD: '$', EUR: '€', GBP: '£', INR: '₹', NPR: 'NPR ' }
 
 export function convert(amount: number, currency: Currency, base: Base = 'NPR'): number {
-  const usd = base === 'USD' ? amount : amount / PER_USD.NPR
+  if (base === currency) return amount
+  const usd = amount / PER_USD[base]
   return usd * PER_USD[currency]
 }
 

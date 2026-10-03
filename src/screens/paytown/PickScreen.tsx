@@ -4,6 +4,7 @@ import { useScam } from '@/state/scamStore'
 import { CHARACTERS, type CharacterId } from '@/content/characters'
 import { Button } from '@/ui/Button'
 import { useCash } from '@/ui/useMoney'
+import { paydayFor } from '@/content/economy'
 import { t } from '@/i18n'
 import { play } from '@/audio/sfx'
 
@@ -17,6 +18,7 @@ export function startRun(id: CharacterId) {
 export function PickScreen() {
   const go = useGame((s) => s.go)
   const cash = useCash()
+  const currency = useGame((s) => s.settings.currency)
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-paper px-4 pb-6 pt-[max(16px,env(safe-area-inset-top))] text-ink">
       <div className="flex items-center justify-between">
@@ -41,7 +43,7 @@ export function PickScreen() {
             <span className="min-w-0 flex-1">
               <span className="block font-pixel text-[16px]">{t(c.nameKey)}</span>
               <span className="mt-1 block text-[15px] leading-snug">{t(c.storyKey)}</span>
-              <span className="mt-1 block text-[14px] font-bold text-teal">{t('char.paydayLine', { amount: cash(c.payday) })}</span>
+              <span className="mt-1 block text-[14px] font-bold text-teal">{t('char.paydayLine', { amount: cash(paydayFor(currency, c.id)) })}</span>
             </span>
           </button>
         ))}

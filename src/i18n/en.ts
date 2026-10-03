@@ -711,7 +711,7 @@ export const en = {
   'settings.haptics': 'Haptics',
   'settings.reducedMotion': 'Reduce motion',
   'settings.currency': 'Display currency',
-  'settings.currencyNote': 'Amounts are made up for the game. Conversion is illustrative.',
+  'settings.currencyNote': 'Each currency uses typical local pay and prices. Nothing is converted.',
   'settings.demo': 'Demo mode',
   'settings.reset': 'Reset everything',
   'settings.resetConfirm': 'This clears your saved game and settings on this phone.',

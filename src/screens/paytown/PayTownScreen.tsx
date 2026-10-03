@@ -8,7 +8,8 @@ import { useGame } from '@/state/gameStore'
 import { useScam } from '@/state/scamStore'
 import { useReducedMotion } from '@/state/hooks'
 import { firstAnswers, townLedger, type EncounterDef } from '@/engine/scamTown'
-import { ENCOUNTERS, REAL_MESSAGES } from '@/content/scamTown'
+import { REAL_MESSAGES } from '@/content/scamTown'
+import { useEncounters } from './useEncounters'
 import { CHARACTERS_BY_ID } from '@/content/characters'
 import { MAP_H, MAP_W, PLACES, startWalker, stepWalker, type WalkerState } from '@/walk/map'
 import { drawOutlined } from '@/ui/pixel/sprites'
@@ -53,12 +54,16 @@ export function PayTownScreen() {
   // The opened real message stays on screen until closed, even once it counts as handled.
   const [realOpen, setRealOpen] = useState<(typeof REAL_MESSAGES)[number] | null>(null)
 
-  const ledger = useMemo(() => townLedger(ch.payday, answers, ENCOUNTERS), [ch.payday, answers])
+  const { encounters, payday } = useEncounters()
+  const currency = useGame((s) => s.settings.currency)
+  const encountersRef = useRef(encounters)
+  encountersRef.current = encounters
+  const ledger = useMemo(() => townLedger(payday, answers, encounters), [payday, answers, encounters])
   const done = useMemo(() => new Set(firstAnswers(answers).map((a) => a.encounterId)), [answers])
   const doneRef = useRef(done)
   doneRef.current = done
   const pendingReal = REAL_MESSAGES.find((m) => done.size >= m.after && !real[m.id]) ?? null
-  const allDone = done.size === ENCOUNTERS.length
+  const allDone = done.size === encounters.length
 
   // Start at home on payday; in demo mode, start at the bank door so the first scam is seconds away.
   useEffect(() => {
@@ -113,7 +118,7 @@ export function PayTownScreen() {
       if (!busy) stepWalker(w, input.current.dx, input.current.dy)
       else w.moving = false
       let found: EncounterDef | null = null
-      for (const e of ENCOUNTERS) {
+      for (const e of encountersRef.current) {
         const d = doorOf(e.building).door
         if (Math.hypot(d.x - w.x, d.y - w.y) <= DOOR_RADIUS) found = e
       }
@@ -132,7 +137,7 @@ export function PayTownScreen() {
         step()
         n++
       }
-      render(ctx, canvas.width, canvas.height, walker.current, frame.current, mapImg.current, doneRef.current, ch.look, reduced)
+      render(ctx, canvas.width, canvas.height, walker.current, frame.current, mapImg.current, doneRef.current, ch.look, reduced, encountersRef.current)
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
@@ -198,7 +203,7 @@ export function PayTownScreen() {
           <div className="font-pixel text-[13px]">{t(ch.nameKey)}</div>
           <div className="text-[13px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size })}</div>
         </div>
-        <Balance amountNpr={ledger.balance} base="USD" state={ledger.balance < ch.payday ? 'warn' : 'safe'} size="lg" />
+        <Balance amountNpr={ledger.balance} base={currency} state={ledger.balance < payday ? 'warn' : 'safe'} size="lg" />
         <button className="relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft" onClick={() => {
             setRealOpen(pendingReal)
             setPhone(pendingReal ? 'real' : 'checker')
@@ -256,6 +261,7 @@ function render(
   done: Set<string>,
   look: { shirt: string; trim: string; braid: boolean },
   reduced: boolean,
+  encounters: EncounterDef[],
 ) {
   const camX = Math.round(Math.min(MAP_W - vw, Math.max(0, w.x - vw / 2)))
   const camY = Math.round(Math.min(MAP_H - vh, Math.max(0, w.y - vh * 0.55)))
@@ -263,7 +269,7 @@ function render(
   ctx.fillRect(0, 0, vw, vh)
   if (map) ctx.drawImage(map, camX, camY, vw, vh, 0, 0, vw, vh)
 
-  for (const e of ENCOUNTERS) {
+  for (const e of encounters) {
     const place = doorOf(e.building)
     const dx = place.door.x - camX
     const dy = place.door.y - camY
@@ -304,7 +310,7 @@ function render(
   drawOutlined(ctx, sx - 7, sy - 18, 14, 20, (c) => drawSitaTop(c, 7, 18, w.facing, Math.floor(w.odometer / 5), w.moving, false, look))
 
   // Off-screen buildings still to visit: an arrow at the edge points the way.
-  for (const e of ENCOUNTERS) {
+  for (const e of encounters) {
     if (done.has(e.id)) continue
     const d = doorOf(e.building).door
     const x = d.x - camX

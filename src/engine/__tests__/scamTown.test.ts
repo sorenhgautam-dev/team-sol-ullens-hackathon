@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { immunity, shuffledChoices, townLedger, type Answer } from '../scamTown'
-import { ENCOUNTERS, REAL_MESSAGES } from '@/content/scamTown'
+import { localEncounters, REAL_MESSAGES } from '@/content/scamTown'
 import { CHARACTERS } from '@/content/characters'
+import { ECONOMIES, paydayFor } from '@/content/economy'
+import { CURRENCIES } from '@/i18n/currency'
+
+const ENCOUNTERS = localEncounters('USD', 'sita')
 import { en } from '@/i18n/en'
 
 const all = (choice: string): Answer[] => ENCOUNTERS.map((e) => ({ encounterId: e.id, choiceId: choice }))
@@ -27,8 +31,13 @@ describe('scam town ledger', () => {
     expect(townLedger(800, a, ENCOUNTERS).balance).toBe(600)
   })
 
-  it('falling for everything still leaves every character with money (losses never exceed payday)', () => {
-    for (const c of CHARACTERS) expect(townLedger(c.payday, all('fall'), ENCOUNTERS).balance).toBeGreaterThanOrEqual(0)
+  it('falling for everything still leaves every character something, in every currency', () => {
+    for (const cur of CURRENCIES)
+      for (const c of CHARACTERS) {
+        const enc = localEncounters(cur, c.id)
+        const l = townLedger(paydayFor(cur, c.id), enc.map((e) => ({ encounterId: e.id, choiceId: 'fall' })), enc)
+        expect(l.balance, `${cur} ${c.id}`).toBeGreaterThan(0)
+      }
   })
 })
 
@@ -68,5 +77,26 @@ describe('encounter content', () => {
   it('uses no real brand names and no Nepal-specific words in the new text', () => {
     const text = Object.entries(en).filter(([k]) => k.startsWith('town.') && /^(town\.(bank|market|post|job|invest|real_)|town\.(scams|go|enter|phone|hurry))/.test(k)).map(([, v]) => v).join(' ')
     expect(text).not.toMatch(/Nepal|Kathmandu|NPR|eSewa|Khalti|Visa|Mastercard|PayPal|Amazon|FedEx|DHL/i)
+  })
+})
+
+describe('realistic local money (no exchange-rate conversion)', () => {
+  it('no one in rupees is paid a lakh or more', () => {
+    for (const cur of ['NPR', 'INR'] as const) for (const c of CHARACTERS) expect(paydayFor(cur, c.id)).toBeLessThan(100_000)
+  })
+
+  it('rupee pay is local, not dollars times an exchange rate', () => {
+    expect(paydayFor('NPR', 'sita')).not.toBe(paydayFor('USD', 'sita') * 133)
+    expect(paydayFor('NPR', 'bikash')).toBe(7_000)
+  })
+
+  it('scam amounts are shares of the character’s own pay, rounded to local numbers', () => {
+    const rider = localEncounters('NPR', 'bikash')
+    const clerk = localEncounters('NPR', 'aarav')
+    const bank = (l: typeof rider) => l.find((e) => e.id === 'bank')!.choices.find((c) => c.id === 'fall')!.loss
+    expect(bank(rider)).toBe(1_750)
+    expect(bank(clerk)).toBe(7_000)
+    for (const e of rider) for (const v of Object.values(e.amounts)) expect(v % 1 === 0 || v === ECONOMIES.NPR.fee).toBe(true)
+    expect(localEncounters('USD', 'sita').find((e) => e.id === 'post')!.amounts.fee).toBe(1.99)
   })
 })

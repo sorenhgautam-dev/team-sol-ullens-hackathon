@@ -8,7 +8,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ChoiceDef, EncounterDef } from '@/engine/scamTown'
 import { shuffledChoices, townLedger } from '@/engine/scamTown'
-import { ENCOUNTERS } from '@/content/scamTown'
+import { useEncounters } from './useEncounters'
+import { useGame } from '@/state/gameStore'
 import { CHARACTERS_BY_ID } from '@/content/characters'
 import { SCAMS_BY_ID } from '@/content/enemies'
 import { useScam } from '@/state/scamStore'
@@ -33,6 +34,8 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
   const { characterId, seed, answers, answer, shown } = useScam()
   const ch = CHARACTERS_BY_ID[characterId]
   const cash = useCash()
+  const { encounters, payday } = useEncounters()
+  const currency = useGame((s) => s.settings.currency)
   const persona = usePersonaParams()
   const [step, setStep] = useState<Step>('thought')
   const [attempt, setAttempt] = useState(0)
@@ -94,10 +97,10 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
     if (answered) return
     setAnswered(true)
     setPicked(c)
-    const before = townLedger(ch.payday, answers, ENCOUNTERS).balance
+    const before = townLedger(payday, answers, encounters).balance
     setShownBalance(before)
     if (!practice) answer({ encounterId: e.id, choiceId: c.id })
-    const after = practice ? before : townLedger(ch.payday, [...answers, { encounterId: e.id, choiceId: c.id }], ENCOUNTERS).balance
+    const after = practice ? before : townLedger(payday, [...answers, { encounterId: e.id, choiceId: c.id }], encounters).balance
     setStep('outcome')
     window.setTimeout(() => setShownBalance(after), 450)
     play(c.loss > 0 ? 'thud' : 'coin')
@@ -126,7 +129,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
               <span className="text-6xl" aria-hidden>
                 {ch.emoji}
               </span>
-              <p className="pixel-frame max-w-[300px] px-2 py-2 text-[19px] leading-snug">“{t(e.thoughtKey, { ...params, payday: cash(ch.payday) })}”</p>
+              <p className="pixel-frame max-w-[300px] px-2 py-2 text-[19px] leading-snug">“{t(e.thoughtKey, { ...params, payday: cash(payday) })}”</p>
               <Button variant="primary" size="lg" className="w-full" onClick={() => setStep('message')}>
                 {t('town.continue')}
               </Button>
@@ -138,7 +141,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
               <PhoneFrame channel={e.channel} sender={t(e.senderKey, params)} left={left} total={e.timerSeconds}>
                 {e.lineKeys.slice(0, linesShown).map((k) => (
                   <motion.p key={k} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-[88%] self-start bg-card px-3 py-2 text-[16px] leading-snug text-ink" style={{ boxShadow: '0 0 0 2px var(--frame-dark)' }}>
-                    {linkify(t(k, { ...params, payday: cash(ch.payday) }))}
+                    {linkify(t(k, { ...params, payday: cash(payday) }))}
                   </motion.p>
                 ))}
                 {ready && e.payKey && (
@@ -168,7 +171,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
 
           {step === 'outcome' && picked && (
             <motion.div key="outcome" className="flex flex-1 flex-col items-center justify-center gap-3 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Balance amountNpr={shownBalance} base="USD" state={picked.loss > 0 ? 'danger' : 'safe'} size="lg" className="!text-5xl" />
+              <Balance amountNpr={shownBalance} base={currency} state={picked.loss > 0 ? 'danger' : 'safe'} size="lg" className="!text-5xl" />
               <p className={`font-pixel text-lg ${picked.loss > 0 ? 'text-danger' : 'text-teal'}`}>{picked.loss > 0 ? t('town.lost', { amount: cash(picked.loss) }) : t('town.kept')}</p>
               <p className="text-[17px] leading-snug">{practice ? t('town.practiceOut', { outcome: t(picked.outcomeKey, { ...params, loss: cash(picked.loss) }) }) : t(picked.outcomeKey, { ...params, loss: lossText || cash(picked.loss) })}</p>
               <Button variant="primary" size="lg" className="mt-2 w-full" onClick={() => setStep('reveal')}>
