@@ -48,6 +48,59 @@ A mobile game (installable PWA, fully offline) about a problem most money apps i
 | Sita + bike repair 3,500 on day 9, rent moved | 5 | −3,200 | 5,800 |
 | Sita + repair, rent and school fee moved to day 21 | 0 | 800 | 5,800 |
 
+## Tools, libraries and assets
+
+**AI coding assistant.** We used **Claude Code** (Anthropic) to write code, tests, animation and effect code, placeholder art and documentation drafts. Every commit it helped with carries a `Co-Authored-By: Claude` trailer. See [docs/AI_USAGE.md](docs/AI_USAGE.md) for who did what.
+
+**Runtime libraries** (shipped in the app)
+
+| Library | Version | License | Used for |
+|---|---|---|---|
+| react, react-dom | 18.3.1 | MIT | UI |
+| zustand | 5.0.15 | MIT | UI state and saved games |
+| framer-motion | 11.18.2 | MIT | Transitions and sheets |
+| @number-flow/react | 0.5.14 | MIT | Animated balance |
+| @use-gesture/react | 10.3.1 | MIT | Swipeable event cards |
+| d3-delaunay | 6.0.4 | ISC | Town Mode ward geometry |
+| zzfx | 1.4.0 | MIT | Sound effects, generated in code |
+| canvas-confetti | 1.9.4 | ISC | Celebration effect |
+| @fontsource/nunito | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
+| @fontsource/silkscreen | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
+| @fontsource/pixelify-sans | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
+
+**Development tools** (not shipped)
+
+| Tool | Version | License |
+|---|---|---|
+| vite | 5.4.21 | MIT |
+| vite-plugin-pwa | 0.20.5 | MIT |
+| @vitejs/plugin-react | 4.7.0 | MIT |
+| typescript | 5.6.3 | Apache-2.0 |
+| vitest | 2.1.9 | MIT |
+| tailwindcss | 3.4.19 | MIT |
+| postcss | 8.5.28 | MIT |
+| autoprefixer | 10.6.1 | MIT |
+| @types/react, @types/react-dom, @types/node, @types/canvas-confetti, @types/d3-delaunay | various | MIT |
+
+**Fonts.** All are bundled through @fontsource and work offline. None are loaded from the internet.
+
+| Font | License | Used for |
+|---|---|---|
+| Nunito | SIL Open Font License 1.1 | Body text, money, dates |
+| Silkscreen | SIL Open Font License 1.1 | Pixel headings and buttons |
+| Pixelify Sans | SIL Open Font License 1.1 | Pixel accents |
+
+**Art and assets.** We used no pre-made art packs, stock images or third-party sprites.
+
+| Asset | Made by | Where |
+|---|---|---|
+| Town map | Our team, during the event | `public/sprites/town-map.png`, `design/town-map-concept.png` |
+| UI/UX screen designs | Our team, during the event | `design/`, `docs/UI_NOTES.md` |
+| Sita, the courier, scammers, buildings and effects | Code-drawn placeholders (`placeholder_*`) by Claude Code, to be replaced by team sprites | `src/ui/pixel/`, list in `docs/SPRITES_NEEDED.md` |
+| App icons | Drawn in SVG by Claude Code | `public/icon.svg` and PNG exports |
+| Sound effects | Generated in code with ZzFX | `src/audio/sfx.ts` |
+| Emoji | The device's own system emoji, not bundled | — |
+
 ## Run locally
 
 ```bash
