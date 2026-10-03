@@ -67,6 +67,7 @@ A mobile game (installable PWA, fully offline) about a problem most money apps i
 | @fontsource/nunito | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
 | @fontsource/silkscreen | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
 | @fontsource/pixelify-sans | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
+| pixelarticons | 2.4.1 | MIT | Pixel UI icons (only the ~30 we use are bundled) |
 
 **Development tools** (not shipped)
 
@@ -90,13 +91,23 @@ A mobile game (installable PWA, fully offline) about a problem most money apps i
 | Silkscreen | SIL Open Font License 1.1 | Pixel headings and buttons |
 | Pixelify Sans | SIL Open Font License 1.1 | Pixel accents |
 
-**Art and assets.** We used no pre-made art packs, stock images or third-party sprites.
+**Pre-made asset packs.** Originals and their licence files are in `public/assets/vendor/`. `scripts/unify-assets.py` recolours them into the game's single palette (`src/ui/palette.ts`) and adds the same ink outline as the rest of the art. The style guide at `/styleguide` shows every result.
+
+| Pack | Author | Licence | What we use |
+|---|---|---|---|
+| [Pixel UI Pack](https://kenney.nl/assets/pixel-ui-pack) | Kenney | CC0 1.0 | Nine-slice panels and buttons, recoloured |
+| [Tiny Town](https://kenney.nl/assets/tiny-town) | Kenney | CC0 1.0 | 16×16 town tiles, recoloured. Weapon, tool and explosive tiles were left out (list in `public/assets/vendor/README.md`) |
+| [pixelarticons](https://github.com/halfmage/pixelarticons) | Gerrit Halfmann | MIT | UI icons |
+
+CC0 needs no credit, but we credit Kenney anyway. We used no other stock images or third-party sprites.
+
+**Our own art.**
 
 | Asset | Made by | Where |
 |---|---|---|
 | Town map | Our team, during the event | `public/sprites/town-map.png`, `design/town-map-concept.png` |
 | UI/UX screen designs | Our team, during the event | `design/`, `docs/UI_NOTES.md` |
-| Sita, the courier, scammers, buildings and effects | Code-drawn placeholders (`placeholder_*`) by Claude Code, to be replaced by team sprites | `src/ui/pixel/`, list in `docs/SPRITES_NEEDED.md` |
+| Sita, the courier, scammers and world props | Code-drawn placeholders (`placeholder_*`) by Claude Code, to be replaced by team sprites | `src/ui/pixel/`, list in `docs/SPRITES_NEEDED.md` |
 | App icons | Drawn in SVG by Claude Code | `public/icon.svg` and PNG exports |
 | Sound effects | Generated in code with ZzFX | `src/audio/sfx.ts` |
 | Emoji | The device's own system emoji, not bundled | — |
