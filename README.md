@@ -3,7 +3,7 @@
 **Same income. Different month.**  
 *Live one month. Save one town. Fix your real dates.*
 
-A mobile game (installable PWA, fully offline) about a problem most budgeting apps ignore: **when** money arrives matters as much as **how much**. Two households with the same income and the same bills end the month with the same balance, but one of them spends fifteen days below zero, and that is exactly when the scammers call.
+A mobile game (installable PWA, fully offline) about a problem most money apps ignore: **when** money arrives matters as much as **how much**. Two households with the same income and the same bills end the month with the same balance, but one of them spends fifteen days below zero, and that is exactly when the scammers call.
 
 > *The same engine that runs one household runs the whole town.*
 

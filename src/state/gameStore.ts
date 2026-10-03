@@ -16,7 +16,7 @@ import { setHapticsEnabled, setSoundEnabled } from '@/audio/sfx'
 
 export type Screen = 'title' | 'twin' | 'profile' | 'life' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town'
 export type Tab = 'home' | 'money' | 'people' | 'phone' | 'moves'
-export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | null
+export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'ledger' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | null
 
 export interface Settings {
   sound: boolean

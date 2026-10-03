@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useGame, useGameShallow } from './gameStore'
 import { lived, forecast, describeGap } from '@/engine/forecast'
 import { simulate } from '@/engine/simulate'
+import { deriveGameState, type GameState } from '@/engine/gameState'
 import type { Ledger, Profile, Scenario } from '@/engine/types'
 import type { MonteCarloResult } from '@/engine/monteCarlo'
 import type { MonteCarloRequest } from '@/engine/monteCarlo.worker'
@@ -24,6 +25,13 @@ export function useLived(): Ledger {
   const { profileId, decisions, seed, day } = useGameShallow((s) => ({ profileId: s.profileId, decisions: s.decisions, seed: s.seed, day: s.day }))
   const profile = PROFILES[profileId] ?? SITA
   return useMemo(() => lived(DEMO_SCENARIO, profile, decisions, seed, day), [profile, decisions, seed, day])
+}
+
+/** One typed GameState for the current day (Phase 1.1). */
+export function useGameState(): GameState {
+  const { profileId, decisions, seed, day, energy } = useGameShallow((s) => ({ profileId: s.profileId, decisions: s.decisions, seed: s.seed, day: s.day, energy: s.energy }))
+  const profile = PROFILES[profileId] ?? SITA
+  return useMemo(() => deriveGameState(DEMO_SCENARIO, profile, decisions, seed, day, energy, 3), [profile, decisions, seed, day, energy])
 }
 
 /** The whole month as the forecast sees it (decided + foreseeable events, no scams). */
