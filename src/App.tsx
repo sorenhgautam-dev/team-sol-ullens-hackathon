@@ -2,6 +2,7 @@ import { MotionConfig } from 'framer-motion'
 import { useGame } from '@/state/gameStore'
 import { useReducedMotion } from '@/state/hooks'
 import { PhoneFrame } from '@/ui/PhoneFrame'
+import { ErrorBoundary } from '@/ui/ErrorBoundary'
 import { TitleScreen } from '@/screens/TitleScreen'
 import { TwinWalletsScreen } from '@/screens/TwinWalletsScreen'
 import { ProfileSelectScreen } from '@/screens/ProfileSelectScreen'
@@ -18,11 +19,13 @@ import { TownScreen } from '@/screens/town/TownScreen'
 
 export default function App() {
   const screen = useGame((s) => s.screen)
+  const go = useGame((s) => s.go)
   const reduced = useReducedMotion()
   if (screen === 'debug') return <DebugPage />
   return (
     <MotionConfig reducedMotion={reduced ? 'always' : 'user'}>
       <PhoneFrame>
+        <ErrorBoundary key={screen} onReset={() => go('title')}>
         {screen === 'title' && <TitleScreen />}
         {screen === 'twin' && <TwinWalletsScreen />}
         {screen === 'profile' && <ProfileSelectScreen />}
@@ -37,6 +40,7 @@ export default function App() {
         {screen === 'impactPre' && <ImpactPreScreen />}
         {screen === 'impactPost' && <ImpactPostScreen />}
         {screen === 'town' && <TownScreen />}
+        </ErrorBoundary>
       </PhoneFrame>
     </MotionConfig>
   )

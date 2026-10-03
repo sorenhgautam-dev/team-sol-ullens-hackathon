@@ -49,7 +49,7 @@ export function TitleScreen() {
           onPointerLeave={endHold}
           aria-label={t('app.name')}
           animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: 'steps(6)' }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         >
           🪙
         </motion.button>
