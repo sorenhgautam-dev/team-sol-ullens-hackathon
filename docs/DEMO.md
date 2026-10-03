@@ -29,7 +29,6 @@
 - Two real messages are mixed in. Treating everything as a scam is not the goal.
 - Global by default: dollars, generic senders, no brands. Switch currency in Settings and the pay becomes typical local pay (NPR 30,000 for Sita, not a converted lakh).
 - The paths work: fences, trees and walls block; Sita leaves her garden through the gate.
-- The earlier budgeting game is still in the code behind one flag (`FEATURES.budgeting`).
 
 ## If something goes wrong
 

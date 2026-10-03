@@ -1,13 +1,11 @@
 # UI notes from the team's designs
 
-One section per design image. Images live in `design/`. **The town map PNG must be re-added as `design/town-map-concept.png` and `public/sprites/town-map.png` (the temp screenshot expired before it was copied).**
+Images live in `design/`.
 
-## Town map concept — `design/town-map-concept.png` (Town Mode)
-- **Layout:** portrait, top-down pixel town on grass with a river along the top-right and forest edges. A cobbled road loops from the top-left house around a central market square and down to the bottom-right cottage.
-- **Elements:** red-brick two-storey house (top-left), clock-tower school (top-right), market square with four blue-striped stalls and a fountain (centre), stone bank with a gold coin emblem (left), knight statue on a plinth (centre-bottom), half-timbered shop with warm windows (right), cottage with vegetable garden and well (bottom-right), lamp posts, benches, fences, flower beds.
-- **Mapping to wards:** bank → cooperative office (town-wide initiatives), market → Bazaar, school → College Hill, river bank → Riverside, brick house → Old Town, cottage → New Colony; Bus Park and Brick Kilns still need art.
-- **Flow:** tap a building to open its ward panel; SAFE / WARNING / CRISIS overlays tint the ward; initiatives stamp onto the ward. Replaces the current Voronoi map once tiles exist.
-- **Note:** the statue holds a sword and shield; per Section 3b the final sprite should drop the blade (shield or scroll only).
+## Town map — `design/town-map-concept.png` (in the game as `public/sprites/town-map.png`)
+- **Layout:** portrait, top-down pixel town on grass with a river along the top and forest edges. A cobbled road loops from the top-left house around a central market square and down to the cottage garden.
+- **Scam Town places:** stone bank with a gold coin (the bank), the market square with blue-striped stalls and a fountain (the market), the clock tower (the post office), the half-timbered house on the right (the job centre), the statue on the plaza (the kiosk), the cottage with a vegetable garden (home, where every payday starts). The south district and Main Street are built from Kenney Tiny Town tiles below the map.
+- **Note:** the statue holds a sword and shield; per the code of conduct the final art should drop the blade (shield or scroll only).
 
-## Not yet received
-- "Screenshot 2026-10-03 at 2.20.33 PM" and "Screenshot 2026-10-03 at 2.20.38 PM" were referenced but are not on disk. Please add them to `design/` so they can be documented and built.
+## Character select
+- The team's mockup: a card per citizen with a pixel portrait, name (editable), role, short story, local pay chip, payday frequency and the scams that often target them; a dark "Select a citizen" bar until one is picked.
