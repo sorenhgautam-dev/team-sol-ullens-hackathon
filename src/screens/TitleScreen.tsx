@@ -5,12 +5,14 @@ import { useInstall } from '@/state/pwa'
 import { useTown } from '@/state/townStore'
 import { Button } from '@/ui/Button'
 import { PixelSkyline } from '@/ui/PixelSkyline'
+import { dailySeed } from '@/engine/badges'
 import { t } from '@/i18n'
 import { haptic, play } from '@/audio/sfx'
 
 export function TitleScreen() {
-  const { go, seenIntro, day, monthOver, decisions, settings, setSettings, toast } = useGameShallow((s) => ({
+  const { go, seenIntro, day, monthOver, decisions, settings, setSettings, toast, startDaily } = useGameShallow((s) => ({
     go: s.go,
+    startDaily: s.startDaily,
     seenIntro: s.seenIntro,
     day: s.day,
     monthOver: s.monthOver,
@@ -72,6 +74,9 @@ export function TitleScreen() {
         )}
         <Button variant={canContinue ? 'secondary' : 'primary'} size="lg" className="w-full" onClick={() => go(seenIntro ? 'profile' : 'twin')}>
           🎮 {t('title.play')}
+        </Button>
+        <Button variant="secondary" className="w-full" onClick={startDaily}>
+          📅 {t('title.daily')} · {dailySeed().code}
         </Button>
         {install.deferred && !install.installed && (
           <Button variant="shield" className="w-full" onClick={() => void install.install()}>

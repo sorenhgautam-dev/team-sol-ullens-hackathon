@@ -12,6 +12,7 @@ import { DEMO_SCENARIO, DEMO_SEED } from '@/content/scenario'
 import { PROFILES, SITA } from '@/content/profiles'
 import type { Currency } from '@/i18n/currency'
 import { ENERGY_PER_DAY, energyCost, spendEnergy, type EnergyKind } from './energy'
+import { dailySeed } from '@/engine/badges'
 import { setHapticsEnabled, setSoundEnabled } from '@/audio/sfx'
 
 export type Screen = 'title' | 'twin' | 'profile' | 'life' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town'
@@ -61,10 +62,17 @@ interface GameState {
   nextId: number
   toasts: Toast[]
   monthOver: boolean
+  rewindCharges: number
+  rewoundToVictory: boolean
+  dailyCode: string | null
+  bestScores: Record<string, number>
 
   go: (screen: Screen) => void
   setSettings: (patch: Partial<Settings>) => void
-  startMonth: (profileId: string, seed?: number) => void
+  startMonth: (profileId: string, seed?: number, dailyCode?: string | null) => void
+  startDaily: () => void
+  adoptTimeline: (decisions: DecisionLog, improved: boolean) => boolean
+  recordBest: (score: number) => boolean
   nextMonth: () => void
   setTab: (tab: Tab) => void
   openSheet: (kind: SheetKind, payload?: string | null) => void
@@ -111,6 +119,10 @@ export const useGame = create<GameState>()(
       nextId: 1,
       toasts: [],
       monthOver: false,
+      rewindCharges: 3,
+      rewoundToVictory: false,
+      dailyCode: null,
+      bestScores: {},
 
       go: (screen) => {
         set({ screen })
@@ -124,7 +136,7 @@ export const useGame = create<GameState>()(
         set({ settings })
       },
 
-      startMonth: (profileId, seed) => {
+      startMonth: (profileId, seed, dailyCode = null) => {
         const s = get()
         const newSeed = seed ?? (s.settings.demoMode ? DEMO_SEED : DEMO_SEED + s.monthsPlayed * 7)
         set({
@@ -139,11 +151,39 @@ export const useGame = create<GameState>()(
           readMail: [],
           readPhone: [],
           monthOver: false,
+          rewindCharges: 3,
+          rewoundToVictory: false,
+          dailyCode,
           screen: 'life',
           seenIntro: true,
         })
         // Day 1 may already hold a pending encounter.
         setTimeout(() => get().openPending(), 400)
+      },
+
+      startDaily: () => {
+        const { seed, code } = dailySeed()
+        get().startMonth('sita', seed, code)
+      },
+
+      /** Replace the month's decisions with a rewound timeline. Spends a charge outside demo mode. */
+      adoptTimeline: (decisions, improved) => {
+        const s = get()
+        const unlimited = s.settings.demoMode
+        if (!unlimited && s.rewindCharges <= 0) return false
+        set({ decisions, rewindCharges: unlimited ? s.rewindCharges : s.rewindCharges - 1, rewoundToVictory: s.rewoundToVictory || improved })
+        return true
+      },
+
+      recordBest: (score) => {
+        const s = get()
+        const key = s.dailyCode ?? `${s.profileId}:${s.seed}`
+        const prev = s.bestScores[key] ?? -1
+        if (score > prev) {
+          set({ bestScores: { ...s.bestScores, [key]: score } })
+          return prev >= 0
+        }
+        return false
       },
 
       nextMonth: () => {
@@ -268,6 +308,10 @@ export const useGame = create<GameState>()(
           nextId: 1,
           toasts: [],
           monthOver: false,
+          rewindCharges: 3,
+          rewoundToVictory: false,
+          dailyCode: null,
+          bestScores: {},
         })
       },
     }),
@@ -287,6 +331,10 @@ export const useGame = create<GameState>()(
         nextId: s.nextId,
         monthOver: s.monthOver,
         hubCollapsed: s.hubCollapsed,
+        rewindCharges: s.rewindCharges,
+        rewoundToVictory: s.rewoundToVictory,
+        dailyCode: s.dailyCode,
+        bestScores: s.bestScores,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
