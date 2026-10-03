@@ -1,14 +1,16 @@
 /**
- * Scam Town: the character starts in town on payday. Five buildings glow; walk to them
- * in any order and face the trap inside. The HUD shows only who you are, your balance,
+ * Scam Town: the character starts in town on payday. Scams start one at a time, in a
+ * fixed order: only the current building shows its cue (a ringing phone, a shout, a
+ * notification...) and an arrow. Walk there and face the trap inside; about two seconds
+ * after the rule card, the next building's cue pops up. The HUD shows only who you are, your balance,
  * how many scams you have faced, and the phone. The balance comes from the ledger.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGame } from '@/state/gameStore'
 import { useScam } from '@/state/scamStore'
 import { useReducedMotion } from '@/state/hooks'
-import { firstAnswers, townLedger, type EncounterDef } from '@/engine/scamTown'
-import { REAL_MESSAGES } from '@/content/scamTown'
+import { currentEncounter, firstAnswers, townLedger, type EncounterDef } from '@/engine/scamTown'
+import { CUES, REAL_MESSAGES } from '@/content/scamTown'
 import { useEncounters } from './useEncounters'
 import { CHARACTERS_BY_ID } from '@/content/characters'
 import { MAP_H, PLACES, WORLD_H, WORLD_W, startWalker, stepWalker, type Rect, type WalkerState } from '@/walk/map'
@@ -16,6 +18,7 @@ import { DISTRICT_COLS, DISTRICT_DOORS, DISTRICT_GROUND, DISTRICT_OBJECTS, DISTR
 import tilesUrl from '@/assets/pixel/tiles.png'
 import { drawOutlined } from '@/ui/pixel/sprites'
 import { drawSitaTop, drawText } from '@/ui/pixel/topdown'
+import { drawCue, drawDoorArrow } from '@/ui/pixel/cues'
 import { PIXEL_SCALE } from '@/ui/palette'
 import { Balance } from '@/ui/Balance'
 import { Button } from '@/ui/Button'
@@ -32,6 +35,22 @@ import { haptic, play, unlockAudio } from '@/audio/sfx'
 const SCALE = PIXEL_SCALE.world
 const STEP_MS = 1000 / 60
 const DOOR_RADIUS = 16
+/** The pause after a rule card before the next scam's cue pops up, and before the first one. */
+const NEXT_CUE_MS = 2000
+const FIRST_CUE_MS = 600
+
+/** Where a cue's speech-bubble tail points: just above the building's name, so it stays in view. */
+function cueAnchor(place: { door: { x: number; y: number } }) {
+  return { x: place.door.x, y: place.door.y - 46 }
+}
+
+/** The cue on screen: which scam, the frame it popped up on, and its text. */
+interface ShownCue {
+  id: string
+  building: EncounterDef['building']
+  at: number
+  label: string
+}
 
 /** Which map building houses each encounter: the team's town, or the south district. */
 const TOWN_PLACE: Partial<Record<EncounterDef['building'], string>> = { bank: 'bank', market: 'market', post: 'school', job: 'workshop', invest: 'plaza', home: 'home' }
@@ -93,6 +112,13 @@ export function PayTownScreen() {
   doneRef.current = done
   const pendingReal = REAL_MESSAGES.find((m) => m.round === Math.min(round, 2) && done.size >= m.after && !real[`${round}:${m.id}`]) ?? null
   const allDone = done.size === thisRound.length
+  // One scam at a time, in the payday's fixed order.
+  const current = useMemo(() => currentEncounter(thisRound, answers, round), [thisRound, answers, round])
+  const [cue, setCue] = useState<ShownCue | null>(null)
+  const cueRef = useRef<ShownCue | null>(null)
+  cueRef.current = cue && cue.id === current?.id ? cue : null
+  // True once a scam is finished, so the next cue waits about two seconds after the rule card.
+  const finished = useRef(false)
 
   // Start at home on payday; in demo mode (first payday), start at the bank door so the first scam is seconds away.
   useEffect(() => {
@@ -135,6 +161,19 @@ export function PayTownScreen() {
   const busy = !!open || !!phone
   const walkedRef = useRef(false)
 
+  // Pop up the current scam's cue: at the start, and about two seconds after each rule card.
+  useEffect(() => {
+    if (!current || busy || cue?.id === current.id) return
+    const id = window.setTimeout(() => {
+      finished.current = false
+      const c = CUES[current.building]
+      setCue({ id: current.id, building: current.building, at: frame.current, label: c.textKey ? t(c.textKey, { name }) : '' })
+      play(c.sound)
+      if (c.vibrate) haptic(c.vibrate)
+    }, finished.current ? NEXT_CUE_MS : FIRST_CUE_MS)
+    return () => window.clearTimeout(id)
+  }, [current, busy, cue?.id, name])
+
   // Development only: jump to a spot, for testing far-off buildings. Not in the production build.
   useEffect(() => {
     if (!import.meta.env.DEV) return
@@ -165,6 +204,8 @@ export function PayTownScreen() {
       }
       let found: EncounterDef | null = null
       for (const e of encountersRef.current) {
+        // Only the current scam (once its cue is up) and finished ones can be entered.
+        if (!doneRef.current.has(e.id) && e.id !== cueRef.current?.id) continue
         const d = doorOf(e.building).door
         if (Math.hypot(d.x - w.x, d.y - w.y) <= DOOR_RADIUS) found = e
       }
@@ -183,7 +224,7 @@ export function PayTownScreen() {
         step()
         n++
       }
-      render(ctx, canvas.width, canvas.height, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current)
+      render(ctx, canvas.width, canvas.height, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current, cueRef.current, nearId)
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
@@ -285,7 +326,13 @@ export function PayTownScreen() {
         </Button>
       </div>
 
-      <EncounterSheet encounter={open} onClose={() => setOpen(null)} />
+      <EncounterSheet
+        encounter={open}
+        onClose={() => {
+          if (open && doneRef.current.has(open.id)) finished.current = true
+          setOpen(null)
+        }}
+      />
       <RealMessageSheet
         message={phone === 'real' ? realOpen : null}
         onClose={() => {
@@ -311,6 +358,8 @@ function render(
   look: { shirt: string; trim: string; braid: boolean },
   reduced: boolean,
   encounters: EncounterDef[],
+  cue: ShownCue | null,
+  nearId: string | null,
 ) {
   const camX = Math.round(Math.min(WORLD_W - vw, Math.max(0, w.x - vw / 2)))
   const camY = Math.round(Math.min(WORLD_H - vh, Math.max(0, w.y - vh * 0.55)))
@@ -328,6 +377,9 @@ function render(
     const place = doorOf(e.building)
     const dx = place.door.x - camX
     const dy = place.door.y - camY
+    const isCurrent = cue?.id === e.id
+    // Scams still to come look like normal buildings until it is their turn.
+    if (!done.has(e.id) && !isCurrent) continue
     if (done.has(e.id)) {
       // Done: the building dims and shows a tick.
       if (place.body) {
@@ -341,21 +393,14 @@ function render(
       ctx.fillStyle = '#fbf4e2'
       for (const [px_, py_] of [[-3, -24], [-2, -23], [-1, -22], [0, -23], [1, -24], [2, -25], [3, -26]]) ctx.fillRect(dx + px_!, dy + py_!, 1, 2)
     } else {
-      // To do: a glowing beacon above the door.
+      // Its turn: the door glows and an arrow points at it.
       const pulse = reduced ? 0.5 : 0.35 + 0.35 * Math.sin(frame / 10)
-      const g = ctx.createRadialGradient(dx, dy - 10, 2, dx, dy - 10, 22)
+      const g = ctx.createRadialGradient(dx, dy - 6, 2, dx, dy - 6, 22)
       g.addColorStop(0, `rgba(245,194,107,${pulse + 0.25})`)
       g.addColorStop(1, 'rgba(245,194,107,0)')
       ctx.fillStyle = g
-      ctx.fillRect(dx - 22, dy - 32, 44, 44)
-      const bob = reduced ? 0 : Math.round(Math.sin(frame / 12) * 2)
-      ctx.fillStyle = '#2b1d10'
-      ctx.fillRect(dx - 4, dy - 34 + bob, 8, 10)
-      ctx.fillStyle = '#e0a93b'
-      ctx.fillRect(dx - 3, dy - 33 + bob, 6, 8)
-      ctx.fillStyle = '#2b1d10'
-      ctx.fillRect(dx - 0.5, dy - 32 + bob, 1, 4)
-      ctx.fillRect(dx - 0.5, dy - 27 + bob, 1, 1)
+      ctx.fillRect(dx - 22, dy - 28, 44, 44)
+      if (nearId !== e.id) drawDoorArrow(ctx, dx, dy - 22, frame, reduced)
     }
     drawText(ctx, t(`town.building.${e.building}`), dx, dy - 40, done.has(e.id) ? '#c9ac7a' : '#fbf4e2', 7)
   }
@@ -364,9 +409,16 @@ function render(
   const sy = Math.round(w.y - camY)
   drawOutlined(ctx, sx - 7, sy - 18, 14, 20, (c) => drawSitaTop(c, 7, 18, w.facing, Math.floor(w.odometer / 5), w.moving, false, look))
 
-  // Off-screen buildings still to visit: an arrow at the edge points the way.
+  // The current scam's cue, drawn over everything so it is never hidden.
+  if (cue) {
+    const place = doorOf(cue.building)
+    const a = cueAnchor(place)
+    drawCue(ctx, CUES[cue.building].kind, a.x - camX, a.y - camY, place.door.x - camX, place.door.y - camY, frame, frame - cue.at, cue.label, reduced)
+  }
+
+  // The current scam off screen: an arrow at the edge points the way.
   for (const e of encounters) {
-    if (done.has(e.id)) continue
+    if (done.has(e.id) || cue?.id !== e.id) continue
     const d = doorOf(e.building).door
     const x = d.x - camX
     const y = d.y - camY - 10
