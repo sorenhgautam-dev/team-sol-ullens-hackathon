@@ -8,25 +8,20 @@
 import { findPath, type Point } from '@/walk/path'
 import { WORLD_W } from '@/walk/map'
 import { PALETTE as P } from '@/ui/palette'
-import { drawOutlined } from './sprites'
-import { drawSitaTop } from './topdown'
+import { drawPerson, type PersonLook } from './people'
 
 type Ctx = CanvasRenderingContext2D
 type Facing = 'down' | 'up' | 'left' | 'right'
-interface Look {
-  shirt: string
-  trim: string
-  braid: boolean
-}
+type Look = PersonLook
 
 /** Each townsperson walks a loop through these spots, in world pixels. */
 const ROUNDS: { stops: Point[]; look: Look; speed: number; start: number }[] = [
-  { stops: [{ x: 130, y: 330 }, { x: 172, y: 330 }, { x: 172, y: 362 }, { x: 130, y: 362 }], look: { shirt: P.stone, trim: P.stoneLight, braid: false }, speed: 0.35, start: 0 },
-  { stops: [{ x: 150, y: 400 }, { x: 150, y: 640 }], look: { shirt: P.wood, trim: P.sand, braid: true }, speed: 0.45, start: 120 },
-  { stops: [{ x: 110, y: 196 }, { x: 250, y: 196 }], look: { shirt: P.blueDark, trim: P.stoneLight, braid: false }, speed: 0.4, start: 40 },
-  { stops: [{ x: 70, y: 250 }, { x: 70, y: 400 }], look: { shirt: P.amberDark, trim: P.sand, braid: true }, speed: 0.4, start: 80 },
-  { stops: [{ x: 40, y: 600 }, { x: 264, y: 600 }, { x: 264, y: 816 }, { x: 40, y: 816 }], look: { shirt: P.woodDark, trim: P.sand, braid: false }, speed: 0.5, start: 300 },
-  { stops: [{ x: 30, y: 930 }, { x: 280, y: 930 }], look: { shirt: P.sage, trim: P.stone, braid: true }, speed: 0.4, start: 10 },
+  { stops: [{ x: 130, y: 330 }, { x: 172, y: 330 }, { x: 172, y: 362 }, { x: 130, y: 362 }], look: { shirt: P.stone, trim: P.stoneLight, style: 'bun', hair: '#9a9aa8', skin: '#c98a5a', pants: '#4a3a2a' }, speed: 0.3, start: 0 },
+  { stops: [{ x: 150, y: 400 }, { x: 150, y: 640 }], look: { shirt: P.wood, trim: P.sand, style: 'long', top: 'kurta', hair: '#2a1d1a', skin: '#a8714a', pants: '#3a2a20' }, speed: 0.45, start: 120 },
+  { stops: [{ x: 110, y: 196 }, { x: 250, y: 196 }], look: { shirt: P.blueDark, trim: P.stoneLight, style: 'short', hair: '#3a2418', skin: '#d8a07a', pants: '#3a2a20' }, speed: 0.4, start: 40 },
+  { stops: [{ x: 70, y: 250 }, { x: 70, y: 400 }], look: { shirt: P.amberDark, trim: P.sand, style: 'cap', hair: '#1e1a1f', skin: '#b07850', pants: '#2b4566' }, speed: 0.4, start: 80 },
+  { stops: [{ x: 40, y: 600 }, { x: 264, y: 600 }, { x: 264, y: 816 }, { x: 40, y: 816 }], look: { shirt: P.woodDark, trim: P.sand, style: 'short', hair: '#6e6a80', skin: '#c98a5a', pants: '#2b1d10' }, speed: 0.5, start: 300 },
+  { stops: [{ x: 30, y: 930 }, { x: 280, y: 930 }], look: { shirt: P.sage, trim: P.stone, style: 'bun', hair: '#2a1d1a', skin: '#d8a07a', pants: '#5b4b6b' }, speed: 0.4, start: 10 },
 ]
 
 interface Walker {
@@ -98,8 +93,9 @@ export function drawTownsperson(ctx: Ctx, p: Townsperson, x: number, y: number) 
   const sx = Math.round(x)
   const sy = Math.round(y)
   ctx.fillStyle = 'rgba(43,29,16,0.22)'
-  ctx.fillRect(sx - 4, sy, 9, 2)
-  drawOutlined(ctx, sx - 7, sy - 18, 14, 20, (c) => drawSitaTop(c, 7, 18, p.facing, p.step, p.moving, false, p.look))
+  ctx.fillRect(sx - 3, sy - 1, 7, 1)
+  ctx.fillRect(sx - 5, sy, 11, 2)
+  drawPerson(ctx, sx, sy, p.facing, p.step, p.moving, p.look)
 }
 
 /** Soft cloud shadows drifting east over the whole map (world pixels, relative to the camera). */

@@ -6,7 +6,7 @@
  */
 import type { CueKind } from '@/content/scamTown'
 import { PALETTE as P } from '@/ui/palette'
-import { drawOutlined } from './sprites'
+import { drawPerson, type PersonLook } from './people'
 import { drawText } from './topdown'
 
 type Ctx = CanvasRenderingContext2D
@@ -141,27 +141,20 @@ function iconBubble(ctx: Ctx, icon: keyof typeof ICONS | null, label: string, bo
   return { x, y, w, h }
 }
 
-/** The friendly stranger with a "$$" sparkle, feet at (x, y). */
-function drawStranger(ctx: Ctx, x: number, y: number, frame: number, reduced: boolean) {
-  const wave = !reduced && frame % 20 < 10
-  px(ctx, x - 2, y - 17, 5, 2, P.ink)
-  px(ctx, x - 3, y - 15, 7, 1, P.ink)
-  px(ctx, x - 2, y - 14, 5, 5, P.skin)
-  px(ctx, x - 1, y - 12, 1, 1, P.ink)
-  px(ctx, x + 1, y - 12, 1, 1, P.ink)
-  px(ctx, x - 3, y - 9, 7, 6, P.blueDark)
-  px(ctx, x, y - 9, 1, 4, P.amber)
-  px(ctx, x - 5, y - 9, 2, 5, P.blueDark)
-  px(ctx, x - 5, y - 4, 2, 1, P.skin)
-  if (wave) {
-    px(ctx, x + 4, y - 14, 2, 5, P.blueDark)
-    px(ctx, x + 4, y - 16, 2, 2, P.skin)
-  } else {
-    px(ctx, x + 4, y - 12, 2, 4, P.blueDark)
-    px(ctx, x + 6, y - 14, 2, 2, P.skin)
-  }
-  px(ctx, x - 2, y - 3, 2, 3, P.ink)
-  px(ctx, x + 1, y - 3, 2, 3, P.ink)
+/** The friendly stranger: a person in a dark suit and hat, waving, feet at (0, 0). */
+const STRANGER: PersonLook = { shirt: '#2b4566', trim: '#e0a93b', style: 'cap', hair: '#2a1d1a', skin: '#c98a5a', pants: '#2b1d10' }
+function drawStranger(ctx: Ctx, frame: number, reduced: boolean) {
+  ctx.fillStyle = 'rgba(43,29,16,0.22)'
+  ctx.fillRect(-5, 0, 11, 2)
+  drawPerson(ctx, 0, 0, 'down', 0, false, STRANGER)
+  // The waving arm, raised over the shoulder.
+  const wave = !reduced && frame % 20 < 10 ? 1 : 0
+  ctx.fillStyle = '#3b261c'
+  ctx.fillRect(5 + wave, -21, 4, 10)
+  ctx.fillStyle = '#2b4566'
+  ctx.fillRect(6 + wave, -16, 2, 4)
+  ctx.fillStyle = '#c98a5a'
+  ctx.fillRect(6 + wave, -20, 2, 4)
 }
 
 /**
@@ -179,12 +172,12 @@ export function drawCue(ctx: Ctx, kind: CueKind, ax: number, ay: number, doorX: 
     ctx.save()
     ctx.translate(fx, fy)
     if (s !== 1) ctx.scale(s, s)
-    drawOutlined(ctx, -7, -19, 14, 20, (c) => drawStranger(c, 7, 19, frame, reduced))
+    drawStranger(ctx, frame, reduced)
     const blink = reduced || frame % 30 < 20
-    if (blink) drawText(ctx, '$$', 0, -25 - (reduced ? 0 : Math.round(Math.sin(frame / 8))), P.amberLight, 7)
+    if (blink) drawText(ctx, '$$', 0, -30 - (reduced ? 0 : Math.round(Math.sin(frame / 8))), P.amberLight, 7)
     if (!reduced && frame % 30 < 15) {
-      px(ctx, -8, -24, 1, 1, P.light)
-      px(ctx, 8, -27, 1, 1, P.light)
+      px(ctx, -8, -29, 1, 1, P.light)
+      px(ctx, 8, -32, 1, 1, P.light)
     }
     ctx.restore()
     return

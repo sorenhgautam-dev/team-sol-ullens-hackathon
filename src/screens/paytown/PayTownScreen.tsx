@@ -17,9 +17,9 @@ import { PLACES, WALK_SPEED, WORLD_H, WORLD_W, startWalker, stepWalker, type Rec
 import { findPath, type Point } from '@/walk/path'
 import { DISTRICT_COLS, DISTRICT_DOORS, DISTRICT_GROUND, DISTRICT_OBJECTS, DISTRICT_ROWS, DISTRICT_SIGNS, DISTRICT_TOP, TILE } from '@/walk/district'
 import tilesUrl from '@/assets/pixel/tiles.png'
-import { drawOutlined } from '@/ui/pixel/sprites'
-import { drawSitaTop, drawText } from '@/ui/pixel/topdown'
+import { drawText } from '@/ui/pixel/topdown'
 import { drawCue, drawDoorArrow } from '@/ui/pixel/cues'
+import { drawPerson, PERSON_TOP, type PersonLook } from '@/ui/pixel/people'
 import { drawBirds, drawCloudShadows, drawFountainSparkle, drawTownsperson, townsfolk } from '@/ui/pixel/ambient'
 import { PIXEL_SCALE } from '@/ui/palette'
 import { Balance } from '@/ui/Balance'
@@ -478,7 +478,7 @@ function render(
   map: HTMLImageElement | null,
   district: HTMLCanvasElement | null,
   done: Set<string>,
-  look: { shirt: string; trim: string; braid: boolean },
+  look: PersonLook,
   reduced: boolean,
   encounters: EncounterDef[],
   cue: ShownCue | null,
@@ -572,10 +572,10 @@ function render(
   ctx.fillRect(sx - 3, sy - 1, 7, 1)
   ctx.fillRect(sx - 5, sy, 11, 2)
   ctx.fillRect(sx - 3, sy + 2, 7, 1)
-  drawOutlined(ctx, sx - 7, sy - 18, 14, 20, (c) => drawSitaTop(c, 7, 18, w.facing, Math.floor(w.odometer / 5), w.moving, false, look))
+  drawPerson(ctx, sx, sy, w.facing, Math.floor(w.odometer / 5), w.moving, look)
   // "This is you": a small teal marker over the head while standing still.
   if (!w.moving && nearId === null) {
-    const my = sy - 25 + (reduced ? 0 : Math.round(Math.sin(frame / 10)))
+    const my = sy - PERSON_TOP - 6 + (reduced ? 0 : Math.round(Math.sin(frame / 10)))
     ctx.fillStyle = '#2b1d10'
     ctx.fillRect(sx - 3, my - 1, 7, 3)
     ctx.fillRect(sx - 2, my + 2, 5, 1)
