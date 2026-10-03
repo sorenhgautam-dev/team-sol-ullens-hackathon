@@ -6,3 +6,9 @@ export function useMoney() {
   const currency = useGame((s) => s.settings.currency)
   return (amountNpr: number) => formatMoney(amountNpr, currency)
 }
+
+/** Display-currency formatter for amounts written in US dollars (the scam game). */
+export function useCash() {
+  const currency = useGame((s) => s.settings.currency)
+  return (amountUsd: number) => formatMoney(amountUsd, currency, 'USD')
+}

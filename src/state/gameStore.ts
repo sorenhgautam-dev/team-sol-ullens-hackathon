@@ -94,7 +94,7 @@ interface GameState {
   resetAll: () => void
 }
 
-const defaultSettings: Settings = { sound: true, haptics: true, reducedMotion: false, currency: 'NPR', demoMode: false }
+const defaultSettings: Settings = { sound: true, haptics: true, reducedMotion: false, currency: 'USD', demoMode: false }
 
 function profileOf(id: string) {
   return PROFILES[id] ?? SITA

@@ -1,6 +1,6 @@
 import { useGameShallow } from '@/state/gameStore'
 import { useInstall } from '@/state/pwa'
-import type { Currency } from '@/i18n/currency'
+import { CURRENCIES, type Currency } from '@/i18n/currency'
 import { Button } from '@/ui/Button'
 import { t } from '@/i18n'
 import { FEATURES } from '@/config/features'
@@ -28,7 +28,7 @@ export function SettingsScreen() {
             <div className="text-xs text-ink/60">{t('settings.currencyNote')}</div>
           </div>
           <select className="input w-24" value={settings.currency} onChange={(e) => setSettings({ currency: e.target.value as Currency })}>
-            {(['NPR', 'USD', 'INR', 'EUR'] as Currency[]).map((c) => (
+            {CURRENCIES.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
