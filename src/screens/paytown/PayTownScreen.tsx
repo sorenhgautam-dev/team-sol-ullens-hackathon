@@ -232,7 +232,8 @@ export function PayTownScreen() {
     let raf = 0
     let last = performance.now()
     let acc = 0
-    let nearId: string | null = null
+    // Undefined until the first step, so the button always matches where the walker is after a restart.
+    let nearId: string | null | undefined = undefined
     const step = () => {
       frame.current++
       const w = walker.current
@@ -288,7 +289,7 @@ export function PayTownScreen() {
         step()
         n++
       }
-      if (cam.current) render(ctx, view.current.w, view.current.h, cam.current, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current, cueRef.current, nearId, route.current ? tapMark.current : null)
+      if (cam.current) render(ctx, view.current.w, view.current.h, cam.current, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current, cueRef.current, nearId ?? null, route.current ? tapMark.current : null)
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
