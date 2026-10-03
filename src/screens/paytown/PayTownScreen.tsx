@@ -87,8 +87,29 @@ function buildDistrict(tiles: HTMLImageElement): HTMLCanvasElement {
       const o = DISTRICT_OBJECTS[r]![col]!
       if (o >= 0) draw(o, col, r)
     }
+  // The roads get soft edges where they meet the grass, and a few pebbles, so they read as paths.
+  const isRoad = (r: number, col: number) => r >= 0 && col >= 0 && r < DISTRICT_ROWS && col < DISTRICT_COLS && DISTRICT_GROUND[r]![col] === ROAD_TILE
+  for (let r = 0; r < DISTRICT_ROWS; r++)
+    for (let col = 0; col < DISTRICT_COLS; col++) {
+      if (!isRoad(r, col) || DISTRICT_OBJECTS[r]![col]! >= 0) continue
+      const x = col * TILE
+      const y = r * TILE
+      ctx.fillStyle = '#a8885a'
+      if (!isRoad(r - 1, col)) ctx.fillRect(x, y, TILE, 1)
+      if (!isRoad(r + 1, col)) ctx.fillRect(x, y + TILE - 1, TILE, 1)
+      if (!isRoad(r, col - 1)) ctx.fillRect(x, y, 1, TILE)
+      if (!isRoad(r, col + 1)) ctx.fillRect(x + TILE - 1, y, 1, TILE)
+      ctx.fillStyle = '#3e7a3a'
+      if (!isRoad(r - 1, col)) for (let i = (r * 7 + col * 3) % 5; i < TILE; i += 5) ctx.fillRect(x + i, y + 1, 2, 1)
+      if (!isRoad(r + 1, col)) for (let i = (r * 3 + col * 7) % 5; i < TILE; i += 6) ctx.fillRect(x + i, y + TILE - 2, 2, 1)
+      ctx.fillStyle = '#b89a68'
+      const h = (r * 73 + col * 151) % 97
+      ctx.fillRect(x + 3 + (h % 9), y + 4 + (h % 7), 1, 1)
+      ctx.fillRect(x + 9 + (h % 5), y + 10 + (h % 4), 2, 1)
+    }
   return c
 }
+const ROAD_TILE = 25
 
 export function PayTownScreen() {
   const go = useGame((s) => s.go)
