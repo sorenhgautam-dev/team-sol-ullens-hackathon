@@ -14,15 +14,17 @@ export interface Economy {
   fee: number
   /** An hourly rate that sounds too good for easy work. */
   hourly: number
+  /** A coffee at a café. */
+  coffee: number
 }
 
 export const ECONOMIES: Record<Currency, Economy> = {
   // Sita: money from her husband abroad. Bikash: a week of deliveries. Aarav: a first monthly salary.
-  USD: { payday: { sita: 800, bikash: 600, aarav: 2_400 }, fee: 1.99, hourly: 30 },
-  EUR: { payday: { sita: 700, bikash: 500, aarav: 2_000 }, fee: 1.99, hourly: 28 },
-  GBP: { payday: { sita: 600, bikash: 450, aarav: 1_800 }, fee: 1.99, hourly: 25 },
-  INR: { payday: { sita: 20_000, bikash: 4_500, aarav: 22_000 }, fee: 49, hourly: 900 },
-  NPR: { payday: { sita: 30_000, bikash: 7_000, aarav: 28_000 }, fee: 99, hourly: 1_200 },
+  USD: { payday: { sita: 800, bikash: 600, aarav: 2_400 }, fee: 1.99, hourly: 30, coffee: 4.5 },
+  EUR: { payday: { sita: 700, bikash: 500, aarav: 2_000 }, fee: 1.99, hourly: 28, coffee: 3.5 },
+  GBP: { payday: { sita: 600, bikash: 450, aarav: 1_800 }, fee: 1.99, hourly: 25, coffee: 3.5 },
+  INR: { payday: { sita: 20_000, bikash: 4_500, aarav: 22_000 }, fee: 49, hourly: 900, coffee: 150 },
+  NPR: { payday: { sita: 30_000, bikash: 7_000, aarav: 28_000 }, fee: 99, hourly: 1_200, coffee: 200 },
 }
 
 /** Round to a number people would actually see in that currency. */

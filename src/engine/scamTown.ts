@@ -3,6 +3,8 @@
  * encounter is answered once. Losses are booked as double-entry postings into the
  * ScamLoss account, so the balance on screen always comes from this ledger.
  * Practice replays ("Try again") never touch the ledger: the first answer counts.
+ * The gauntlet loop: each payday is a round. Pay lands at the start of every round and
+ * the balance carries over, so what you keep adds up.
  */
 import { subRng } from './rng'
 import type { Posting } from './types'
@@ -21,7 +23,7 @@ export interface ChoiceDef {
 export interface EncounterDef {
   id: string
   /** Building on the town map. */
-  building: 'bank' | 'market' | 'post' | 'job' | 'invest'
+  building: 'bank' | 'market' | 'post' | 'job' | 'invest' | 'home' | 'cafe' | 'tech' | 'gov' | 'rental' | 'shop'
   /** Existing scammer art revealed after the decision. */
   scammer: string
   channel: 'call' | 'text' | 'chat' | 'payment'
@@ -41,11 +43,14 @@ export interface EncounterDef {
 export interface Answer {
   encounterId: string
   choiceId: string
+  /** Which payday (round) it was answered in. Defaults to 1. */
+  round?: number
 }
 
 export interface TownEntry {
   kind: 'payday' | 'scam_loss'
   amount: number
+  round: number
   encounterId?: string
   postings: Posting[]
 }
@@ -64,41 +69,52 @@ export function choiceOf(encounters: EncounterDef[], a: Answer): ChoiceDef | und
 }
 
 /** First answer per encounter only, in the order they were given. */
-export function firstAnswers(answers: Answer[]): Answer[] {
+export function firstAnswers(answers: Answer[], round?: number): Answer[] {
   const seen = new Set<string>()
-  return answers.filter((a) => (seen.has(a.encounterId) ? false : (seen.add(a.encounterId), true)))
+  return answers.filter((a) => {
+    if (round !== undefined && (a.round ?? 1) !== round) return false
+    const key = `${a.round ?? 1}:${a.encounterId}`
+    return seen.has(key) ? false : (seen.add(key), true)
+  })
 }
 
-export function townLedger(payday: number, answers: Answer[], encounters: EncounterDef[]): TownLedger {
+/** Book `rounds` paydays, each followed by that payday's losses. The wallet never goes below zero. */
+export function townLedger(payday: number, answers: Answer[], encounters: EncounterDef[], rounds = 1): TownLedger {
   const accounts = { Wallet: 0, Income: 0, ScamLoss: 0 }
   const entries: TownEntry[] = []
   const book = (e: TownEntry) => {
     for (const p of e.postings) accounts[p.account as keyof typeof accounts] += p.delta
     entries.push(e)
   }
-  book({ kind: 'payday', amount: payday, postings: [{ account: 'Wallet', delta: payday }, { account: 'Income', delta: -payday }] })
-  for (const a of firstAnswers(answers)) {
-    const c = choiceOf(encounters, a)
-    if (!c || c.loss <= 0) continue
-    // Never take more than is left: a scam empties the wallet, it does not create debt here.
-    const loss = Math.min(c.loss, accounts.Wallet)
-    if (loss <= 0) continue
-    book({ kind: 'scam_loss', amount: -loss, encounterId: a.encounterId, postings: [{ account: 'Wallet', delta: -loss }, { account: 'ScamLoss', delta: loss }] })
+  for (let round = 1; round <= rounds; round++) {
+    book({ kind: 'payday', amount: payday, round, postings: [{ account: 'Wallet', delta: payday }, { account: 'Income', delta: -payday }] })
+    for (const a of firstAnswers(answers, round)) {
+      const c = choiceOf(encounters, a)
+      if (!c || c.loss <= 0) continue
+      // Never take more than is left: a scam empties the wallet, it does not create debt here.
+      const loss = Math.min(c.loss, accounts.Wallet)
+      if (loss <= 0) continue
+      book({ kind: 'scam_loss', amount: -loss, round, encounterId: a.encounterId, postings: [{ account: 'Wallet', delta: -loss }, { account: 'ScamLoss', delta: loss }] })
+    }
   }
-  return { start: payday, balance: accounts.Wallet, entries, accounts }
+  return { start: payday * rounds, balance: accounts.Wallet, entries, accounts }
 }
 
 export type Tier = 'proof' | 'wiser' | 'easy'
 
-export function immunity(answers: Answer[], encounters: EncounterDef[]): { score: number; tier: Tier; verdicts: Record<string, Verdict> } {
+/** Scam Immunity Score out of 100 for one payday (or all of them): safe 20, tempted 10, fall 0 per scam, scaled to 100. */
+export function immunity(answers: Answer[], encounters: EncounterDef[], round?: number): { score: number; tier: Tier; verdicts: Record<string, Verdict> } {
   const verdicts: Record<string, Verdict> = {}
-  let score = 0
-  for (const a of firstAnswers(answers)) {
+  let points = 0
+  let n = 0
+  for (const a of firstAnswers(answers, round)) {
     const c = choiceOf(encounters, a)
     if (!c) continue
     verdicts[a.encounterId] = c.verdict
-    score += POINTS[c.verdict]
+    points += POINTS[c.verdict]
+    n++
   }
+  const score = n ? Math.round((points / (n * POINTS.safe)) * 100) : 0
   const tier: Tier = score >= 80 ? 'proof' : score >= 50 ? 'wiser' : 'easy'
   return { score, tier, verdicts }
 }
@@ -112,4 +128,22 @@ export function shuffledChoices(e: EncounterDef, seed: number, attempt: number):
     ;[out[i], out[j]] = [out[j]!, out[i]!]
   }
   return out
+}
+
+/** Which buildings glow on a payday: the classic five, then the everyday six, then a seeded mix of five. */
+export function roundIds(round: number, first: string[], second: string[], seed: number): string[] {
+  if (round <= 1) return first
+  if (round === 2) return second
+  const all = [...first, ...second]
+  const rng = subRng(seed, `round:${round}`)
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[all[i], all[j]] = [all[j]!, all[i]!]
+  }
+  return all.slice(0, 5)
+}
+
+/** The gauntlet gets faster: each payday the countdowns shrink, down to 60%. */
+export function timerFactor(round: number): number {
+  return Math.max(0.6, 1 - 0.15 * (round - 1))
 }

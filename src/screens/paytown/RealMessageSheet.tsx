@@ -13,6 +13,7 @@ import { play } from '@/audio/sfx'
 
 export function RealMessageSheet({ message: m, onClose }: { message: RealMessage | null; onClose: () => void }) {
   const handleReal = useScam((s) => s.handleReal)
+  const round = useScam((s) => s.round)
   const cash = useCash()
   const { payday } = useEncounters()
   const params = { ...usePersonaParams(), payday: cash(payday) }
@@ -42,7 +43,7 @@ export function RealMessageSheet({ message: m, onClose }: { message: RealMessage
                   style={{ textTransform: 'none', letterSpacing: 0, fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 16 }}
                   onClick={() => {
                     setPicked(c)
-                    handleReal(m.id, c.id)
+                    handleReal(`${round}:${m.id}`, c.id)
                     play(c.best ? 'chime' : 'tap')
                   }}
                 >

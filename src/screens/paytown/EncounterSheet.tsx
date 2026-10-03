@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ChoiceDef, EncounterDef } from '@/engine/scamTown'
-import { shuffledChoices, townLedger } from '@/engine/scamTown'
+import { firstAnswers, shuffledChoices, timerFactor, townLedger } from '@/engine/scamTown'
 import { useEncounters } from './useEncounters'
 import { useGame } from '@/state/gameStore'
 import { CHARACTERS_BY_ID } from '@/content/characters'
@@ -34,7 +34,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
   const { characterId, seed, answers, answer, shown } = useScam()
   const ch = CHARACTERS_BY_ID[characterId]
   const cash = useCash()
-  const { encounters, payday } = useEncounters()
+  const { encounters, payday, round } = useEncounters()
   const currency = useGame((s) => s.settings.currency)
   const persona = usePersonaParams()
   const [step, setStep] = useState<Step>('thought')
@@ -57,7 +57,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
   useEffect(() => {
     if (!e) return
     setStep('thought')
-    setPractice(answers.some((a) => a.encounterId === e.id))
+    setPractice(firstAnswers(answers, round).some((a) => a.encounterId === e.id))
     setPicked(null)
     setAttempt(shown(e.id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,7 +67,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
   useEffect(() => {
     if (!e || step !== 'message') return
     setLinesShown(0)
-    setLeft(e.timerSeconds)
+    setLeft(Math.round(e.timerSeconds * timerFactor(round)))
     setAnswered(false)
     play(e.channel === 'call' ? 'buzz' : 'mailbox')
     haptic([40, 60, 40])
@@ -97,10 +97,10 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
     if (answered) return
     setAnswered(true)
     setPicked(c)
-    const before = townLedger(payday, answers, encounters).balance
+    const before = townLedger(payday, answers, encounters, round).balance
     setShownBalance(before)
-    if (!practice) answer({ encounterId: e.id, choiceId: c.id })
-    const after = practice ? before : townLedger(payday, [...answers, { encounterId: e.id, choiceId: c.id }], encounters).balance
+    if (!practice) answer({ encounterId: e.id, choiceId: c.id, round })
+    const after = practice ? before : townLedger(payday, [...answers, { encounterId: e.id, choiceId: c.id, round }], encounters, round).balance
     setStep('outcome')
     window.setTimeout(() => setShownBalance(after), 450)
     play(c.loss > 0 ? 'thud' : 'coin')
@@ -138,7 +138,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
 
           {step === 'message' && (
             <motion.div key={`msg-${attempt}`} className="flex flex-1 flex-col" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <PhoneFrame channel={e.channel} sender={t(e.senderKey, params)} left={left} total={e.timerSeconds}>
+              <PhoneFrame channel={e.channel} sender={t(e.senderKey, params)} left={left} total={Math.max(1, Math.round(e.timerSeconds * timerFactor(round)))}>
                 {e.lineKeys.slice(0, linesShown).map((k) => (
                   <motion.p key={k} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-[88%] self-start bg-card px-3 py-2 text-[16px] leading-snug text-ink" style={{ boxShadow: '0 0 0 2px var(--frame-dark)' }}>
                     {linkify(t(k, { ...params, payday: cash(payday) }))}
@@ -236,7 +236,7 @@ export function RuleCard({ encounter: e, params, compact }: { encounter: Encount
 
 /** A plain phone screen for calls, texts and chats. No villain art: only what a real phone would show. */
 function PhoneFrame({ channel, sender, left, total, children }: { channel: EncounterDef['channel']; sender: string; left: number; total: number; children: React.ReactNode }) {
-  const label = channel === 'call' ? t('town.incomingCall') : channel === 'text' ? t('town.text') : t('town.chat')
+  const label = channel === 'call' ? t('town.incomingCall') : channel === 'text' ? t('town.text') : channel === 'payment' ? t('town.paymentPage') : t('town.chat')
   return (
     <div className="mt-2 flex flex-1 flex-col bg-[#2b1d10] p-2" style={{ boxShadow: '0 0 0 3px var(--frame-dark)' }}>
       <div className="flex items-center gap-2 bg-[#3a2a1c] px-2 py-1 text-[#fbf4e2]">

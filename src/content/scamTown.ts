@@ -11,7 +11,7 @@ import { ECONOMIES, nice } from './economy'
 import type { CharacterId } from './characters'
 
 /** A share of the payday, an economy constant, or a multiple of another amount. */
-type Money = number | 'fee' | 'hourly' | { times: string; by: number }
+type Money = number | 'fee' | 'hourly' | 'coffee' | { times: string; by: number }
 
 export interface EncounterSpec {
   id: string
@@ -32,7 +32,19 @@ export const ENCOUNTER_SPECS: EncounterSpec[] = [
   { id: 'post', building: 'post', scammer: 'phisher', channel: 'text', lines: 2, timerSeconds: 20, money: { fee: 'fee' }, loss: { fall: 0.1, tempted: 0 } },
   { id: 'job', building: 'job', scammer: 'job_recruiter', channel: 'chat', lines: 3, timerSeconds: 25, money: { hourly: 'hourly', kit: 0.2, small: 0.05 }, loss: { fall: 'kit', tempted: 'small' } },
   { id: 'invest', building: 'invest', scammer: 'investment_guru', channel: 'chat', lines: 3, timerSeconds: 25, money: { stake: 0.25, double: { times: 'stake', by: 2 }, small: 0.06 }, loss: { fall: 'stake', tempted: 'small' } },
+  // Everyday traps, met from the second payday on.
+  { id: 'home', building: 'home', scammer: 'impersonator', channel: 'text', lines: 3, timerSeconds: 22, money: { ask: 0.15, small: 0.05 }, loss: { fall: 'ask', tempted: 'small' } },
+  { id: 'cafe', building: 'cafe', scammer: 'fine_print', channel: 'payment', lines: 2, timerSeconds: 18, pay: true, money: { coffee: 'coffee' }, loss: { fall: 0.12, tempted: 0.04 } },
+  { id: 'tech', building: 'tech', scammer: 'loan_shark', channel: 'call', lines: 3, timerSeconds: 22, money: { fix: 0.08 }, loss: { fall: 0.2, tempted: 0.08 } },
+  { id: 'gov', building: 'gov', scammer: 'otp_snatcher', channel: 'call', lines: 3, timerSeconds: 22, money: { fine: 0.2, half: { times: 'fine', by: 0.5 } }, loss: { fall: 'fine', tempted: 'half' } },
+  { id: 'rental', building: 'rental', scammer: 'prize_ghost', channel: 'chat', lines: 3, timerSeconds: 25, money: { rent: 0.2, deposit: 0.2, small: 0.05 }, loss: { fall: 'deposit', tempted: 'small' } },
+  { id: 'shop', building: 'shop', scammer: 'phisher', channel: 'chat', lines: 3, timerSeconds: 20, money: { price: 0.1, small: 0.05 }, loss: { fall: 'price', tempted: 'small' } },
 ]
+
+/** The five traps of the first payday (the classic run, and what demo mode plays). */
+export const FIRST_PAYDAY = ['bank', 'market', 'post', 'job', 'invest']
+/** The everyday traps of the second payday. */
+export const SECOND_PAYDAY = ['home', 'cafe', 'tech', 'gov', 'rental', 'shop']
 
 const k = (id: string, part: string) => `town.${id}.${part}`
 
@@ -45,6 +57,7 @@ export function localEncounters(currency: Currency, character: CharacterId, spec
     const resolve = (m: Money): number => {
       if (m === 'fee') return econ.fee
       if (m === 'hourly') return econ.hourly
+      if (m === 'coffee') return econ.coffee
       if (typeof m === 'number') return nice(payday * m, currency)
       return 0
     }
@@ -75,8 +88,10 @@ export function localEncounters(currency: Currency, character: CharacterId, spec
 /** Real messages that are safe to act on: the lesson is "verify", not "everything is a scam". */
 export interface RealMessage {
   id: string
-  /** Arrives after this many scams have been faced. */
+  /** Arrives after this many scams have been faced in this payday. */
   after: number
+  /** Which payday it belongs to (later paydays repeat the last set). */
+  round: number
   senderKey: string
   lineKeys: string[]
   choices: { id: string; best: boolean; labelKey: string; outcomeKey: string }[]
@@ -86,6 +101,7 @@ export const REAL_MESSAGES: RealMessage[] = [
   {
     id: 'real_bank',
     after: 1,
+    round: 1,
     senderKey: 'town.real_bank.sender',
     lineKeys: ['town.real_bank.line1'],
     choices: [
@@ -96,11 +112,23 @@ export const REAL_MESSAGES: RealMessage[] = [
   {
     id: 'real_family',
     after: 3,
+    round: 1,
     senderKey: 'town.real_family.sender',
     lineKeys: ['town.real_family.line1'],
     choices: [
       { id: 'reply', best: true, labelKey: 'town.real_family.reply', outcomeKey: 'town.real_family.reply.out' },
       { id: 'block', best: false, labelKey: 'town.real_family.block', outcomeKey: 'town.real_family.block.out' },
+    ],
+  },
+  {
+    id: 'real_parcel',
+    after: 2,
+    round: 2,
+    senderKey: 'town.real_parcel.sender',
+    lineKeys: ['town.real_parcel.line1'],
+    choices: [
+      { id: 'check', best: true, labelKey: 'town.real_parcel.check', outcomeKey: 'town.real_parcel.check.out' },
+      { id: 'report', best: false, labelKey: 'town.real_parcel.report', outcomeKey: 'town.real_parcel.report.out' },
     ],
   },
 ]

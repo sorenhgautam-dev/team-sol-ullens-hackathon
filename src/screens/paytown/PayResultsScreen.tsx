@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameShallow } from '@/state/gameStore'
 import { useScam } from '@/state/scamStore'
-import { immunity, townLedger } from '@/engine/scamTown'
+import { firstAnswers, immunity, townLedger } from '@/engine/scamTown'
 import { useEncounters } from './useEncounters'
 import type { EncounterDef } from '@/engine/scamTown'
 import { Button } from '@/ui/Button'
@@ -25,12 +25,15 @@ export function familyWarningText(encounters: EncounterDef[]): string {
 
 export function PayResultsScreen() {
   const { go, toast, reduced } = useGameShallow((s) => ({ go: s.go, toast: s.toast, reduced: s.settings.reducedMotion }))
-  const { answers } = useScam()
+  const { answers, nextRound } = useScam()
   const cash = useCash()
-  const { encounters, payday } = useEncounters()
+  const { encounters, thisRound, round, payday } = useEncounters()
+  // Rule cards collected over every payday so far.
+  const seen = useMemo(() => encounters.filter((e) => firstAnswers(answers).some((a) => a.encounterId === e.id)), [encounters, answers])
   const params = usePersonaParams()
-  const ledger = useMemo(() => townLedger(payday, answers, encounters), [payday, answers, encounters])
-  const imm = useMemo(() => immunity(answers, encounters), [answers, encounters])
+  const ledger = useMemo(() => townLedger(payday, answers, encounters, round), [payday, answers, encounters, round])
+  const imm = useMemo(() => immunity(answers, encounters, round), [answers, encounters, round])
+  const lostThisRound = ledger.entries.filter((e) => e.kind === 'scam_loss' && e.round === round).reduce((n, e) => n - e.amount, 0)
   const [shown, setShown] = useState(0)
 
   // The score counts up; a celebration only for "Scam-proof".
@@ -53,7 +56,7 @@ export function PayResultsScreen() {
   }, [imm.score, imm.tier, reduced])
 
   const share = async () => {
-    const text = familyWarningText(encounters)
+    const text = familyWarningText(seen)
     try {
       if (navigator.share) await navigator.share({ title: t('results2.familyTitle'), text })
       else {
@@ -66,7 +69,7 @@ export function PayResultsScreen() {
   }
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(familyWarningText(encounters))
+      await navigator.clipboard.writeText(familyWarningText(seen))
       toast(t('results2.copied'), 'good')
     } catch {
       toast(t('results2.copyFailed'), 'bad')
@@ -76,7 +79,7 @@ export function PayResultsScreen() {
   const tierColor = imm.tier === 'proof' ? 'text-teal' : imm.tier === 'wiser' ? 'text-honey' : 'text-danger'
   return (
     <div className="h-full overflow-y-auto bg-paper px-4 pb-8 pt-[max(16px,env(safe-area-inset-top))] text-ink">
-      <h1 className="text-center text-xl">{t('results2.title')}</h1>
+      <h1 className="text-center text-xl">{t('results2.title', { n: round })}</h1>
 
       {/* The one main thing: your score. */}
       <section className="pixel-frame mt-3 p-3 text-center">
@@ -86,13 +89,11 @@ export function PayResultsScreen() {
           {t(`results2.tier.${imm.tier}`)}
         </motion.div>
         <p className="mt-3 text-[16px]">
-          {t('results2.money', { end: cash(ledger.balance), start: cash(ledger.start) })}
+          {round === 1 ? t('results2.money', { end: cash(ledger.balance), start: cash(ledger.start) }) : t('results2.moneyRounds', { end: cash(ledger.balance), start: cash(ledger.start), n: round })}
         </p>
-        <p className={`text-[15px] font-bold ${ledger.accounts.ScamLoss > 0 ? 'text-danger' : 'text-teal'}`}>
-          {ledger.accounts.ScamLoss > 0 ? t('results2.lost', { amount: cash(ledger.accounts.ScamLoss) }) : t('results2.keptAll')}
-        </p>
-        <ul className="mt-3 grid grid-cols-5 gap-1 text-[11px]">
-          {encounters.map((e) => {
+        <p className={`text-[15px] font-bold ${lostThisRound > 0 ? 'text-danger' : 'text-teal'}`}>{lostThisRound > 0 ? t('results2.lost', { amount: cash(lostThisRound) }) : t('results2.keptAll')}</p>
+        <ul className={`mt-3 grid gap-1 text-[11px] ${thisRound.length > 5 ? 'grid-cols-3' : 'grid-cols-5'}`}>
+          {thisRound.map((e) => {
             const v = imm.verdicts[e.id]
             return (
               <li key={e.id} className={`p-1 ${v === 'safe' ? 'bg-teal text-white' : v === 'tempted' ? 'bg-marigold' : 'bg-danger text-white'}`}>
@@ -105,13 +106,27 @@ export function PayResultsScreen() {
         <p className="mt-2 text-[12px] text-ink/60">{t('results2.scoring')}</p>
       </section>
 
-      <Button variant="primary" size="lg" className="mt-3 w-full" onClick={() => go('pick')}>
+      {/* The gauntlet loop: the next payday brings new traps and faster timers. */}
+      <Button
+        variant="primary"
+        size="lg"
+        className="mt-3 w-full"
+        onClick={() => {
+          nextRound()
+          play('coin')
+          go('paytown')
+        }}
+      >
+        {t('results2.next', { n: round + 1 })}
+      </Button>
+      <p className="mt-1 text-center text-[12px] text-ink/60">{t('results2.nextHint')}</p>
+      <Button variant="ghost" className="mt-1 w-full" onClick={() => go('pick')}>
         {t('results2.again')}
       </Button>
 
-      <h2 className="mt-5 text-[14px]">{t('results2.rules')}</h2>
+      <h2 className="mt-5 text-[14px]">{t('results2.rules', { n: seen.length })}</h2>
       <div className="mt-2 space-y-2">
-        {encounters.map((e) => (
+        {seen.map((e) => (
           <RuleCard key={e.id} encounter={e} params={params} compact />
         ))}
       </div>
@@ -123,7 +138,7 @@ export function PayResultsScreen() {
           <h2 className="text-[15px]">{t('results2.familyTitle')}</h2>
         </div>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-[15px] leading-snug">
-          {encounters.map((e) => (
+          {seen.map((e) => (
             <li key={e.id}>{t(e.rule.ruleKey)}</li>
           ))}
         </ol>

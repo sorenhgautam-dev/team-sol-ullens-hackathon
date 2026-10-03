@@ -10,13 +10,17 @@ import type { Answer } from '@/engine/scamTown'
 interface ScamState {
   characterId: CharacterId
   seed: number
+  /** The gauntlet loop: which payday this is (1, 2, 3, ...). */
+  round: number
   /** Every answer given, in order; the engine counts only the first per encounter. */
   answers: Answer[]
   /** How many times each encounter has been shown (for shuffling and practice). */
   attempts: Record<string, number>
-  /** Real messages handled: message id -> choice id. */
+  /** Real messages handled: `${round}:${id}` -> choice id. */
   real: Record<string, string>
   start: (characterId: CharacterId, seed: number) => void
+  /** Next payday: pay lands again and a new set of buildings glows. */
+  nextRound: () => void
   answer: (a: Answer) => void
   shown: (encounterId: string) => number
   handleReal: (id: string, choiceId: string) => void
@@ -27,10 +31,12 @@ export const useScam = create<ScamState>()(
     (set, get) => ({
       characterId: 'sita',
       seed: 1,
+      round: 1,
       answers: [],
       attempts: {},
       real: {},
-      start: (characterId, seed) => set({ characterId, seed, answers: [], attempts: {}, real: {} }),
+      start: (characterId, seed) => set({ characterId, seed, round: 1, answers: [], attempts: {}, real: {} }),
+      nextRound: () => set((s) => ({ round: s.round + 1, attempts: {} })),
       answer: (a) => set((s) => ({ answers: [...s.answers, a] })),
       shown: (encounterId) => {
         const n = get().attempts[encounterId] ?? 0

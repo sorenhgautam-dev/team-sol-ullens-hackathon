@@ -11,7 +11,9 @@ import { firstAnswers, townLedger, type EncounterDef } from '@/engine/scamTown'
 import { REAL_MESSAGES } from '@/content/scamTown'
 import { useEncounters } from './useEncounters'
 import { CHARACTERS_BY_ID } from '@/content/characters'
-import { MAP_H, MAP_W, PLACES, startWalker, stepWalker, type WalkerState } from '@/walk/map'
+import { MAP_H, PLACES, WORLD_H, WORLD_W, startWalker, stepWalker, type Rect, type WalkerState } from '@/walk/map'
+import { DISTRICT_COLS, DISTRICT_DOORS, DISTRICT_GROUND, DISTRICT_OBJECTS, DISTRICT_ROWS, DISTRICT_TOP, TILE } from '@/walk/district'
+import tilesUrl from '@/assets/pixel/tiles.png'
 import { drawOutlined } from '@/ui/pixel/sprites'
 import { drawSitaTop, drawText } from '@/ui/pixel/topdown'
 import { PIXEL_SCALE } from '@/ui/palette'
@@ -30,9 +32,32 @@ const SCALE = PIXEL_SCALE.world
 const STEP_MS = 1000 / 60
 const DOOR_RADIUS = 16
 
-/** Which map building houses each encounter. */
-const BUILDING_PLACE: Record<EncounterDef['building'], string> = { bank: 'bank', market: 'market', post: 'school', job: 'workshop', invest: 'plaza' }
-const doorOf = (b: EncounterDef['building']) => PLACES.find((p) => p.id === BUILDING_PLACE[b])!
+/** Which map building houses each encounter: the team's town, or the south district. */
+const TOWN_PLACE: Partial<Record<EncounterDef['building'], string>> = { bank: 'bank', market: 'market', post: 'school', job: 'workshop', invest: 'plaza', home: 'home' }
+function doorOf(b: EncounterDef['building']): { door: { x: number; y: number }; body: Rect | null } {
+  const town = TOWN_PLACE[b]
+  if (town) return PLACES.find((p) => p.id === town)!
+  const d = DISTRICT_DOORS[b as keyof typeof DISTRICT_DOORS]
+  // District houses are three tiles tall, directly above the door spot.
+  return { door: d, body: { x: d.x - 24, y: d.y - TILE / 2 - 3 * TILE, w: 48, h: 3 * TILE } }
+}
+
+/** The south district, drawn once from the recoloured Kenney tiles. */
+function buildDistrict(tiles: HTMLImageElement): HTMLCanvasElement {
+  const c = document.createElement('canvas')
+  c.width = DISTRICT_COLS * TILE
+  c.height = DISTRICT_ROWS * TILE
+  const ctx = c.getContext('2d')!
+  ctx.imageSmoothingEnabled = false
+  const draw = (i: number, col: number, row: number) => ctx.drawImage(tiles, (i % 12) * TILE, Math.floor(i / 12) * TILE, TILE, TILE, col * TILE, row * TILE, TILE, TILE)
+  for (let r = 0; r < DISTRICT_ROWS; r++)
+    for (let col = 0; col < DISTRICT_COLS; col++) {
+      draw(DISTRICT_GROUND[r]![col]!, col, r)
+      const o = DISTRICT_OBJECTS[r]![col]!
+      if (o >= 0) draw(o, col, r)
+    }
+  return c
+}
 
 export function PayTownScreen() {
   const go = useGame((s) => s.go)
@@ -43,6 +68,7 @@ export function PayTownScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const holderRef = useRef<HTMLDivElement>(null)
   const mapImg = useRef<HTMLImageElement | null>(null)
+  const district = useRef<HTMLCanvasElement | null>(null)
   const walker = useRef<WalkerState>(startWalker())
   const input = useRef({ dx: 0, dy: 0 })
   const frame = useRef(0)
@@ -51,30 +77,31 @@ export function PayTownScreen() {
   const [near, setNear] = useState<EncounterDef | null>(null)
   const [open, setOpen] = useState<EncounterDef | null>(null)
   const [phone, setPhone] = useState<'real' | 'checker' | null>(null)
+  const [walked, setWalked] = useState(false)
   // The opened real message stays on screen until closed, even once it counts as handled.
   const [realOpen, setRealOpen] = useState<(typeof REAL_MESSAGES)[number] | null>(null)
 
-  const { encounters, payday } = useEncounters()
+  const { encounters, thisRound, round, payday } = useEncounters()
   const currency = useGame((s) => s.settings.currency)
-  const encountersRef = useRef(encounters)
-  encountersRef.current = encounters
-  const ledger = useMemo(() => townLedger(payday, answers, encounters), [payday, answers, encounters])
-  const done = useMemo(() => new Set(firstAnswers(answers).map((a) => a.encounterId)), [answers])
+  const encountersRef = useRef(thisRound)
+  encountersRef.current = thisRound
+  const ledger = useMemo(() => townLedger(payday, answers, encounters, round), [payday, answers, encounters, round])
+  const done = useMemo(() => new Set(firstAnswers(answers, round).map((a) => a.encounterId)), [answers, round])
   const doneRef = useRef(done)
   doneRef.current = done
-  const pendingReal = REAL_MESSAGES.find((m) => done.size >= m.after && !real[m.id]) ?? null
-  const allDone = done.size === encounters.length
+  const pendingReal = REAL_MESSAGES.find((m) => m.round === Math.min(round, 2) && done.size >= m.after && !real[`${round}:${m.id}`]) ?? null
+  const allDone = done.size === thisRound.length
 
-  // Start at home on payday; in demo mode, start at the bank door so the first scam is seconds away.
+  // Start at home on payday; in demo mode (first payday), start at the bank door so the first scam is seconds away.
   useEffect(() => {
     const w = startWalker()
-    if (demo) {
+    if (demo && round === 1) {
       const bank = doorOf('bank').door
       w.x = bank.x
       w.y = bank.y + 2
     }
     walker.current = w
-  }, [demo])
+  }, [demo, round])
 
   // The phone buzzes when a real message arrives.
   useEffect(() => {
@@ -87,6 +114,9 @@ export function PayTownScreen() {
     const img = new Image()
     img.src = `${import.meta.env.BASE_URL}sprites/town-map.png`
     img.onload = () => (mapImg.current = img)
+    const tiles = new Image()
+    tiles.src = tilesUrl
+    tiles.onload = () => (district.current = buildDistrict(tiles))
   }, [])
 
   useEffect(() => {
@@ -101,6 +131,16 @@ export function PayTownScreen() {
   }, [])
 
   const busy = !!open || !!phone
+  const walkedRef = useRef(false)
+
+  // Development only: jump to a spot, for testing far-off buildings. Not in the production build.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    ;(window as unknown as { __teleport?: (x: number, y: number) => void }).__teleport = (x, y) => {
+      walker.current.x = x
+      walker.current.y = y
+    }
+  }, [])
 
   // Main loop: walk, find the nearest unvisited building, draw.
   useEffect(() => {
@@ -117,6 +157,10 @@ export function PayTownScreen() {
       const w = walker.current
       if (!busy) stepWalker(w, input.current.dx, input.current.dy)
       else w.moving = false
+      if (w.odometer > 40 && !walkedRef.current) {
+        walkedRef.current = true
+        setWalked(true)
+      }
       let found: EncounterDef | null = null
       for (const e of encountersRef.current) {
         const d = doorOf(e.building).door
@@ -137,7 +181,7 @@ export function PayTownScreen() {
         step()
         n++
       }
-      render(ctx, canvas.width, canvas.height, walker.current, frame.current, mapImg.current, doneRef.current, ch.look, reduced, encountersRef.current)
+      render(ctx, canvas.width, canvas.height, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current)
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
@@ -200,10 +244,12 @@ export function PayTownScreen() {
           {ch.emoji}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="font-pixel text-[13px]">{t(ch.nameKey)}</div>
-          <div className="text-[13px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size })}</div>
+          <div className="truncate font-pixel text-[12px]">
+            {t(ch.nameKey)} · {t('town.payday', { n: round })}
+          </div>
+          <Balance amountNpr={ledger.balance} base={currency} state={ledger.balance < payday * round ? 'warn' : 'safe'} size="md" />
+          <div className="truncate text-[12px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size, total: thisRound.length })}</div>
         </div>
-        <Balance amountNpr={ledger.balance} base={currency} state={ledger.balance < payday ? 'warn' : 'safe'} size="lg" />
         <button className="relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft" onClick={() => {
             setRealOpen(pendingReal)
             setPhone(pendingReal ? 'real' : 'checker')
@@ -226,7 +272,7 @@ export function PayTownScreen() {
             <PxIcon name="message" size={12} /> {t('town.newMessage')}
           </button>
         )}
-        {done.size === 0 && !near && <p className="pointer-events-none absolute inset-x-3 bottom-2 pixel-frame-soft px-1 text-center text-[14px] font-bold">{t('town.goHint')}</p>}
+        {done.size === 0 && !near && !walked && <p className="pointer-events-none absolute inset-x-3 bottom-2 pixel-frame-soft px-1 text-center text-[14px] font-bold">{t('town.goHint')}</p>}
         {allDone && <p className="pointer-events-none absolute inset-x-3 bottom-2 pixel-frame-soft px-1 text-center text-[14px] font-bold">{t('town.allDone')}</p>}
       </div>
 
@@ -258,16 +304,23 @@ function render(
   w: WalkerState,
   frame: number,
   map: HTMLImageElement | null,
+  district: HTMLCanvasElement | null,
   done: Set<string>,
   look: { shirt: string; trim: string; braid: boolean },
   reduced: boolean,
   encounters: EncounterDef[],
 ) {
-  const camX = Math.round(Math.min(MAP_W - vw, Math.max(0, w.x - vw / 2)))
-  const camY = Math.round(Math.min(MAP_H - vh, Math.max(0, w.y - vh * 0.55)))
+  const camX = Math.round(Math.min(WORLD_W - vw, Math.max(0, w.x - vw / 2)))
+  const camY = Math.round(Math.min(WORLD_H - vh, Math.max(0, w.y - vh * 0.55)))
   ctx.fillStyle = '#5f8f4e'
   ctx.fillRect(0, 0, vw, vh)
-  if (map) ctx.drawImage(map, camX, camY, vw, vh, 0, 0, vw, vh)
+  // The team's town on top, the south district below it.
+  if (map && camY < MAP_H) ctx.drawImage(map, camX, camY, vw, Math.min(vh, MAP_H - camY), 0, 0, vw, Math.min(vh, MAP_H - camY))
+  if (district && camY + vh > DISTRICT_TOP) {
+    const sy = Math.max(0, camY - DISTRICT_TOP)
+    const dy = Math.max(0, DISTRICT_TOP - camY)
+    ctx.drawImage(district, camX, sy, vw, vh - dy, 0, dy, vw, vh - dy)
+  }
 
   for (const e of encounters) {
     const place = doorOf(e.building)
