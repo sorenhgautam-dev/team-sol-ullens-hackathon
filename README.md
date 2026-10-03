@@ -85,7 +85,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 - **Content is data.** The twenty-one traps (each citizen's own five, plus the everyday six), their three choices, losses (as shares of the character's pay), rule cards and the three real messages are in `src/content/scamTown.ts`; local pay and prices per currency in `src/content/economy.ts`; characters in `src/content/characters.ts`; all text in `src/i18n/en.ts`.
 - **The paths work.** `scripts/build-collision.py` reads the team's map into a 4-pixel walk grid (fences, trees, buildings, stalls and water blocked; roads, grass and the plaza open). `scripts/build-district.py` builds the south district from tiles with its own blocked tiles. The walker's whole foot box is checked, and they slide around posts and door frames toward gaps. An audit of every reachable spot found the bank roof and some tree tops walkable; they are now blocked by hand in the script. **Tap to walk** (`src/walk/path.ts`) finds a shortest path on the same grid with the same rule, then walks it in straight lines. The town is drawn at full screen resolution with the art at 2x, wide enough to see the streets around you, and the camera eases after the walker in screen-pixel steps. Townsfolk walk their rounds on real paths, cloud shadows drift over the map and birds fly over, just for show (`src/ui/pixel/ambient.ts`).
 - **The earlier budgeting game is still in the code, switched off.** `src/config/features.ts` has `FEATURES.budgeting = false`. Setting it to `true` brings back the Money Calendar, forecast, Plan Your Week, Gap Bridge, Twin Wallets, Town Mode, Fix My Dates, Impact Lab, energy and hearts, with their engine (`simulate()`) and tests untouched.
-- **194 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), each citizen's own five scams with fifteen different rules, every message filling its placeholders in every currency, collision (fences block, the gate opens, roofs and tree tops are solid, every door reachable on foot), tap to walk (the real walker reaches all 14 doors without touching a wall), editable names, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), the currency helper, and every test of the budgeting engine.
+- **196 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), each citizen's own five scams with fifteen different rules, every message filling its placeholders in every currency, collision (fences block, the gate opens, roofs and tree tops are solid, every door reachable on foot), tap to walk (the real walker reaches all 14 doors without touching a wall), editable names, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), the currency helper, and every test of the budgeting engine.
 
 ## Tools, libraries and assets
 
@@ -96,7 +96,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 | Claude Code (Anthropic) | AI pair-programmer under our direction (see "How we built it") |
 | Node.js 20, npm | Running, testing and building the app |
 | Vite, React, TypeScript, Tailwind | The app itself (versions below) |
-| Vitest | 194 automated tests |
+| Vitest | 196 automated tests |
 | Python 3 + Pillow | Our asset scripts: recolouring the vendor art (`scripts/unify-assets.py`), building the walk grid from the town map (`scripts/build-collision.py`), building the south district from tiles (`scripts/build-district.py`) |
 | Headless Chromium | Scripted playtests and the screenshots in this README |
 | Git, GitHub, GitHub Actions, GitHub Pages | Version control, CI (typecheck, tests, build) and the live site |
@@ -156,7 +156,8 @@ CC0 needs no credit, but we credit Kenney anyway. We used no other stock images 
 |---|---|---|
 | Town map | Our team, during the event | `public/sprites/town-map.png`, `design/town-map-concept.png` |
 | UI/UX screen designs, including the character select | Our team, during the event | `design/`, `docs/UI_NOTES.md` |
-| Character portraits, walking sprites, scammers and world props | Code-drawn placeholders (`placeholder_*`), made with Claude Code to our art direction; to be replaced by team sprites | `src/ui/pixel/`, list in `docs/SPRITES_NEEDED.md` |
+| Walking people (the player and the townsfolk) | Pixel templates drawn in `scripts/build-people.py`, made with Claude Code to our art direction (shaded to match the map) | `scripts/build-people.py`, `src/ui/pixel/people.ts` |
+| Character portraits, scammers and world props | Code-drawn placeholders (`placeholder_*`), made with Claude Code to our art direction; to be replaced by team sprites | `src/ui/pixel/`, list in `docs/SPRITES_NEEDED.md` |
 | App icon (coin, S and shield) | Drawn in SVG with Claude Code | `public/icon.svg` and PNG exports |
 | Sound effects | Generated in code with ZzFX | `src/audio/sfx.ts` |
 | Emoji | The device's own system emoji, not bundled | — |
