@@ -6,7 +6,6 @@ import { ErrorBoundary } from '@/ui/ErrorBoundary'
 import { TitleScreen } from '@/screens/TitleScreen'
 import { TwinWalletsScreen } from '@/screens/TwinWalletsScreen'
 import { ProfileSelectScreen } from '@/screens/ProfileSelectScreen'
-import { LifeMode } from '@/screens/life/LifeMode'
 import { ResultsScreen } from '@/screens/ResultsScreen'
 import { RewindScreen } from '@/screens/RewindScreen'
 import { CapabilityScreen } from '@/screens/CapabilityScreen'
@@ -16,6 +15,7 @@ import { DebugPage } from '@/screens/DebugPage'
 import { FixMyDatesScreen } from '@/screens/FixMyDatesScreen'
 import { ImpactLabScreen, ImpactPreScreen, ImpactPostScreen } from '@/screens/ImpactLabScreen'
 import { TownScreen } from '@/screens/town/TownScreen'
+import { WalkScreen } from '@/screens/walk/WalkScreen'
 
 export default function App() {
   const screen = useGame((s) => s.screen)
@@ -29,7 +29,7 @@ export default function App() {
         {screen === 'title' && <TitleScreen />}
         {screen === 'twin' && <TwinWalletsScreen />}
         {screen === 'profile' && <ProfileSelectScreen />}
-        {screen === 'life' && <LifeMode />}
+        {screen === 'walk' && <WalkScreen />}
         {screen === 'results' && <ResultsScreen />}
         {screen === 'rewind' && <RewindScreen />}
         {screen === 'capability' && <CapabilityScreen />}

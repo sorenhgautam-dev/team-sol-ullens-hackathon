@@ -15,9 +15,9 @@ import { ENERGY_PER_DAY, energyCost, spendEnergy, type EnergyKind } from './ener
 import { dailySeed } from '@/engine/badges'
 import { setHapticsEnabled, setSoundEnabled } from '@/audio/sfx'
 
-export type Screen = 'title' | 'twin' | 'profile' | 'life' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town'
+export type Screen = 'title' | 'twin' | 'profile' | 'walk' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town'
 export type Tab = 'home' | 'money' | 'people' | 'phone' | 'moves'
-export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'ledger' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | null
+export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'ledger' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | 'money' | 'people' | 'moves' | 'phone' | 'log' | null
 
 export interface Settings {
   sound: boolean
@@ -84,7 +84,8 @@ interface GameState {
   requestNextDay: () => void
   nextDay: () => void
   skipToNextEvent: () => void
-  openPending: () => boolean
+  /** The village screen opens encounters itself (events when Sita steps out, scams when they reach her); store timers pass no `force` and are ignored there. */
+  openPending: (force?: boolean) => boolean
   markMailRead: (id: string) => void
   markPhoneRead: (id: string) => void
   toast: (text: string, tone?: Toast['tone']) => void
@@ -124,10 +125,7 @@ export const useGame = create<GameState>()(
       dailyCode: null,
       bestScores: {},
 
-      go: (screen) => {
-        set({ screen })
-        if (screen === 'life') setTimeout(() => get().openPending(), 350)
-      },
+      go: (screen) => set({ screen }),
 
       setSettings: (patch) => {
         const settings = { ...get().settings, ...patch }
@@ -154,7 +152,7 @@ export const useGame = create<GameState>()(
           rewindCharges: 3,
           rewoundToVictory: false,
           dailyCode,
-          screen: 'life',
+          screen: 'walk',
           seenIntro: true,
         })
         // Day 1 may already hold a pending encounter.
@@ -224,8 +222,9 @@ export const useGame = create<GameState>()(
       },
 
       /** Opens the first undecided event or pending scam of the current day. Returns true if something opened. */
-      openPending: () => {
+      openPending: (force = false) => {
         const s = get()
+        if (s.screen === 'walk' && !force) return false
         const ledger = lived(DEMO_SCENARIO, profileOf(s.profileId), s.decisions, s.seed, s.day)
         const today = ledger.days[s.day - 1]
         const decidedEvents = new Set(s.decisions.filter((a) => a.type === 'eventChoice').map((a) => (a.type === 'eventChoice' ? a.eventId : '')))

@@ -7,7 +7,7 @@ import { t } from '@/i18n'
 export function SettingsScreen() {
   const { settings, setSettings, go, resetAll, monthOver, day } = useGameShallow((s) => ({ settings: s.settings, setSettings: s.setSettings, go: s.go, resetAll: s.resetAll, monthOver: s.monthOver, day: s.day }))
   const install = useInstall()
-  const back = () => go(monthOver ? 'results' : day > 0 ? 'life' : 'title')
+  const back = () => go(monthOver ? 'results' : day > 0 ? 'walk' : 'title')
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-paper px-4 pb-6 pt-[max(16px,env(safe-area-inset-top))] text-ink">
       <div className="flex items-center justify-between">

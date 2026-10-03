@@ -68,7 +68,7 @@ export function TitleScreen() {
       </div>
       <div className="relative mx-auto w-full max-w-sm space-y-2 px-6">
         {canContinue && (
-          <Button variant="primary" size="lg" className="w-full" onClick={() => go('life')}>
+          <Button variant="primary" size="lg" className="w-full" onClick={() => go('walk')}>
             ▶️ {t('title.continue', { day })}
           </Button>
         )}
