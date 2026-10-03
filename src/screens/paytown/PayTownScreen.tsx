@@ -15,7 +15,7 @@ import { useEncounters } from './useEncounters'
 import { CHARACTERS_BY_ID } from '@/content/characters'
 import { PLACES, WALK_SPEED, WORLD_H, WORLD_W, startWalker, stepWalker, type Rect, type WalkerState } from '@/walk/map'
 import { findPath, type Point } from '@/walk/path'
-import { DISTRICT_COLS, DISTRICT_DOORS, DISTRICT_GROUND, DISTRICT_OBJECTS, DISTRICT_ROWS, DISTRICT_TOP, TILE } from '@/walk/district'
+import { DISTRICT_COLS, DISTRICT_DOORS, DISTRICT_GROUND, DISTRICT_OBJECTS, DISTRICT_ROWS, DISTRICT_SIGNS, DISTRICT_TOP, TILE } from '@/walk/district'
 import tilesUrl from '@/assets/pixel/tiles.png'
 import { drawOutlined } from '@/ui/pixel/sprites'
 import { drawSitaTop, drawText } from '@/ui/pixel/topdown'
@@ -510,6 +510,13 @@ function render(
     ctx.fillStyle = '#f5c26b'
     ctx.fillRect(tx, ty - 2, 1, 5)
     ctx.fillRect(tx - 2, ty, 5, 1)
+  }
+
+  // Main Street's buildings are just for show: a name over the door, no way in.
+  for (const [key, spot] of Object.entries(DISTRICT_SIGNS)) {
+    const sy = spot.y - camY
+    if (sy < -20 || sy > vh + 60) continue
+    drawText(ctx, t(`town.show.${key}`), spot.x - camX, sy - 40, '#e4d2ac', 7)
   }
 
   for (const e of encounters) {

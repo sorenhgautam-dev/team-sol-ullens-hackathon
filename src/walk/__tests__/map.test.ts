@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { BATTLE_RANGE, MAP_H, PLACES, WORLD_H, isWalkable, placeAt, startApproach, startWalker, stepApproach, stepWalker } from '../map'
-import { DISTRICT_DOORS } from '../district'
+import { DISTRICT_DOORS, DISTRICT_SIGNS } from '../district'
+import { findPath } from '../path'
 
 describe('village map', () => {
   it('every door is standable and resolves to its own place', () => {
@@ -106,6 +107,15 @@ describe('collision from the map: fences, trees and the district', () => {
     for (let i = 0; i < 60; i++) stepWalker(s, 0, 1)
     expect(s.y).toBeGreaterThan(485) // out of the garden
     expect(s.x).toBeLessThan(58) // slid toward the gap
+  })
+
+  it('Main Street, south of the loop, has solid show buildings you can walk up to', () => {
+    for (const [id, spot] of Object.entries(DISTRICT_SIGNS)) {
+      expect(isWalkable(spot.x, spot.y), `${id} front`).toBe(true)
+      expect(isWalkable(spot.x, spot.y - 24), `${id} wall`).toBe(false)
+    }
+    const path = findPath(PLACES[0]!.door, DISTRICT_SIGNS.school)
+    expect(path, 'walk from home to the school').not.toBeNull()
   })
 
   it('every district door can be reached on foot from home, through the town', () => {
