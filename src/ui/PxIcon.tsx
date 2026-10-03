@@ -34,8 +34,16 @@ import play from 'pixelarticons/svg/play.svg'
 import book from 'pixelarticons/svg/book-open.svg'
 import settings from 'pixelarticons/svg/sliders.svg'
 import map from 'pixelarticons/svg/map.svg'
+import pencil from 'pixelarticons/svg/pencil.svg'
+import pin from 'pixelarticons/svg/map-pin.svg'
+import qr from 'pixelarticons/svg/qr-code.svg'
+import trend from 'pixelarticons/svg/trending-up.svg'
+import phone from 'pixelarticons/svg/smartphone.svg'
+import coins from 'pixelarticons/svg/coins.svg'
+import chevronRight from 'pixelarticons/svg/chevron-right.svg'
+import chevronLeft from 'pixelarticons/svg/chevron-left.svg'
 
-export const ICONS = { coin, wallet, calendar, mail, message, home, building, sun, moon, heart, shield, lock, check, close, arrowUp, arrowDown, arrowLeft, arrowRight, zap, user, users, clock, reload, search, gift, store, briefcase, card, play, book, settings, map }
+export const ICONS = { coin, wallet, calendar, mail, message, home, building, sun, moon, heart, shield, lock, check, close, arrowUp, arrowDown, arrowLeft, arrowRight, zap, user, users, clock, reload, search, gift, store, briefcase, card, play, book, settings, map, pencil, pin, qr, trend, phone, coins, chevronRight, chevronLeft }
 export type IconName = keyof typeof ICONS
 
 /** 24-unit grid icons; size should be a multiple of 12 so the pixels stay whole. */
