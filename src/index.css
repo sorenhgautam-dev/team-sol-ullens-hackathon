@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #f7f5f0;
+  --card: #ffffff;
+  --ink: #1e2a44;
+  --ink-rgb: 30 42 68;
+  --cream: #fff4e0;
+  --shell: #e9e4d8;
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #171a23;
+    --card: #222634;
+    --ink: #eef0f6;
+    --ink-rgb: 238 240 246;
+    --cream: #2a2436;
+    --shell: #0d0f15;
+    color-scheme: dark;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--shell);
+  color: var(--ink);
+  font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-variant-numeric: tabular-nums;
+  overscroll-behavior: none;
+}
+
+.phone-shell {
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--shell);
+}
+
+.phone {
+  position: relative;
+  width: 100%;
+  max-width: 390px;
+  height: 100dvh;
+  max-height: 844px;
+  overflow: hidden;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+.phone > * {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (min-width: 480px) and (min-height: 900px) {
+  .phone {
+    border-radius: 40px;
+    box-shadow:
+      0 0 0 10px #1e2a44,
+      0 30px 60px rgba(0, 0, 0, 0.35);
+  }
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-xl border border-ink/10 bg-card px-2 py-1.5 text-sm font-normal text-ink;
+  }
+}
+
+/* Home Street idle motion: transform and opacity only. */
+.spot {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 0.15s ease;
+}
+.spot:active {
+  transform: scale(0.96);
+}
+.sway {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: sway 4s ease-in-out infinite alternate;
+}
+@keyframes sway {
+  from {
+    transform: translateX(-2px) rotate(-0.6deg);
+  }
+  to {
+    transform: translateX(2px) rotate(0.6deg);
+  }
+}
+.tail {
+  transform-box: fill-box;
+  transform-origin: 20% 80%;
+  animation: tail 1.8s ease-in-out infinite;
+}
+@keyframes tail {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0deg);
+  }
+  80% {
+    transform: rotate(-6deg);
+  }
+  90% {
+    transform: rotate(6deg);
+  }
+}
+.smoke {
+  animation: smoke 4s linear infinite;
+}
+@keyframes smoke {
+  from {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
+}
+.twinkle {
+  animation: twinkle 2.4s ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.danger-pulse {
+  animation: dangerPulse 1.6s ease-in-out infinite alternate;
+}
+@keyframes dangerPulse {
+  from {
+    opacity: 0.08;
+  }
+  to {
+    opacity: 0.22;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .danger-pulse {
+    opacity: 0.15;
+  }
+}
