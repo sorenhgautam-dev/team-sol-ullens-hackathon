@@ -10,7 +10,7 @@ export type Base = Currency
 
 /** Illustrative display rates per US$1. */
 const PER_USD: Record<Currency, number> = { USD: 1, EUR: 0.92, GBP: 0.79, INR: 83, NPR: 133 }
-const SYMBOLS: Record<Currency, string> = { USD: '$', EUR: '€', GBP: '£', INR: '₹', NPR: 'NPR ' }
+const SYMBOLS: Record<Currency, string> = { USD: '$', EUR: '€', GBP: '£', INR: '₹', NPR: 'Rs. ' }
 
 export function convert(amount: number, currency: Currency, base: Base = 'NPR'): number {
   if (base === currency) return amount

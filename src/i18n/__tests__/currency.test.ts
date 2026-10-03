@@ -10,7 +10,7 @@ describe('currency helper', () => {
     expect(formatMoney(1.99, 'USD', 'USD')).toBe('$1.99')
   })
   it('keeps the budgeting engine NPR amounts working', () => {
-    expect(formatMoney(12_000, 'NPR')).toBe('NPR 12,000')
+    expect(formatMoney(12_000, 'NPR')).toBe('Rs. 12,000')
     expect(convert(13_300, 'USD')).toBeCloseTo(100)
   })
 })
