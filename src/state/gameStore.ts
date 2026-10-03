@@ -1,24 +1,14 @@
 /**
- * UI state only (Zustand). Money is never computed here: screens derive ledgers from
- * the decision log through the engine (see hooks.ts).
+ * App state (Zustand): which screen is showing, the player's settings, and toasts.
+ * The scam run itself (character, answers, paydays) lives in scamStore.ts.
  */
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
-import type { DecisionLog, PlayerAction, ScamResponse } from '@/engine/types'
-import { lived } from '@/engine/forecast'
-import { simulate } from '@/engine/simulate'
-import { GAME_SCENARIO, DEMO_SEED } from '@/content/scenario'
-import { PROFILES, SITA } from '@/content/profiles'
 import type { Currency } from '@/i18n/currency'
-import { ENERGY_PER_DAY, energyCost, spendEnergy, type EnergyKind } from './energy'
-import { dailySeed } from '@/engine/badges'
 import { setHapticsEnabled, setSoundEnabled } from '@/audio/sfx'
-import { useLearn } from './learnStore'
 
-export type Screen = 'title' | 'twin' | 'profile' | 'walk' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town' | 'styleguide' | 'cards' | 'pick' | 'paytown' | 'payresults'
-export type Tab = 'home' | 'money' | 'people' | 'phone' | 'moves'
-export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'ledger' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | 'money' | 'people' | 'moves' | 'phone' | 'log' | 'stats' | 'plan' | null
+export type Screen = 'title' | 'settings' | 'pick' | 'paytown' | 'payresults'
 
 export interface Settings {
   sound: boolean
@@ -28,67 +18,18 @@ export interface Settings {
   demoMode: boolean
 }
 
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
-/** A player action without the id/day the store assigns. */
-export type ActionInput = DistributiveOmit<PlayerAction, 'id' | 'day'>
-
 export interface Toast {
   id: number
   text: string
   tone: 'neutral' | 'good' | 'bad'
 }
 
-export interface ActionResult {
-  ok: boolean
-  id: string
-  reasonKey?: string
-}
-
 interface GameState {
   screen: Screen
   settings: Settings
-  seenIntro: boolean
-  profileId: string
-  seed: number
-  day: number
-  decisions: DecisionLog
-  energy: number
-  tab: Tab
-  sheet: SheetKind
-  sheetPayload: string | null
-  hubCollapsed: boolean
-  readMail: string[]
-  readPhone: string[]
-  monthsPlayed: number
-  nextId: number
   toasts: Toast[]
-  monthOver: boolean
-  rewindCharges: number
-  rewoundToVictory: boolean
-  dailyCode: string | null
-  bestScores: Record<string, number>
-
   go: (screen: Screen) => void
   setSettings: (patch: Partial<Settings>) => void
-  startMonth: (profileId: string, seed?: number, dailyCode?: string | null) => void
-  startDaily: () => void
-  adoptTimeline: (decisions: DecisionLog, improved: boolean) => boolean
-  recordBest: (score: number) => boolean
-  nextMonth: () => void
-  setTab: (tab: Tab) => void
-  openSheet: (kind: SheetKind, payload?: string | null) => void
-  closeSheet: () => void
-  toggleHub: () => void
-  logAction: (action: ActionInput, energyKind?: EnergyKind) => ActionResult
-  decideEvent: (eventId: string, choiceId: string) => void
-  respondScam: (scamId: string, response: ScamResponse, tellsSpotted: number) => void
-  requestNextDay: () => void
-  nextDay: () => void
-  skipToNextEvent: () => void
-  /** The village screen opens encounters itself (events when Sita steps out, scams when they reach her); store timers pass no `force` and are ignored there. */
-  openPending: (force?: boolean) => boolean
-  markMailRead: (id: string) => void
-  markPhoneRead: (id: string) => void
   toast: (text: string, tone?: Toast['tone']) => void
   dismissToast: (id: number) => void
   resetAll: () => void
@@ -96,35 +37,12 @@ interface GameState {
 
 const defaultSettings: Settings = { sound: true, haptics: true, reducedMotion: false, currency: 'USD', demoMode: false }
 
-function profileOf(id: string) {
-  return PROFILES[id] ?? SITA
-}
-
 export const useGame = create<GameState>()(
   persist(
     (set, get) => ({
       screen: 'title',
       settings: defaultSettings,
-      seenIntro: false,
-      profileId: 'sita',
-      seed: DEMO_SEED,
-      day: 1,
-      decisions: [],
-      energy: ENERGY_PER_DAY,
-      tab: 'home',
-      sheet: null,
-      sheetPayload: null,
-      hubCollapsed: false,
-      readMail: [],
-      readPhone: [],
-      monthsPlayed: 0,
-      nextId: 1,
       toasts: [],
-      monthOver: false,
-      rewindCharges: 3,
-      rewoundToVictory: false,
-      dailyCode: null,
-      bestScores: {},
 
       go: (screen) => set({ screen }),
 
@@ -135,215 +53,22 @@ export const useGame = create<GameState>()(
         set({ settings })
       },
 
-      startMonth: (profileId, seed, dailyCode = null) => {
-        const s = get()
-        useLearn.getState().newMonth()
-        const newSeed = seed ?? (s.settings.demoMode ? DEMO_SEED : DEMO_SEED + s.monthsPlayed * 7)
-        set({
-          profileId,
-          seed: newSeed,
-          day: 1,
-          decisions: [],
-          energy: ENERGY_PER_DAY,
-          tab: 'home',
-          sheet: null,
-          sheetPayload: null,
-          readMail: [],
-          readPhone: [],
-          monthOver: false,
-          rewindCharges: 3,
-          rewoundToVictory: false,
-          dailyCode,
-          screen: 'walk',
-          seenIntro: true,
-        })
-        // Day 1 may already hold a pending encounter.
-        setTimeout(() => get().openPending(), 400)
-      },
-
-      startDaily: () => {
-        const { seed, code } = dailySeed()
-        get().startMonth('sita', seed, code)
-      },
-
-      /** Replace the month's decisions with a rewound timeline. Spends a charge outside demo mode. */
-      adoptTimeline: (decisions, improved) => {
-        const s = get()
-        const unlimited = s.settings.demoMode
-        if (!unlimited && s.rewindCharges <= 0) return false
-        set({ decisions, rewindCharges: unlimited ? s.rewindCharges : s.rewindCharges - 1, rewoundToVictory: s.rewoundToVictory || improved })
-        return true
-      },
-
-      recordBest: (score) => {
-        const s = get()
-        const key = s.dailyCode ?? `${s.profileId}:${s.seed}`
-        const prev = s.bestScores[key] ?? -1
-        if (score > prev) {
-          set({ bestScores: { ...s.bestScores, [key]: score } })
-          return prev >= 0
-        }
-        return false
-      },
-
-      nextMonth: () => {
-        const s = get()
-        set({ monthsPlayed: s.monthsPlayed + 1 })
-        get().startMonth(s.profileId, s.settings.demoMode ? DEMO_SEED : s.seed + 13)
-      },
-
-      setTab: (tab) => set({ tab }),
-      openSheet: (kind, payload = null) => set({ sheet: kind, sheetPayload: payload }),
-      closeSheet: () => set({ sheet: null, sheetPayload: null }),
-      toggleHub: () => set((s) => ({ hubCollapsed: !s.hubCollapsed })),
-
-      logAction: (action, energyKind) => {
-        const s = get()
-        const cost = energyKind ? energyCost(energyKind) : 0
-        const spent = spendEnergy(s.energy, cost)
-        const id = `a${s.nextId}`
-        if (!spent.ok) return { ok: false, id, reasonKey: 'blocked.noEnergy' }
-        const full = { ...action, id, day: s.day } as PlayerAction
-        const decisions = [...s.decisions, full]
-        // Ask the engine whether the action applies; refund energy if it is blocked.
-        const ledger = lived(GAME_SCENARIO, profileOf(s.profileId), decisions, s.seed, s.day)
-        const outcome = ledger.actionOutcomes.find((o) => o.actionId === id)
-        const blocked = outcome?.status === 'blocked'
-        set({ decisions, nextId: s.nextId + 1, energy: blocked ? s.energy : spent.energy })
-        return blocked ? { ok: false, id, reasonKey: outcome?.reasonKey } : { ok: true, id }
-      },
-
-      decideEvent: (eventId, choiceId) => {
-        get().logAction({ type: 'eventChoice', eventId, choiceId })
-        set({ sheet: null, sheetPayload: null })
-        setTimeout(() => get().openPending(), 350)
-      },
-
-      respondScam: (scamId, response, tellsSpotted) => {
-        get().logAction({ type: 'scamResponse', scamId, response, tellsSpotted }, response)
-      },
-
-      /** Opens the first undecided event or pending scam of the current day. Returns true if something opened. */
-      openPending: (force = false) => {
-        const s = get()
-        if (s.screen === 'walk' && !force) return false
-        const ledger = lived(GAME_SCENARIO, profileOf(s.profileId), s.decisions, s.seed, s.day)
-        const today = ledger.days[s.day - 1]
-        const decidedEvents = new Set(s.decisions.filter((a) => a.type === 'eventChoice').map((a) => (a.type === 'eventChoice' ? a.eventId : '')))
-        const event = GAME_SCENARIO.events.find((e) => e.day === s.day && !decidedEvents.has(e.id))
-        if (event) {
-          set({ sheet: 'event', sheetPayload: event.id })
-          return true
-        }
-        const scam = today?.scams.find((x) => x.outcome === 'pending')
-        if (scam) {
-          set({ sheet: 'scam', sheetPayload: scam.scamId, tab: s.tab })
-          return true
-        }
-        return false
-      },
-
-      requestNextDay: () => {
-        const s = get()
-        if (get().openPending()) return
-        const ledger = lived(GAME_SCENARIO, profileOf(s.profileId), s.decisions, s.seed, s.day)
-        const today = ledger.days[s.day - 1]
-        const busy = (today?.entries.length ?? 0) > 0 || s.decisions.some((a) => a.day === s.day && a.type !== 'forecastViewed')
-        if (busy && !s.settings.demoMode) set({ sheet: 'goodnight', sheetPayload: null })
-        else get().nextDay()
-      },
-
-      nextDay: () => {
-        const s = get()
-        if (s.day >= GAME_SCENARIO.days) {
-          set({ sheet: null, sheetPayload: null, monthOver: true, screen: 'results' })
-          return
-        }
-        set({ day: s.day + 1, energy: ENERGY_PER_DAY, sheet: null, sheetPayload: null, tab: 'home' })
-        setTimeout(() => get().openPending(), 450)
-      },
-
-      /** Long-press: advance until a day with an event or a scam, or the month ends. */
-      skipToNextEvent: () => {
-        const s = get()
-        if (get().openPending()) return
-        const full = simulate(GAME_SCENARIO, profileOf(s.profileId), s.decisions, s.seed)
-        let target = GAME_SCENARIO.days
-        for (const d of full.days) {
-          if (d.day > s.day && (d.events.length > 0 || d.scams.length > 0)) {
-            target = d.day
-            break
-          }
-        }
-        set({ day: target, energy: ENERGY_PER_DAY, sheet: null, sheetPayload: null, tab: 'home' })
-        setTimeout(() => get().openPending(), 450)
-      },
-
-      markMailRead: (id) => set((s) => (s.readMail.includes(id) ? s : { readMail: [...s.readMail, id] })),
-      markPhoneRead: (id) => set((s) => (s.readPhone.includes(id) ? s : { readPhone: [...s.readPhone, id] })),
-
       toast: (text, tone = 'neutral') => {
-        const id = Date.now() + Math.floor(Math.random() * 1000) // UI-only id, never used by engines
+        const id = Date.now() + Math.floor(Math.random() * 1000) // UI-only id
         set((s) => ({ toasts: [...s.toasts.slice(-2), { id, text, tone }] }))
         setTimeout(() => get().dismissToast(id), 2600)
       },
       dismissToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
       resetAll: () => {
-        set({
-          screen: 'title',
-          settings: defaultSettings,
-          seenIntro: false,
-          profileId: 'sita',
-          seed: DEMO_SEED,
-          day: 1,
-          decisions: [],
-          energy: ENERGY_PER_DAY,
-          tab: 'home',
-          sheet: null,
-          sheetPayload: null,
-          hubCollapsed: false,
-          readMail: [],
-          readPhone: [],
-          monthsPlayed: 0,
-          nextId: 1,
-          toasts: [],
-          monthOver: false,
-          rewindCharges: 3,
-          rewoundToVictory: false,
-          dailyCode: null,
-          bestScores: {},
-        })
+        set({ screen: 'title', settings: defaultSettings, toasts: [] })
+        setSoundEnabled(true)
+        setHapticsEnabled(true)
       },
     }),
     {
-      name: 'next-payday-v1',
-      // v2: the game went global; saves from before show US dollars instead of rupees by default.
-      version: 2,
-      migrate: (persisted, version) => {
-        const s = persisted as { settings?: Settings }
-        if (version < 2 && s.settings?.currency === 'NPR') s.settings = { ...s.settings, currency: 'USD' }
-        return s as GameState
-      },
-      partialize: (s) => ({
-        settings: s.settings,
-        seenIntro: s.seenIntro,
-        profileId: s.profileId,
-        seed: s.seed,
-        day: s.day,
-        decisions: s.decisions,
-        energy: s.energy,
-        readMail: s.readMail,
-        readPhone: s.readPhone,
-        monthsPlayed: s.monthsPlayed,
-        nextId: s.nextId,
-        monthOver: s.monthOver,
-        hubCollapsed: s.hubCollapsed,
-        rewindCharges: s.rewindCharges,
-        rewoundToVictory: s.rewoundToVictory,
-        dailyCode: s.dailyCode,
-        bestScores: s.bestScores,
-      }),
+      name: 'scam-town-settings',
+      partialize: (s) => ({ settings: s.settings }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           setSoundEnabled(state.settings.sound)
