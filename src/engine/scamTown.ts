@@ -33,6 +33,8 @@ export interface EncounterDef {
   lineKeys: string[]
   /** Optional payment card (chat/payment channels). */
   payKey?: string
+  /** How the payment screen looks: a request to approve, a "payment successful" screenshot, or a card form. */
+  payStyle?: 'request' | 'screenshot' | 'form'
   timerSeconds: number
   /** Money mentioned in the messages, in US dollars (shown through the currency helper). */
   amounts: Record<string, number>
