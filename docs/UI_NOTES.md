@@ -1,6 +1,6 @@
 # UI notes from the team's designs
 
-One section per design image. Images live in `design/`.
+One section per design image. Images live in `design/`. **The town map PNG must be re-added as `design/town-map-concept.png` and `public/sprites/town-map.png` (the temp screenshot expired before it was copied).**
 
 ## Town map concept — `design/town-map-concept.png` (Town Mode)
 - **Layout:** portrait, top-down pixel town on grass with a river along the top-right and forest edges. A cobbled road loops from the top-left house around a central market square and down to the bottom-right cottage.
