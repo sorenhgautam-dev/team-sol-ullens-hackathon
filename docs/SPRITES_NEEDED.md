@@ -17,6 +17,7 @@ All sprites are PNG sheets with frames laid out horizontally, drawn at the inter
 | placeholder_sita_topdown | `public/sprites/sita_topdown.png` | 10×16 | down 4 · up 4 · left 4 · right 4 (walk cycles) + idle 1 each | Village (walkable town on the team's map) |
 | placeholder_scammer_topdown (per scammer) | `public/sprites/scammer_topdown_<id>.png` | 12×18 | walk 4 · taunt 2 · hit 1 · dissolve 4 | Village: scammers walk over to Sita |
 | placeholder_message | `public/sprites/message.png` | 12×11 | fly 1 · blocked 2 · stuck 1 | Village battle (the scammer's "messages") |
+| placeholder_cues | `public/sprites/cues.png` | 12×9 desk phone, 7×11 phone, 11×8 letter, 9×9 QR, 9×8 warning, 14×20 stranger | phone ring 2 · stranger wave 2 | Scam Town: the cue above the building whose scam is next (`src/ui/pixel/cues.ts`) |
 | team town map | `public/sprites/town-map.png` | 305×537 (in the repo) | 1 (+ optional night variant with lit windows) | Village ground. Doors and collisions live in `src/walk/map.ts`; if the map changes, update the rectangles there |
 
 Suggested order: Sita → the Phisher and the Loan Shark App → stamps → the town map → the rest.

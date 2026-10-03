@@ -44,7 +44,7 @@ We wrote the specs and briefs (`CLAUDE.md`, `NEXT_PAYDAY_MASTER_PROMPT.md`, `Nex
 
 1. **Pick a citizen.** A home tailor whose family's savings come from abroad, a gig delivery rider, or a first-time office worker. Each has a fixed story, job, pay and the scams that often target people like them, but **the name is yours**: tap the pencil and play as yourself (or "Y/N"). Every message uses that name and that life: the tailor waits for a parcel from abroad, the rider is offered a "team leader" job.
 2. **Payday.** You start at home with your pay. The HUD shows only who you are, which payday it is, your balance, "Scams faced X/N" and your phone.
-3. **Buildings glow.** Walk to them in any order, on the roads and grass: fences, trees, walls, stalls and water block you, and the garden gate is the way out. Arrows at the screen edge point to buildings you cannot see yet. On the first payday these five glow:
+3. **One scam at a time.** Scams start in a fixed order, and only the current building shows a cue and an arrow. On the first payday the bank's phone rings first. Then someone at the market shouts your name, the post office buzzes with a notification, a "You're hired!" letter appears at the job centre, and a waving stranger with a "$$" sparkle shows up at the investment kiosk. About two seconds after each rule card, the next cue pops up. Walk there on the roads and grass: fences, trees, walls, stalls and water block you, and the garden gate is the way out. If the building is off screen, an arrow at the edge points the way. Buildings whose turn has not come stay closed. The first payday's five:
 
 | Building | The trap | The rule on the card |
 |---|---|---|
@@ -70,7 +70,7 @@ We wrote the specs and briefs (`CLAUDE.md`, `NEXT_PAYDAY_MASTER_PROMPT.md`, `Nex
 | Rental office | A cheap room, the owner is abroad, send the deposit to get the keys | Never pay a deposit before you have seen the place and met the owner in person. |
 | Shop | Branded shoes 80% off, bank transfer only | If a deal looks too good and they only take bank transfer, it is a trap. |
 
-   From payday 3, a seeded mix of five from all eleven places glows. A third real message, a parcel update with no link and no fee, arrives on payday 2.
+   Payday 2 follows the same one-at-a-time order, with its own cues: a "New number" text, a "Scan to pay" QR sticker, a "Virus found!" pop-up, a "Final notice!" letter, a "Room for rent!" shout and an "80% OFF!" tag. From payday 3, a seeded mix of five from all eleven places comes up, in a fixed order too. A third real message, a parcel update with no link and no fee, arrives on payday 2.
 
 **The phone's Scam Checker** is a guided checklist, not a keyword score: does it ask for a code or PIN, rush you, contact you first, want an upfront fee, promise guaranteed money? It always ends with "Verify through an official number or website" and says it can miss new scams. Anything you paste is never stored.
 
