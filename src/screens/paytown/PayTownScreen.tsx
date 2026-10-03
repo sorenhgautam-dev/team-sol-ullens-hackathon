@@ -20,6 +20,7 @@ import tilesUrl from '@/assets/pixel/tiles.png'
 import { drawOutlined } from '@/ui/pixel/sprites'
 import { drawSitaTop, drawText } from '@/ui/pixel/topdown'
 import { drawCue, drawDoorArrow } from '@/ui/pixel/cues'
+import { drawBirds, drawCloudShadows, drawFountainSparkle, drawTownsperson, townsfolk } from '@/ui/pixel/ambient'
 import { PIXEL_SCALE } from '@/ui/palette'
 import { Balance } from '@/ui/Balance'
 import { Button } from '@/ui/Button'
@@ -499,6 +500,10 @@ function render(
   // The team's town on top, the south district below it.
   if (map) ctx.drawImage(map, -camX, -camY)
   if (district) ctx.drawImage(district, -camX, DISTRICT_TOP - camY)
+  if (!reduced) {
+    drawFountainSparkle(ctx, frame, camX, camY)
+    drawCloudShadows(ctx, frame, camX, camY, vw, vh)
+  }
 
   // Where a tap is walking to: a small blinking diamond.
   if (tap && !reduced ? frame % 30 < 22 : !!tap) {
@@ -551,6 +556,10 @@ function render(
     drawText(ctx, t(`town.building.${e.building}`), dx, dy - 40, done.has(e.id) ? '#c9ac7a' : '#fbf4e2', 7)
   }
 
+  // Townsfolk on their rounds: the ones further up the screen are drawn behind the walker.
+  const folk = townsfolk(frame, reduced).filter((p) => p.x - camX > -12 && p.x - camX < vw + 12 && p.y - camY > -4 && p.y - camY < vh + 24)
+  for (const p of folk) if (p.y <= w.y) drawTownsperson(ctx, p, p.x - camX, p.y - camY)
+
   // The walker sits between art pixels too, so it glides with the camera; a soft shadow grounds it.
   const wx = snap(w.x) - camX
   const wy = snap(w.y) - camY
@@ -564,6 +573,7 @@ function render(
   ctx.fillRect(sx - 3, sy + 2, 7, 1)
   drawOutlined(ctx, sx - 7, sy - 18, 14, 20, (c) => drawSitaTop(c, 7, 18, w.facing, Math.floor(w.odometer / 5), w.moving, false, look))
   ctx.restore()
+  for (const p of folk) if (p.y > w.y) drawTownsperson(ctx, p, p.x - camX, p.y - camY)
 
   // The current scam's cue, drawn over everything so it is never hidden.
   if (cue) {
@@ -571,6 +581,8 @@ function render(
     const a = cueAnchor(place)
     drawCue(ctx, CUES[cue.building].kind, a.x - camX, a.y - camY, place.door.x - camX, place.door.y - camY, frame, frame - cue.at, cue.label, reduced)
   }
+
+  if (!reduced) drawBirds(ctx, frame, camX, camY)
 
   // The current scam off screen: an arrow at the edge points the way.
   for (const e of encounters) {
