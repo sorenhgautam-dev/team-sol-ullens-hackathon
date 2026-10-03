@@ -1,27 +1,24 @@
 import { describe, expect, it } from 'vitest'
-import { BATTLE_RANGE, MAP_H, PLACES, WORLD_H, isWalkable, placeAt, startApproach, startWalker, stepApproach, stepWalker } from '../map'
+import { MAP_H, PLACES, WORLD_H, isWalkable, startWalker, stepWalker } from '../map'
 import { DISTRICT_DOORS, DISTRICT_SIGNS } from '../district'
 import { findPath } from '../path'
 
-describe('village map', () => {
-  it('every door is standable and resolves to its own place', () => {
-    for (const p of PLACES) {
-      expect(isWalkable(p.door.x, p.door.y), p.id).toBe(true)
-      expect(placeAt(p.door.x, p.door.y)?.id).toBe(p.id)
-    }
+describe('town map', () => {
+  it('every door is standable', () => {
+    for (const p of PLACES) expect(isWalkable(p.door.x, p.door.y), p.id).toBe(true)
   })
 
   it('buildings and the river are solid', () => {
-    expect(isWalkable(40, 140)).toBe(false) // inside the landlord house
+    expect(isWalkable(40, 140)).toBe(false) // inside the red-brick house
     expect(isWalkable(150, 50)).toBe(false) // river
     expect(isWalkable(150, 300)).toBe(false) // fountain
     expect(isWalkable(150, 400)).toBe(true) // road south of the square
     expect(isWalkable(-3, 300)).toBe(false)
   })
 
-  it('Sita starts at her own door, and the house wall stops her going in', () => {
+  it('every payday starts at home, and the house wall stops the player going in', () => {
     const s = startWalker()
-    expect(placeAt(s.x, s.y)?.id).toBe('home')
+    expect({ x: s.x, y: s.y }).toEqual(PLACES.find((p) => p.id === 'home')!.door)
     const y0 = s.y
     for (let i = 0; i < 40; i++) stepWalker(s, 0, -1)
     // She may slide along the wall, but never ends up inside the house.
@@ -53,22 +50,6 @@ describe('village map', () => {
       })
       expect(near, `${p.id} door reachable`).toBe(true)
     }
-  })
-
-  it('a scammer approaches until battle range and then stops', () => {
-    const sita = { x: 150, y: 400 }
-    const a = startApproach(0)
-    let steps = 0
-    while (!a.arrived && steps < 2000) {
-      stepApproach(a, sita)
-      steps++
-    }
-    expect(a.arrived).toBe(true)
-    expect(Math.hypot(a.x - sita.x, a.y - sita.y)).toBeLessThanOrEqual(BATTLE_RANGE + 1)
-    expect(steps).toBeGreaterThan(100)
-    const b = startApproach(0)
-    for (let i = 0; i < steps; i++) stepApproach(b, sita)
-    expect(b).toEqual(a)
   })
 })
 

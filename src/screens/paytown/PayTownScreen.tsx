@@ -65,11 +65,10 @@ interface Route {
   stuck: number
 }
 
-/** Which map building houses each encounter: the team's town, or the south district. */
-const TOWN_PLACE: Partial<Record<EncounterDef['building'], string>> = { bank: 'bank', market: 'market', post: 'school', job: 'workshop', invest: 'plaza', home: 'home' }
+/** Where each encounter's building is: in the team's town, or in the south district. */
 function doorOf(b: EncounterDef['building']): { door: { x: number; y: number }; body: Rect | null } {
-  const town = TOWN_PLACE[b]
-  if (town) return PLACES.find((p) => p.id === town)!
+  const town = PLACES.find((p) => p.id === b)
+  if (town) return town
   const d = DISTRICT_DOORS[b as keyof typeof DISTRICT_DOORS]
   // District houses are three tiles tall, directly above the door spot.
   return { door: d, body: { x: d.x - 24, y: d.y - TILE / 2 - 3 * TILE, w: 48, h: 3 * TILE } }
