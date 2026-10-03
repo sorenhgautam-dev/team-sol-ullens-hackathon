@@ -16,7 +16,7 @@ import { dailySeed } from '@/engine/badges'
 import { setHapticsEnabled, setSoundEnabled } from '@/audio/sfx'
 import { useLearn } from './learnStore'
 
-export type Screen = 'title' | 'twin' | 'profile' | 'walk' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town' | 'styleguide' | 'cards'
+export type Screen = 'title' | 'twin' | 'profile' | 'walk' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town' | 'styleguide' | 'cards' | 'pick' | 'paytown' | 'payresults'
 export type Tab = 'home' | 'money' | 'people' | 'phone' | 'moves'
 export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'ledger' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | 'money' | 'people' | 'moves' | 'phone' | 'log' | 'stats' | 'plan' | null
 

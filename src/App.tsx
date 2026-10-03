@@ -19,6 +19,8 @@ import { TownScreen } from '@/screens/town/TownScreen'
 import { WalkScreen } from '@/screens/walk/WalkScreen'
 import { StyleguideScreen } from '@/screens/StyleguideScreen'
 import { CardsScreen } from '@/screens/CardsScreen'
+import { PickScreen } from '@/screens/paytown/PickScreen'
+import { PayTownScreen } from '@/screens/paytown/PayTownScreen'
 
 export default function App() {
   const raw = useGame((s) => s.screen)
@@ -37,6 +39,8 @@ export default function App() {
         {screen === 'walk' && <WalkScreen />}
         {screen === 'styleguide' && <StyleguideScreen />}
         {screen === 'cards' && <CardsScreen />}
+        {screen === 'pick' && <PickScreen />}
+        {screen === 'paytown' && <PayTownScreen />}
         {screen === 'results' && <ResultsScreen />}
         {screen === 'rewind' && <RewindScreen />}
         {screen === 'capability' && <CapabilityScreen />}

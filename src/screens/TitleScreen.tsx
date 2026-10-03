@@ -7,6 +7,7 @@ import { Button } from '@/ui/Button'
 import { dailySeed } from '@/engine/badges'
 import { t } from '@/i18n'
 import { FEATURES } from '@/config/features'
+import { startRun } from '@/screens/paytown/PickScreen'
 import { haptic, play } from '@/audio/sfx'
 
 export function TitleScreen() {
@@ -80,12 +81,12 @@ export function TitleScreen() {
         {settings.demoMode && <span className="mt-3 bg-ink px-3 py-1 font-pixel text-xs text-card">DEMO</span>}
       </div>
       <div className="relative mx-auto w-full max-w-sm space-y-2 px-6">
-        {canContinue && (
+        {FEATURES.budgeting && canContinue && (
           <Button variant="primary" size="lg" className="w-full" onClick={() => go('walk')}>
             ▶️ {t('title.continue', { day })}
           </Button>
         )}
-        <Button variant={canContinue ? 'secondary' : 'primary'} size="lg" className="w-full" onClick={() => go(FEATURES.budgeting && !seenIntro ? 'twin' : 'profile')}>
+        <Button variant={FEATURES.budgeting && canContinue ? 'secondary' : 'primary'} size="lg" className="w-full" onClick={() => (FEATURES.budgeting ? go(seenIntro ? 'profile' : 'twin') : settings.demoMode ? startRun('sita') : go('pick'))}>
           🎮 {t('title.play')}
         </Button>
         {FEATURES.budgeting && (
