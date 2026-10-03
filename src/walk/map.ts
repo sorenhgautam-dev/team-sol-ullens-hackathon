@@ -5,8 +5,15 @@
  * touches money: a door only names which existing sheet or action it opens.
  */
 
+import { CELL, GRID_COLS, GRID_ROWS, TOWN_GRID } from './collision'
+import { DISTRICT_BLOCKED, DISTRICT_COLS, DISTRICT_ROWS, DISTRICT_TOP, TILE } from './district'
+
+/** The team's town map. */
 export const MAP_W = 305
 export const MAP_H = 537
+/** The whole walkable world: the town plus the south district below it. */
+export const WORLD_W = MAP_W
+export const WORLD_H = DISTRICT_TOP + DISTRICT_ROWS * TILE
 
 export interface Rect {
   x: number
@@ -30,30 +37,15 @@ export interface Place {
 
 export const PLACES: Place[] = [
   { id: 'home', body: { x: 10, y: 395, w: 52, h: 56 }, door: { x: 36, y: 463 }, emoji: '🏡', nameKey: 'walk.place.home', promptKey: 'walk.prompt.home' },
-  { id: 'landlord', body: { x: 8, y: 105, w: 66, h: 66 }, door: { x: 42, y: 178 }, emoji: '🏘️', nameKey: 'walk.place.landlord', promptKey: 'walk.prompt.landlord' },
+  { id: 'landlord', body: { x: 8, y: 105, w: 66, h: 66 }, door: { x: 25, y: 197 }, emoji: '🏘️', nameKey: 'walk.place.landlord', promptKey: 'walk.prompt.landlord' },
   { id: 'family', body: { x: 92, y: 118, w: 74, h: 48 }, door: { x: 129, y: 173 }, emoji: '👨‍👩‍👧', nameKey: 'walk.place.family', promptKey: 'walk.prompt.family' },
-  { id: 'school', body: { x: 181, y: 95, w: 30, h: 74 }, door: { x: 196, y: 176 }, emoji: '🎒', nameKey: 'walk.place.school', promptKey: 'walk.prompt.school' },
-  { id: 'shop', body: { x: 225, y: 112, w: 66, h: 64 }, door: { x: 258, y: 183 }, emoji: '🏪', nameKey: 'walk.place.shop', promptKey: 'walk.prompt.shop' },
+  { id: 'school', body: { x: 181, y: 95, w: 30, h: 74 }, door: { x: 195, y: 177 }, emoji: '🎒', nameKey: 'walk.place.school', promptKey: 'walk.prompt.school' },
+  { id: 'shop', body: { x: 225, y: 112, w: 66, h: 64 }, door: { x: 256, y: 185 }, emoji: '🏪', nameKey: 'walk.place.shop', promptKey: 'walk.prompt.shop' },
   { id: 'bank', body: { x: 8, y: 218, w: 52, h: 62 }, door: { x: 34, y: 287 }, emoji: '🏦', nameKey: 'walk.place.bank', promptKey: 'walk.prompt.bank' },
   { id: 'market', body: null, door: { x: 150, y: 338 }, emoji: '🥬', nameKey: 'walk.place.market', promptKey: 'walk.prompt.market' },
-  { id: 'plaza', body: { x: 184, y: 255, w: 26, h: 50 }, door: { x: 197, y: 312 }, emoji: '📜', nameKey: 'walk.place.plaza', promptKey: 'walk.prompt.plaza' },
-  { id: 'workshop', body: { x: 232, y: 215, w: 60, h: 56 }, door: { x: 262, y: 278 }, emoji: '🧵', nameKey: 'walk.place.workshop', promptKey: 'walk.prompt.workshop' },
+  { id: 'plaza', body: { x: 184, y: 255, w: 26, h: 50 }, door: { x: 188, y: 304 }, emoji: '📜', nameKey: 'walk.place.plaza', promptKey: 'walk.prompt.plaza' },
+  { id: 'workshop', body: { x: 232, y: 215, w: 60, h: 56 }, door: { x: 256, y: 285 }, emoji: '🧵', nameKey: 'walk.place.workshop', promptKey: 'walk.prompt.workshop' },
   { id: 'mailbox', body: null, door: { x: 178, y: 430 }, emoji: '📬', nameKey: 'walk.place.mailbox', promptKey: 'walk.prompt.mailbox' },
-]
-
-/** Water, fences, stalls, the fountain and the big shed: solid but not interactive. */
-export const SOLIDS: Rect[] = [
-  { x: 0, y: 0, w: MAP_W, h: 100 }, // river and far bank
-  { x: 66, y: 400, w: 50, h: 52 }, // home garden fence
-  { x: 100, y: 238, w: 26, h: 24 }, // market stalls
-  { x: 160, y: 238, w: 42, h: 26 },
-  { x: 100, y: 333, w: 26, h: 24 },
-  { x: 190, y: 333, w: 26, h: 24 },
-  { x: 130, y: 280, w: 40, h: 40 }, // fountain
-  { x: 250, y: 300, w: 46, h: 52 }, // farmhouse on the right
-  { x: 200, y: 395, w: 66, h: 56 }, // big shed
-  { x: 118, y: 275, w: 10, h: 44 }, // flower beds beside the fountain
-  { x: 174, y: 275, w: 8, h: 30 },
 ]
 
 /** Sita's collision box (feet-centred). */
@@ -62,17 +54,32 @@ export const SITA_FEET_H = 5
 export const WALK_SPEED = 1.15
 export const INTERACT_RADIUS = 14
 
-function hitRect(x: number, y: number, r: Rect): boolean {
-  return x + SITA_HALF_W > r.x && x - SITA_HALF_W < r.x + r.w && y > r.y && y - SITA_FEET_H < r.y + r.h
+/**
+ * Collision comes from the map itself (scripts/build-collision.py): fences, trees,
+ * buildings, stalls and water are solid; roads, grass and the plaza are open. Below the
+ * town, the south district's tiles decide (scripts/build-district.py).
+ */
+function solidAt(px: number, py: number, maxY: number): boolean {
+  if (px < 1 || px >= WORLD_W - 1 || py < 1 || py >= maxY) return true
+  if (py < DISTRICT_TOP) {
+    const cx = Math.floor(px / CELL)
+    const cy = Math.floor(py / CELL)
+    if (cy >= GRID_ROWS || cx >= GRID_COLS) return true
+    return TOWN_GRID[cy]![cx] !== '.'
+  }
+  const c = Math.floor(px / TILE)
+  const r = Math.floor((py - DISTRICT_TOP) / TILE)
+  if (r >= DISTRICT_ROWS || c >= DISTRICT_COLS) return true
+  return DISTRICT_BLOCKED[r]![c] !== '.'
 }
 
-const BLOCKS: Rect[] = [...SOLIDS, ...PLACES.flatMap((p) => (p.body ? [p.body] : []))]
-
-/** True when Sita's feet can stand at (x, y). */
-export function isWalkable(x: number, y: number): boolean {
-  if (x - SITA_HALF_W < 2 || x + SITA_HALF_W > MAP_W - 2 || y < 8 || y > MAP_H - 4) return false
-  for (const r of BLOCKS) if (hitRect(x, y, r)) return false
-  return true
+/** True when Sita's feet can stand at (x, y). `maxY` limits the world (the old village stops at the town edge). */
+export function isWalkable(x: number, y: number, maxY: number = WORLD_H): boolean {
+  const l = x - SITA_HALF_W
+  const r = x + SITA_HALF_W - 0.01
+  const t = y - SITA_FEET_H
+  const b = y - 0.01
+  return !solidAt(l, t, maxY) && !solidAt(r, t, maxY) && !solidAt(l, b, maxY) && !solidAt(r, b, maxY) && !solidAt(x, b, maxY)
 }
 
 export type Facing = 'down' | 'up' | 'left' | 'right'
@@ -93,7 +100,7 @@ export function startWalker(): WalkerState {
 }
 
 /** Move by a unit-ish vector, sliding along obstacles. Mutates and returns the state. */
-export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_SPEED): WalkerState {
+export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_SPEED, maxY: number = WORLD_H): WalkerState {
   const len = Math.hypot(dx, dy)
   if (len < 0.15) {
     s.moving = false
@@ -102,11 +109,11 @@ export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_
   const nx = (dx / len) * speed
   const ny = (dy / len) * speed
   let moved = false
-  if (Math.abs(nx) > 0.01 && isWalkable(s.x + nx, s.y)) {
+  if (Math.abs(nx) > 0.01 && isWalkable(s.x + nx, s.y, maxY)) {
     s.x += nx
     moved = true
   }
-  if (Math.abs(ny) > 0.01 && isWalkable(s.x, s.y + ny)) {
+  if (Math.abs(ny) > 0.01 && isWalkable(s.x, s.y + ny, maxY)) {
     s.y += ny
     moved = true
   }
