@@ -1,398 +1,54 @@
-# SCAM TOWN — v4: global scam-awareness game (current; formerly Next Payday)
-
-**This section overrides everything below it.** The game was simplified on 2026-10-03.
+# SCAM TOWN — global scam-awareness game
 
 **Pitch:** Scam Town: walk through town on payday and survive five of the world's most common scams. Every trap teaches one rule that protects your money.
+
+Built by Team Sol for the Ullens Hack-a-thon (FinTech). Mobile PWA, 390 × 844 portrait, centred in a phone frame on desktop.
+
+## The game
 
 **Core loop:** Title → Character select → Scam Town → scam encounters one at a time, in an order shuffled per run and payday (`roundIds`; demo mode keeps the listed order) → Results → **Next payday** (the gauntlet loop). Payday 1: each character's own five everyday scams in a shuffled order (`FIRST_PAYDAY` in `src/content/scamTown.ts`), always at the bank, market, post office, job centre and kiosk, fifteen different rules in all; keep scams realistic and everyday, not dramatic. Payday 2: home (family "new number"), café (fake QR), phone repair (virus pop-up), tax office (gift cards, a late penalty), rental office (unseen room deposit), shop (bank transfer only), in the south district. Payday 3+: a seeded mix of five from the character's own eleven. Pay lands each payday, the balance carries over, countdowns get 15% faster (to 60%).
 
 - HUD shows only: portrait and name, balance, "Scams faced X/5", phone.
-- Scams start one at a time, in a shuffled order (`currentEncounter()` in the engine; cues in `CUES`, `src/content/scamTown.ts`; drawn by `src/ui/pixel/cues.ts`). Only the current building shows its cue and an arrow, and only it (plus finished ones) can be entered. Cues by place: bank, a ringing phone with ring sound and vibration; market, a shout with the name ("Sita! Over here!"); post office, a notification badge with a buzz; job centre, a "You're hired!" letter; investment kiosk, a waving stranger with a "$$" sparkle. About 2 seconds after each rule card, the next cue pops up. Demo mode and every payday follow the same rule.
-- Each encounter: a short thought, then the scam as a realistic call, text, chat or payment screen with no villain shown, a countdown and personal details; three shuffled choices (fall / tempted / safe); the balance changes (ScamLoss in the ledger); then the scammer is revealed in the pixel battle scene; then a rule card (why it was a trap, the rule, one money tip) with **Try again** as practice (first answer counts). The building dims with a tick.
+- Scams start one at a time, in a shuffled order (`currentEncounter()` in the engine; cues in `CUES`, `src/content/scamTown.ts`; drawn by `src/ui/pixel/cues.ts`). Only the current building shows its cue and an arrow, and only it (plus finished ones) can be entered. Cues by place: bank, a ringing phone with ring sound and vibration; market, a shout with the name ("Sita! Over here!"); post office, a notification badge with a buzz; job centre, a "You're hired!" letter; kiosk, a waving stranger with a "$$" sparkle. About 2 seconds after each rule card, the next cue pops up.
+- Each encounter: a short thought, then the scam as a realistic call, text, chat or payment screen with no villain shown, a countdown and personal details; three shuffled choices (fall / tempted / safe); the balance changes (ScamLoss in the ledger); then the scammer is revealed in the pixel reveal scene; then a rule card (why it was a trap, the rule, one money tip) with **Try again** as practice (first answer counts). The building dims with a tick.
 - At least two real messages arrive on the phone; they are safe to act on.
-- Results: final vs starting balance, Scam Immunity Score (safe 20, tempted 10, fall 0; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), the five rule cards, and a Family Warning Card with Share and Copy.
+- Results: final vs starting balance, Scam Immunity Score (safe 20, tempted 10, fall 0; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), the rule cards, and a Family Warning Card with Share and Copy.
 - Phone: Scam Checker, a five-question checklist (code or PIN? rushing? contacted you first? upfront fee? guaranteed money?) that always ends with "Verify through an official number or website" and says it can miss new scams. Pasted text is never stored.
 - Global: USD by default (EUR, GBP, INR, NPR in Settings). **Money is local, never converted**: each currency has typical pay (`src/content/economy.ts`, e.g. NPR 7,000 for a rider's week; no rupee pay reaches a lakh) and scam amounts are shares of the character's pay. Generic senders, no real brands, no Nepal place names or institutions on screen. Text at about a 12-year-old reading level.
-- Walking: collision from the map (`scripts/build-collision.py` → `src/walk/collision.ts`); fences, trees (canopies blocked by hand), buildings, the bank roof, stalls and water block. Tap to walk (`src/walk/path.ts`): shortest path on the same rule; tapping the current building walks in. The camera eases; the canvas is full resolution with the art at 2x (`PIXEL_SCALE.town`) so players see more of the town; townsfolk, cloud shadows and birds are decoration (`src/ui/pixel/ambient.ts`). The south district is generated by `scripts/build-district.py` from Kenney Tiny Town tiles; below the loop, Main Street has six buildings just for show (`DISTRICT_SIGNS`, no scams).
-- Demo mode: one character, first scam within 20 seconds.
+- Characters: three citizens with fixed stories, pay and scams; the name is the player's choice.
+- Walking: collision from the map (`scripts/build-collision.py` → `src/walk/collision.ts`); fences, trees (canopies blocked by hand), buildings, the bank roof, stalls and water block. Tap to walk (`src/walk/path.ts`): shortest path on the same rule; tapping the current building walks in. The camera eases; the canvas is full resolution with the art at 2x (`PIXEL_SCALE.town`). Townsfolk, cloud shadows and birds are decoration (`src/ui/pixel/ambient.ts`). The south district is generated by `scripts/build-district.py` from Kenney Tiny Town tiles; below the loop, Main Street has six buildings just for show (`DISTRICT_SIGNS`, no scams).
+- People: 16×24 shaded pixel templates (`scripts/build-people.py` → `src/ui/pixel/peopleArt.ts`, assembled by `people.ts`).
+- Demo mode (long-press the title coin, or Settings): one character, first scam within 20 seconds.
 
-**Code map:** `src/engine/scamTown.ts` (ledger, rounds, score, shuffle), `src/content/scamTown.ts` (encounters, real messages), `src/content/economy.ts`, `src/content/characters.ts`, `src/walk/*` (map, collision, district), `src/screens/paytown/*`, `src/config/features.ts`.
+**Code map:** `src/engine/scamTown.ts` (ledger, rounds, score, shuffle), `src/content/scamTown.ts` (encounters, cues, real messages), `src/content/economy.ts`, `src/content/characters.ts`, `src/content/checker.ts`, `src/walk/*` (map, collision, district, path), `src/screens/paytown/*`, `src/ui/pixel/*`, `src/i18n/en.ts` (all text).
 
-**The budgeting game below is kept, not deleted.** It is hidden behind `FEATURES.budgeting = false` in `src/config/features.ts`: Money Calendar, forecast, Monte Carlo, buffer days, bills list, Plan Your Week, Gap Bridge, Twin Wallets, Town Mode, Fix My Dates, Impact Lab, energy and hearts. Its engine and tests still run. The spec below describes that game.
+## Tech stack (do not change without asking)
 
-Rules that still apply: the master prompt (22,000-line limit, small commits of at most ~1,500 lines, push about every 30 minutes, tests and build before each commit, no API keys, Section 3b code of conduct, AI disclosure), English only.
+Vite + React 18 + TypeScript (strict), Tailwind CSS, Framer Motion, Zustand (UI state), Vitest, vite-plugin-pwa (installable, fully offline), @number-flow/react (animated balance), ZzFX (sound in code), canvas-confetti, pixelarticons, fonts bundled with @fontsource. No backend, no login, no runtime network calls, no API keys.
 
----
+## Architecture rules
 
-# NEXT PAYDAY — Build Spec for Claude Code (v3.1: Life Sim + Town Strategy + Cozy Layer)
+1. The money is in a pure, deterministic engine (`src/engine/scamTown.ts`): balanced double-entry postings, same inputs → same ledger. The UI never calculates money.
+2. Seeded PRNG only (`src/engine/rng.ts`); never `Math.random()` in engines.
+3. All content is data in `src/content/`; all text goes through `t()` and `src/i18n/en.ts`. English only.
+4. One currency helper (`src/i18n/currency.ts`); amounts are local, never converted.
+5. Generated files (`collision.ts`, `district.ts`, `peopleArt.ts`) are edited through their scripts, not by hand.
 
----
+## Rules that apply to all work
 
-## 0. Your role and the goal
+**Line budget.** Under 22,000 lines of code (`src/` and `scripts/`, tests included; images, lockfiles, build output and `.d.ts` files do not count). This is a hard limit. Report the count after each push. Delete before adding; one reusable component per pattern; content as compact data; never get under budget by cramming code onto fewer lines or removing tests.
 
-You are building **Next Payday**, a mobile game for a 48-hour hackathon judged on: Theme Alignment (FinTech) 20, Innovation 25, Functionality & Execution 25, Impact & Feasibility 20, Presentation & Demo 10.
+**Workflow.** Small commits, one change each (aim for a few hundred lines, never over ~1,500 changed lines), pushed little by little. Run the typecheck (`npm run typecheck`), tests and build before every commit. Clear, specific commit messages. Push to `soren-setup`; never merge into `main` or deploy unless the team asks.
 
-The game has two connected modes:
+**Honesty and the Ullens Hack-a-thon Code of Conduct.** The hackathon follows the Ullens School Code of Conduct ("Be honest", "Keep your word", "Use appropriate language", "Treat everyone respectfully", plus a list of prohibited materials). AI tools are allowed; honesty is required.
+- Keep the `Co-Authored-By: Claude` trailer on every commit Claude makes. Never remove AI attribution or rewrite git history to hide it.
+- The README states clearly what the team did and what Claude Code did. Keep `docs/AI_USAGE.md` (max 40 lines) up to date, with a "Reviewed by the team" checklist. Never claim code was written by hand if it wasn't.
+- Appropriate language only: no swearing, slurs, insults or crude jokes. Humour stays light and kind and never mocks poverty, any group, region, religion, caste, gender or the player.
+- No prohibited items anywhere in the game: no guns, knives, khukuri or other blades, explosives, firecrackers, slingshots or projectiles, chemicals, drugs, alcohol, tobacco, cigarettes or vapes.
+- Non-violent: scam reveals use symbolic actions only (a shield, a VERIFY stamp, coins bursting out); no weapons, blood, injury or death. Scammers run off or dissolve.
+- Respectful portrayal: people with less money or access are shown with dignity. Scammers are original, never based on real people, companies or groups. No real brands.
+- Safe and private: no real personal data, credentials, codes or IDs are ever collected; links use the reserved `.example` domain.
 
-1. **Life Mode** — a text-driven life simulator (genre: tap-to-advance life sims). You live one household's month day by day through event cards, choices, stat bars and a scrolling life log. Fast to play, funny, tense.
-2. **Town Mode** — a strategy layer (genre: map-based stabilization strategy games). You manage a cooperative's budget to stabilize a whole town: shortfalls and scams spread across a map like an outbreak, and you deploy initiatives to stop them.
+**Visual design.** Detailed 2D pixel art in one palette (`src/ui/palette.ts`), whole-number scales, soft brown outlines, readable fonts for text (Nunito) and pixel fonts for headings (Silkscreen, Pixelify Sans). Tap targets ≥ 48 px, main actions in the bottom third, safe-area insets, WCAG AA contrast, respect reduced motion. Avoid mixing emoji with the pixel art.
 
-3. **Cozy layer (light touch)** — small touches from cozy village-life games: a warm home street you tap around, a daily energy limit, friendship hearts, a mailbox, a savings plant that grows, and a "go to sleep" end-of-day screen. **No walking, no tile maps, no farming system** — just a static, tappable scene. It makes the game feel warm and alive without adding much build time (Section 4.9).
-
-**Genre-inspired only.** Do not copy names, layouts, text, icons, characters or art from any existing game. Everything must be original.
-
-**Tagline:** *Same income. Different month.*
-**Pitch:** *Live one month. Save one town. Fix your real dates.*
-**Key line for judges:** *"The same engine that runs one household runs the whole town."*
-
-### Design philosophy
-| Principle | Meaning |
-|---|---|
-| Experience before explanation | Feel the problem first; the lesson appears after the consequence. |
-| Consequence over correctness | Choices depend on context and future effects, not right/wrong. |
-| Timing matters | When money moves matters as much as how much. |
-| Pressure is gameplay | Urgency, social pressure, scammers and surprises test decisions. |
-| Replay is learning | Rewind shows how one change alters the month. |
-| Systems, not blame | In Town Mode, players see that shortfalls and scams feed each other across a community. |
-
-### Three messages the game repeats
-1. When money arrives matters as much as how much arrives.
-2. Every way of bridging a gap has a cost; find the full cost before choosing.
-3. Urgency is a reason to verify, not a reason to act faster.
-
----
-
-## 1. Tech stack (do not change without asking)
-
-- **Vite + React 18 + TypeScript** (strict), **Tailwind CSS**, **Framer Motion**
-- **Zustand** for UI state only
-- **Vitest** for engine tests
-- **vite-plugin-pwa** (installable, fully offline)
-- **@number-flow/react** for animated money counters
-- **@use-gesture/react** for swipeable event cards
-- **d3-delaunay** to generate the town map's ward shapes (Voronoi) from fixed seed points
-- **ZzFX** for all sound effects (generated in code); **canvas-confetti** for wins
-- Charts and map: hand-built SVG
-- No backend, login or runtime network calls
-
-Design for a **390 × 844 portrait phone**; center in a phone frame on desktop.
-
----
-
-## 2. Architecture rules (most important section)
-
-1. **One pure household engine** in `src/engine/`:
-   ```ts
-   simulate(scenario, profile, decisions: DecisionLog, seed: number): Ledger
-   ```
-   Deterministic: same inputs → identical ledger.
-2. **Town engine reuses it.** `simulateTown()` runs household archetypes through `simulate()` and aggregates. Never duplicate money logic.
-3. **The UI never calculates money.** Screens read ledgers and town state.
-4. **Forecast = dry run** of the same engine. **Monte Carlo forecast** = 500 dry runs with varied seeds for uncertain events only (remittance delay, gig income), run in a Web Worker, under 300 ms.
-5. **Daily ordering:** income → bills → events and scam encounters → player decision.
-6. **Seeded PRNG only** (mulberry32). Never `Math.random()` in engines.
-7. **All content is data** in `src/content/`. New events, enemies, initiatives or wards need no engine code.
-8. **Every player action is logged** as a typed `PlayerAction` (for Rewind, Life Log, Capability Report).
-9. **All text through i18n** (`en.ts`, `ne.ts`; Nepali marked `// TODO: native speaker review`). **One currency helper** (NPR default; USD, INR, EUR toggle).
-
-```
-src/
-  engine/   simulate.ts forecast.ts monteCarlo.worker.ts rewind.ts whatIf.ts score.ts
-            capability.ts shiftFinder.ts town.ts spread.ts rng.ts types.ts
-  engine/__tests__/
-  content/  scenario.ts profiles.ts bills.ts events.ts enemies.ts bridges.ts
-            initiatives.ts wards.ts askTemplates.ts
-  i18n/  state/  ui/  screens/  audio/
-```
-
----
-
-## 3. Demo scenario (exact numbers; tests must match)
-
-Both households start with **NPR 3,000**:
-
-| Bill | Amount (NPR) | Due day | Flexible |
-|---|---|---|---|
-| Rent | 12,000 | 5 | Maybe |
-| School fee | 4,000 | 10 | Maybe |
-| Electricity | 1,500 | 12 | Yes |
-| Internet / phone | 1,200 | 15 | Yes |
-| Groceries | 2,000 | 1, 8, 15, 22, 29 | No |
-
-- **Aarav:** NPR 35,000 on day 1.
-- **Sita (main character):** NPR 10,000 on day 1 + NPR 25,000 remittance on day 20.
-
-| Situation | Shortfall days | Lowest balance | End balance |
-|---|---|---|---|
-| Aarav, no events | 0 | 9,300 | 9,300 |
-| Sita, no events | 15 (days 5–19) | −11,700 | 9,300 |
-| Sita, rent moved to day 21 | 0 | 300 | 9,300 |
-| Sita + bike repair 3,500 day 9, rent moved | 5 | −3,200 | 5,800 |
-| Sita + repair, rent and school fee moved to day 21 | 0 | 800 | 5,800 |
-
-A **shortfall day** = balance below zero before bridging.
-
----
-
-## 4. LIFE MODE (core, demo centerpiece)
-
-### 4.1 Main screen layout (top to bottom)
-- **Header:** character emoji avatar, name, "Day 7 of 30", payday chip ("Remittance in 13 days").
-- **Money:** large animated balance (NumberFlow), green when safe, amber when the forecast dips, red when negative.
-- **Life Log:** the heart of the screen. A scrolling feed of short, punchy lines per day, newest at the bottom, each with an emoji:
-  - "Day 5 🏠 Rent of NPR 12,000 is due. You have NPR 1,000."
-  - "Day 9 🛵 Your bike broke down. Repair: NPR 3,500."
-  - "Day 11 📱 Unknown number: 'Your wallet is LIMITED…'"
-  Tapping a line shows why it happened.
-- **Stat bars** (4, colored, animated): **Stability** (from Buffer Days), **Stress**, **Trust** (average of Landlord, Family, Friends), **Privacy**.
-- **Bottom bar:** five tabs around a big central **"+ Next Day"** button:
-  - **Money** — forecast (with Monte Carlo band), bills, Gap Bridge, Money Trail
-  - **People** — Landlord, Family, Friends with Trust levels and actions (ask for help, ask to move a date)
-  - **(+ Next Day)** — advances one day; long-press to skip to the next event
-  - **Phone** — Pressure Inbox with scam and real messages, unread badge
-  - **Moves** — Timing Levers and side actions (split a bill, set autopay day, save into emergency jar, sell an item, take an extra shift)
-
-### 4.2 Event cards
-Events pop up as modal cards with an emoji illustration, 2–4 choices, and the visible immediate cost. Swipe or tap to choose. After choosing, a short consequence line appears in the Life Log, and delayed effects arrive later. Lessons appear **after** the consequence, as one line.
-
-Event content (fixed triggers):
-| Event | Day | Type |
-|---|---|---|
-| Phone upgrade on instalments (NPR 1,500/month × 12) | 3 | Trade-off |
-| Bike repair NPR 3,500 (repair vs. replace vs. take the bus) | 9 | Uncontrollable |
-| Friend's wedding, gift NPR 2,000 | 13 | Social pressure |
-| Sell old phone to a buyer who doesn't know its value (fair price or not) | 11 | Fair deal |
-| Remittance delayed 3 days | alternate seed | Uncontrollable |
-| Festival spending | 25 | Trade-off |
-
-### 4.3 Timing Levers (at least 4)
-Ask landlord to move rent to day 21 (succeeds if Landlord Trust ≥ 3); split rent into day 5 and day 21 (NPR 200 fee); choose autopay day for internet; pay electricity early to avoid a late fee.
-
-### 4.4 Gap Bridge
-Opens when the forecast shows a shortfall. Each option shows money cost, future obligation and non-money cost. For Sita's NPR 11,700 gap over ~15 days:
-| Option | Cost | Hidden cost |
-|---|---|---|
-| Pay rent late | NPR 1,000 | Landlord Trust −1 |
-| Instant loan app (10% flat / 14 days) | NPR 1,170 (~260%/yr) | Privacy risk; summons the Loan Shark App |
-| Card cash advance (3% + 2%/month) | ~NPR 470 | Interest starts immediately |
-| Informal moneylender (5%/month) | ~NPR 290 | Repayment pressure event |
-| Delay school fee | NPR 400 | Exam registration warning |
-| Borrow from family | NPR 0 | Family Trust −1 |
-
-Rates live in `content/bridges.ts` with a `source` field; show "Rates are illustrative" until sourced.
-
-### 4.5 Scammers (the Scam Squad)
-Original, slightly comic villains shown as emoji-style badges with a name and color. They message the Phone tab when the player is most vulnerable.
-
-**Encounter:** the phone buzzes, a full-screen chat UI slides up, an urgency timer counts down. The player can tap suspicious parts (**Spot the Tells**, bonus points), then choose: **Do what it says**, **Verify** (opens a mock official app showing the truth), **Ask someone**, **Wait, I'm not sure** (timer ends harmlessly — rewarded), **Block & report**.
-- Scammed: coins fly from the balance to the scammer, red flash, haptic buzz, loss added to Gap Cost, Life Log line.
-- Defended: scammer badge cracks and fades, shield chime, Shield points.
-
-| Scammer | Appears when | Hook | Loss if fooled |
-|---|---|---|---|
-| The Phisher | Balance first goes negative | "Wallet LIMITED, verify in 10 min" + odd link | NPR 2,500 + Privacy leak |
-| The Loan Shark App | Forecast shows a gap | "Pre-approved NPR 15,000, no documents" | 10%/week loan + harassment |
-| The Impersonator | Days 17–19 | "New number, phone broke, send 5,000" | NPR 5,000 |
-| The OTP Snatcher | Payday | Call: "Bank security, read me the code" | NPR 8,000 |
-| The Fine Print | Any loan/instalment offer | Friendly offer, key costs hidden | Hidden fees appear later |
-| The Prize Ghost | Festival | "You won! Pay NPR 999 delivery" | NPR 999 + Privacy leak |
-| The Job Recruiter | Day 14 | "Overseas job, visa fee 20,000 today" | NPR 20,000 |
-| The Investment Guru | After remittance | "Double your money in 30 days" | NPR 3,000, returns for more |
-
-Build at least the first 6. Add **2 decoys** (a real bank notice with no link; the husband confirming from his known number); treating them as scams costs nothing but shows *"This one was real. Verifying calmly is the skill."* **Data Leak combo:** when Privacy is leaked, the next scam uses Sita's real name, husband's name and remittance date. **Scam Codex** collects a card per scammer (how it works, 3 tells, what to do, "report to your local cyber crime police and your bank", no phone numbers). **Shield grade** S–D.
-
-### 4.6 End of month
-1. **Results card:** Stability Score with breakdown bars, Gap Cost, scam losses, Shield grade, a one-line "life summary" in the Life Log voice ("Sita survived the month, but paid NPR 1,170 to an app that wanted her contacts.").
-2. **Month Rewind:** pick one past decision on a timeline and change it. All later decisions auto-replay as originally made; impossible ones are marked **Blocked** with a defined fallback. World is seed-locked. Show original vs. rewound balance lines on one chart and the differences.
-3. **What-If Cards:** one-change reruns labelled **Your choice** or **Not your fault** ("Moving rent to day 21 would have removed 10 shortfall days and saved NPR 1,170."). Never percentages.
-4. **Capability Report:** 6 learning attributes shown through behavior with evidence, e.g. *"Forecasting ✓ — you checked the forecast before 4 of 5 purchases."* Signals: forecast checked before spending, cheaper bridge chosen after viewing costs, emergency jar used, verify/wait/block on scams, "I'm not sure" chosen, missing info requested (Fine Print), fair price chosen, Rewind used, timing lever used, Ask message copied.
-5. **Buttons:** Rewind • Next Month • **Take this to Town Mode** • Fix My Dates.
-
-```
-Stability Score = 40 × (1 − shortfallDays / 30)
-                + 30 × min(1, endBalance / (28,700 / 4))
-                + 30 × (1 − min(1, gapCost / 1500))
-```
-
-### 4.7 Profiles
-Sita (remittance) — full. Bikash (gig rider, ~NPR 1,200 most days, seeded variation, no formal credit) — full. Optional data-only: salaried, freelancer, student, farming household with limited access (bank a day's travel away, missing documents block formal credit). Portray every profile with dignity.
-
-### 4.8 Twin Wallets intro
-Two Life Logs side by side (Aarav and Sita) auto-play the month at speed. Sita's log fills with red lines from day 5. End: *"Same income. Same bills. Same end balance. Fifteen days of difference."* → "Live Sita's month."
-
-### 4.9 Cozy layer (keep it simple)
-
-These are presentation and pacing touches on top of Life Mode. None of them change the money engine, so the Section 3 numbers stay exact.
-
-**Home Street hub.** Life Mode opens on a single, static illustrated scene of Sita's lane (flat SVG, not a walkable world). Five tappable spots, each opening an existing tab or sheet:
-| Spot | Opens |
-|---|---|
-| 🏠 Sita's home (window shows the Savings Sprout) | Money tab |
-| 🏘️ Landlord's house | People tab, Landlord |
-| 🏪 Corner shop | Moves tab (sell an item, extra shift, cook vs. eat out) |
-| 🏦 Cooperative office | Gap Bridge options and Fix My Dates entry |
-| 📬 Mailbox | Real letters (see below) |
-The phone stays in the bottom bar for scams. The "+ Next Day" button and Life Log stay exactly as in 4.1; the hub sits above the Life Log and can be collapsed. The scene's light shifts gently from morning to night as the player uses energy.
-
-**Energy (⚡ 3 per day).** Some Moves cost energy: asking the landlord to move a date (1), taking an extra shift (2), visiting the cooperative office in person (1), selling an item (1). Next Day refills energy. Verifying a scam in the official app, waiting and blocking are always **free**, so safe behavior is never punished. Energy creates gentle "you can't do everything today" tension. Energy never affects money directly.
-
-**Friendship hearts.** Trust for Landlord, Family and Friends is shown as 0–5 hearts. Keeping a promise, paying on time or helping raises hearts; late payments, skipped obligations and borrowing lower them. Hearts unlock options (e.g. the landlord agrees to move rent at 3+ hearts).
-
-**Mailbox.** Real, non-scam letters arrive here with an envelope animation: bill reminders, a landlord note, a letter from Sita's husband abroad, the school's fee notice. This separates trustworthy channels (mailbox, known contacts) from the phone, where scams arrive. One decoy (the real bank notice) arrives on the phone to keep players thinking.
-
-**Savings Sprout.** The emergency jar is shown as a plant pot on Sita's windowsill. It grows through 4 stages based on Buffer Days (seed → sprout → leafy → flowering at 7+ Buffer Days). Withdrawing from the jar makes it droop. This teaches buffers visually without a single number.
-
-**Goodnight screen.** When the player taps Next Day after a day with activity, a short fade shows "Sita goes to sleep 🌙" with the day's tally: money in, money out, net, and what's due tomorrow. Skippable with a tap; auto-skipped on quiet days and in demo mode.
-
-**Month calendar.** A full calendar view (from the Money tab) with icons for paydays, bills, the friend's wedding, the festival, and the remittance date. Days already lived show a small face for how the day went (😊 / 😐 / 😟 based on balance).
-
-**Town Mode tie-in.** Each Town Mode month gets a seasonal tint on the map (spring greens, monsoon blues, autumn golds, winter greys) for a cozy sense of time passing.
-
----
-
-## 5. TOWN MODE (strategy layer)
-
-### 5.1 Premise
-You run the community program of **Naya Tole Cooperative** in a fictional town. Households across seven wards face timing gaps; desperation lets scams spread from ward to ward. You have a limited budget and 24 weekly turns (6 months) to stabilize the town.
-
-### 5.2 Map
-An SVG map of seven wards generated with d3-delaunay from fixed seed points, clipped to a rounded town outline, with a river line and small emoji landmarks. Each ward is tinted by its state; scam levels show as a spreading red overlay with pulsing scam badges. Tap a ward for its panel.
-
-| Ward | Main household type (archetype for `simulate()`) | Households |
-|---|---|---|
-| Riverside | Remittance (Sita pattern) | 60 |
-| Bus Park | Gig riders (Bikash pattern) | 50 |
-| College Hill | Students | 40 |
-| Old Town | Salaried (Aarav pattern) | 55 |
-| Bazaar | Small traders (irregular daily income) | 45 |
-| Brick Kilns | Seasonal workers, limited access | 35 |
-| New Colony | Mixed migrants | 50 |
-
-### 5.3 Ward state
-- **Shortfall rate:** % of households with any shortfall day this week (from `simulate()` on the ward's archetypes and their current modifiers).
-- **Scam level** 0–100.
-- **Buffer** average Buffer Days.
-- **Trust in the cooperative** 0–100.
-
-### 5.4 The core loop: the desperation cycle
-Each week:
-1. Run households forward 7 days (archetype × count; cache results by parameters for speed).
-2. Scam growth per ward: `growth = base × (1 + shortfallRate) × (1 − defense)`.
-3. Spread: wards with scam level > 40 push 15% of the excess into each neighbor (Voronoi adjacency).
-4. Scam losses reduce household buffers, which raises next week's shortfall rate.
-
-**Shortfalls feed scams, and scams feed shortfalls.** Show this cycle in a small diagram in the tutorial and in the pitch.
-
-### 5.5 Town meters
-**Town Stability** (% households with no shortfall), **Scam Spread** (% wards above 40), **Trust** (average), **Budget** (starts NPR 500,000, +NPR 60,000 per month in member fees), and a hidden **Debt Dependency** that rises if the Emergency Fund is overused.
-
-### 5.6 Initiatives (cards with cost, deploy time, effect)
-| Initiative | Cost | Deploy | Effect | Trade-off |
-|---|---|---|---|---|
-| Scam awareness street theatre | 20,000 per ward | 1 week | Ward scam defense +30% | Repeating in the same ward within 4 weeks gives diminishing effect ("fatigue") |
-| Verification hotline | 80,000 + 10,000/week | 2 weeks | Town-wide scam defense +20% | Ongoing cost drains budget |
-| Savings circles | 15,000 per ward | 3 weeks | Ward Buffer Days rise gradually | Slow |
-| Payday alignment with employers | 40,000 per ward | 2 weeks | Archetypes get pay split into two dates (fewer shortfall days) | Only works in Old Town, Bus Park, Bazaar |
-| Date-shift campaign (Ask Builder at scale) | 25,000 per ward | 2 weeks | 50% of households move rent after payday | Lowers landlord goodwill event if overused |
-| Emergency micro-fund (low-cost bridge) | 100,000 capital | 1 week | Replaces loan-app bridging in a ward | Raises Debt Dependency; some loans default |
-| Remittance fast-track partnership | 60,000 | 3 weeks | Riverside and New Colony remittances never delayed | Only helps remittance wards |
-| Report loan apps to authorities | 10,000 | 4 weeks | Loan Shark App growth −50% town-wide | Slow, uncertain (seeded) |
-
-### 5.7 Weekly events (seeded)
-Examples: "Loan app ad campaign hits Bus Park" (scam surge), "Festival month: spending pressure in all wards", "Brick kiln wages paid 2 weeks late", "Viral fake prize message", "Landlords raise rent in College Hill".
-
-### 5.8 Win, lose, grade
-- **Win:** Town Stability ≥ 80% and no ward above scam level 20 at week 24.
-- **Lose early:** Trust < 20, or every ward above scam level 60.
-- **Grade** from final stability, budget left and Debt Dependency.
-- **Monte Carlo outlook:** before ending a turn, show "Projected stability in 4 weeks: 61–74%" from 200 seeded runs.
-
-### 5.9 Bridge from Life Mode
-After a Life Mode month, the player can "Take this to Town Mode": Sita's household appears as a highlighted home in Riverside, and the opening line says *"Sita is one of 60 households in Riverside facing the same gap."*
-
----
-
-## 6. FIX MY DATES (real-life mode)
-
-1. User enters pay dates and amounts, bills (amount, due day, flexibility Yes/Maybe/No) and starting cash. No login; data stays on the device.
-2. **Shift Finder:** simulate 60 days; candidates = move one flexible bill to any day 1–28, move any pair, split a bill into two payments; rank by fewest shortfall days → smallest deepest gap → fewest changes → prefer "Yes" bills. Never move "No" bills. Use a Web Worker; under 1 second.
-3. Show the top 3 with before/after mini charts (Monte Carlo band if income is irregular).
-4. **Ask Builder:** polite, specific message to a landlord, school, employer or provider in English or Nepali; Copy and Share buttons. "They said no" re-ranks.
-5. Note on screen: *"A planning aid, not financial advice. Your data stays on this phone."*
-
----
-
-## 7. IMPACT LAB (tester mode, in Settings)
-
-Pre-check (3 questions matching the three messages) → play Life Mode → optional Fix My Dates → post-check + "Found a shortfall you didn't know about?" + "Would you send this request?". Store anonymous sessions locally. Summary screen: testers, average pre vs. post score, % hidden shortfall found, % would send. "Copy summary" button.
-
----
-
-## 8. Visual design
-
-**Direction:** clean, bright, friendly mobile life-sim UI for Life Mode; a calm, stylized strategy map for Town Mode. Both share one design system so the modes feel like one game.
-
-- **Cozy Home Street hub:** soft, warm flat SVG illustration (not pixel art): rounded rooftops, potted plants, string lights, prayer flags, a dog asleep by a doorway. Warm dusk palette: cream `#FFF4E0`, terracotta `#D9734E`, sage `#8FB08A`, honey `#F5C26B`, plum shadow `#5B4B6B`. Gentle idle motion only: flags sway, the dog's tail flicks, smoke drifts from a chimney, window lights turn on at night. Tapping a spot gives a soft bounce and a sparkle.
-- **Life Mode:** light background `#F7F5F0`, white rounded cards (20 px radius), bold colored stat bars, big emoji, chunky central "Next Day" button `#F5A524` with a soft shadow and press-down animation. Life Log lines fade and slide in one by one.
-- **Town Mode:** muted earthy map palette (greens `#9BB58A`, sand `#E8D9B5`, river `#7FB8D6`), wards outlined in deep navy `#1E2A44`; scam overlay `#FF4D6D` at opacity proportional to scam level; safe wards glow soft green `#4ADE80`.
-- **Shared accents:** marigold `#F5A524` (money, primary), sky `#6EC6FF` (forecast), danger `#FF4D6D`, shield `#4ADE80`, ink `#1E2A44`.
-- **Dark mode** following the system setting.
-- **Fonts:** "Nunito" for UI (rounded, friendly), tabular numbers for money, "Noto Sans Devanagari" for Nepali; fallback `system-ui`.
-- **Emoji:** use native system emoji. Keep the Life Log readable at 16 px minimum.
-- **Motion:** spring animations (stiffness ~300, damping ~25); balance counts with NumberFlow; coin emoji arc into or out of the balance; red pulse on the forecast Danger Zone; scam overlay spreads across the map with a slow ripple between wards; initiative cards flip and "stamp" onto a ward when deployed; confetti on wins. Respect `prefers-reduced-motion`.
-- **Sound (ZzFX):** soft mailbox chime, sleepy goodnight tone, plant-grow pop, coin, bill thud, phone buzz, scam timer tick, shield chime, ward-saved chord, rewind whoosh. Mute toggle.
-- **Mobile UX:** tap targets ≥ 48 px, main actions in the bottom third, safe-area insets, WCAG AA contrast, no blank loading screens.
-
----
-
-## 9. Screens
-
-Title • Twin Wallets intro • Profile select • Home Street hub • Life Mode main (5 tabs) • Mailbox • Month calendar • Goodnight screen • Event card • Gap Bridge sheet • Scam encounter • Month results • Rewind + What-If • Capability Report • Scam Codex • Town Mode map • Ward panel • Initiative picker • Weekly report • Town results • Fix My Dates (3 steps) • Ask Builder • Settings (language, currency, sound, haptics, reduced motion, reset, Impact Lab, demo mode).
-
-**Demo mode** (long-press the logo): fixed seeds, faster animations, Fix My Dates pre-filled, Town Mode starting at week 1 with a visible scam outbreak in Bus Park.
-
----
-
-## 10. Tests (Vitest, required)
-
-- Same inputs + seed → identical ledger; forecast equals actual with no decisions; income before bills on the same day.
-- All five rows of the Section 3 table.
-- Rewind auto-replay keeps unchanged decisions identical or marks them Blocked.
-- Stability Score = 100 for Aarav with no events.
-- Energy never goes below 0, refills to 3 each day, and never changes the ledger; verify/wait/block cost 0 energy.
-- Savings Sprout stage matches Buffer Days thresholds.
-- Hearts unlock rules: landlord date change succeeds only at 3+ hearts.
-- Each scammer's loss is subtracted and added to Gap Cost; Privacy leak personalizes the next scam.
-- Shift Finder never moves "No" bills and finds rent → day 21 for Sita.
-- Town: same seed + same initiatives → identical town state; spread only reaches adjacent wards; scam growth increases with shortfall rate; Riverside's archetype matches Sita's ledger.
-- Monte Carlo with a fixed master seed gives identical bands.
-
----
-
-## 11. Milestones (stop after each)
-
-1. **Household engine** + Section 3 tests. Debug page only.
-2. **Life Mode shell:** main screen, Life Log, stat bars, Next Day, tabs, forecast, Home Street hub (static scene with 5 tappable spots).
-3. **Events, Timing Levers, Gap Bridge, People tab, energy, hearts, mailbox, Savings Sprout.** Full playable month for Sita.
-4. **Scammers:** encounter, 6 scammers, decoys, Data Leak, Codex, Shield grade.
-5. **End of month:** results, Rewind, What-If, Capability Report.
-6. **Twin Wallets + Bikash + Monte Carlo forecast.**
-7. **Fix My Dates + Ask Builder.**
-8. **Impact Lab.**
-9. **Town Mode core:** map, wards, town engine, spread, 5 initiatives, win/lose.
-10. **Town polish:** remaining initiatives, weekly events, Monte Carlo outlook, Life → Town bridge.
-11. **Polish and hardening:** sound, haptics, i18n, currency, PWA, demo mode, dark mode, performance pass, zero console errors.
-
-**If time runs short, cut in this order:** hub idle animations and Goodnight screen → optional profiles → extra scammers → Town weekly events → Town Mode entirely (keep a single "Town preview" screen showing the map with the outbreak and one initiative). **Never cut:** Life Mode, Rewind, scammers, Fix My Dates, Impact Lab.
-
----
-
-## 12. Quality bar and rules
-
-- 60 fps on a mid-range Android phone; animate transform and opacity only.
-- Zero console errors in a full playthrough of both modes.
-- Demo seeds always reproduce Section 3 numbers.
-- Every number on screen comes from an engine.
-- English and Nepali fit every screen without overflow.
-
-**Do not:** add a backend, login, real banking APIs, payments or analytics; use `Math.random()` in engines; copy names, layouts, text, icons, characters or art from existing games (including cozy farming/village games); use real brands, people or existing characters; write content that teaches scamming or exploitation; give personalized investment, lending or regulated financial advice; add features outside this spec without asking.
+**Quality bar.** 60 fps on a mid-range phone, zero console errors in a full playthrough, every number on screen comes from the engine.
