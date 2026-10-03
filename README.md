@@ -16,7 +16,7 @@ A mobile game (installable PWA, fully offline, no account, no network calls) for
 |---|---|---|---|
 | ![outcome](docs/screenshots/paytown/5-outcome.png) | ![reveal](docs/screenshots/paytown/6-reveal.png) | ![rule](docs/screenshots/paytown/7-rule-card.png) | ![results](docs/screenshots/paytown/8-results.png) |
 
-| Family Warning Card | Scam Checker | Payday 2: the south district |
+| Family Warning Card | Scam Checker | Main Street, south of the loop |
 |---|---|---|
 | ![family card](docs/screenshots/paytown/9-family-card.png) | ![checker](docs/screenshots/paytown/10-checker.png) | ![district](docs/screenshots/paytown/11-district.png) |
 
@@ -44,7 +44,7 @@ We wrote the specs and briefs (`CLAUDE.md`, `NEXT_PAYDAY_MASTER_PROMPT.md`, `Nex
 
 1. **Pick a citizen.** A home tailor whose family's savings come from abroad, a gig delivery rider, or a first-time office worker. Each has a fixed story, job, pay and the scams that often target people like them, but **the name is yours**: tap the pencil and play as yourself (or "Y/N"). Every message uses that name and that life, and **each citizen meets their own everyday scams first**, the kind that really happen to people like them.
 2. **Payday.** You start at home with your pay. The HUD shows only who you are, which payday it is, your balance, "Scams faced X/N" and your phone.
-3. **One scam at a time.** Scams start in a fixed order, and only the current building shows a cue and an arrow. On the first payday the bank's phone rings first. Then someone at the market shouts your name, the post office buzzes with a notification, a "You're hired!" letter appears at the job centre, and a waving stranger with a "$$" sparkle shows up at the kiosk. About two seconds after each rule card, the next cue pops up. Walk there on the roads and grass: fences, trees, walls, stalls and water block you, and the garden gate is the way out. If the building is off screen, an arrow at the edge points the way. Buildings whose turn has not come stay closed. Each citizen's first payday is their own five scams, fifteen in all, each with a different rule:
+3. **One scam at a time.** Scams start in a fixed order, and only the current building shows a cue and an arrow. On the first payday the bank's phone rings first. Then someone at the market shouts your name, the post office buzzes with a notification, a "You're hired!" letter appears at the job centre, and a waving stranger with a "$$" sparkle shows up at the kiosk. About two seconds after each rule card, the next cue pops up. **Tap the building and you walk there along the paths** (and straight in), or tap any spot, or use the stick or the arrow keys. Fences, trees, walls, roofs, stalls and water block you, and the garden gate is the way out. If the building is off screen, an arrow at the edge points the way. Buildings whose turn has not come stay closed. Each citizen's first payday is their own five scams, fifteen in all, each with a different rule:
 
 | Place | Home tailor | Delivery rider | First office job |
 |---|---|---|---|
@@ -61,7 +61,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 6. **The rule card.** Why it was a trap, the rule, and one money tip. **Try again** replays the same encounter as practice so you can see what the other choices would have done; your first answer still counts.
 7. **Two real messages** arrive on your phone along the way (your bank confirming your pay, a family member checking in). They are safe to act on: the lesson is *verify*, not *everything is a scam*.
 8. **Results.** What you kept of your pay, your **Scam Immunity Score** for that payday (safe 20, close call 10, fell for it 0, scaled to 100; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), every rule card you have collected, and a **Family Warning Card** with those rules and Share and Copy buttons.
-9. **The gauntlet loop.** **Next payday** starts the next round: pay lands again, your money carries over, and every countdown is 15% faster (down to 60%). Payday 2 opens the south district, a loop road built from Kenney Tiny Town tiles, with six everyday traps:
+9. **The gauntlet loop.** **Next payday** starts the next round: pay lands again, your money carries over, and every countdown is 15% faster (down to 60%). Payday 2 opens the south district, a loop road built from Kenney Tiny Town tiles, with six everyday traps (and, further south, Main Street: a bakery, clinic, library, hotel, school and pharmacy, just for show):
 
 | Place | The trap | The rule |
 |---|---|---|
@@ -83,9 +83,9 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 - **Vite + React 18 + TypeScript (strict)**, Tailwind, Framer Motion, Zustand (UI state only), Vitest, vite-plugin-pwa, NumberFlow. No backend, no login, no network calls, no API keys.
 - **The money is in an engine, not the UI.** `src/engine/scamTown.ts` books payday and every scam loss as balanced double-entry postings (Wallet, Income, ScamLoss), computes the Scam Immunity Score, and shuffles choices with a seeded random generator (never `Math.random`). Only the first answer per encounter counts, so practice replays never change your balance.
 - **Content is data.** The twenty-one traps (each citizen's own five, plus the everyday six), their three choices, losses (as shares of the character's pay), rule cards and the three real messages are in `src/content/scamTown.ts`; local pay and prices per currency in `src/content/economy.ts`; characters in `src/content/characters.ts`; all text in `src/i18n/en.ts`.
-- **The paths work.** `scripts/build-collision.py` reads the team's map into a 4-pixel walk grid (fences, trees, buildings, stalls and water blocked; roads, grass and the plaza open). `scripts/build-district.py` builds the south district from tiles with its own blocked tiles. The walker's whole foot box is checked, and they slide around posts and door frames toward gaps.
+- **The paths work.** `scripts/build-collision.py` reads the team's map into a 4-pixel walk grid (fences, trees, buildings, stalls and water blocked; roads, grass and the plaza open). `scripts/build-district.py` builds the south district from tiles with its own blocked tiles. The walker's whole foot box is checked, and they slide around posts and door frames toward gaps. An audit of every reachable spot found the bank roof and some tree tops walkable; they are now blocked by hand in the script. **Tap to walk** (`src/walk/path.ts`) finds a shortest path on the same grid with the same rule, then walks it in straight lines. The town is drawn at full screen resolution with the art at 3x, so the camera eases after the walker in screen-pixel steps.
 - **The earlier budgeting game is still in the code, switched off.** `src/config/features.ts` has `FEATURES.budgeting = false`. Setting it to `true` brings back the Money Calendar, forecast, Plan Your Week, Gap Bridge, Twin Wallets, Town Mode, Fix My Dates, Impact Lab, energy and hearts, with their engine (`simulate()`) and tests untouched.
-- **181 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), every message filling its placeholders in every currency, collision (fences block, the gate opens, every door reachable on foot), editable names, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), the currency helper, and every test of the budgeting engine.
+- **193 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), each citizen's own five scams with fifteen different rules, every message filling its placeholders in every currency, collision (fences block, the gate opens, roofs and tree tops are solid, every door reachable on foot), tap to walk (the real walker reaches all 14 doors without touching a wall), editable names, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), the currency helper, and every test of the budgeting engine.
 
 ## Tools, libraries and assets
 
@@ -96,7 +96,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 | Claude Code (Anthropic) | AI pair-programmer under our direction (see "How we built it") |
 | Node.js 20, npm | Running, testing and building the app |
 | Vite, React, TypeScript, Tailwind | The app itself (versions below) |
-| Vitest | 181 automated tests |
+| Vitest | 193 automated tests |
 | Python 3 + Pillow | Our asset scripts: recolouring the vendor art (`scripts/unify-assets.py`), building the walk grid from the town map (`scripts/build-collision.py`), building the south district from tiles (`scripts/build-district.py`) |
 | Headless Chromium | Scripted playtests and the screenshots in this README |
 | Git, GitHub, GitHub Actions, GitHub Pages | Version control, CI (typecheck, tests, build) and the live site |
