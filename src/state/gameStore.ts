@@ -318,6 +318,13 @@ export const useGame = create<GameState>()(
     }),
     {
       name: 'next-payday-v1',
+      // v2: the game went global; saves from before show US dollars instead of rupees by default.
+      version: 2,
+      migrate: (persisted, version) => {
+        const s = persisted as { settings?: Settings }
+        if (version < 2 && s.settings?.currency === 'NPR') s.settings = { ...s.settings, currency: 'USD' }
+        return s as GameState
+      },
       partialize: (s) => ({
         settings: s.settings,
         seenIntro: s.seenIntro,

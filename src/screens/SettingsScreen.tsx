@@ -4,11 +4,12 @@ import { CURRENCIES, type Currency } from '@/i18n/currency'
 import { Button } from '@/ui/Button'
 import { t } from '@/i18n'
 import { FEATURES } from '@/config/features'
+import { useScam } from '@/state/scamStore'
 
 export function SettingsScreen() {
   const { settings, setSettings, go, resetAll, monthOver, day } = useGameShallow((s) => ({ settings: s.settings, setSettings: s.setSettings, go: s.go, resetAll: s.resetAll, monthOver: s.monthOver, day: s.day }))
   const install = useInstall()
-  const back = () => go(monthOver ? 'results' : day > 0 ? 'walk' : 'title')
+  const back = () => (FEATURES.budgeting ? go(monthOver ? 'results' : day > 0 ? 'walk' : 'title') : go('title'))
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-paper px-4 pb-6 pt-[max(16px,env(safe-area-inset-top))] text-ink">
       <div className="flex items-center justify-between">
@@ -60,7 +61,10 @@ export function SettingsScreen() {
           variant="danger"
           className="w-full"
           onClick={() => {
-            if (window.confirm(t('settings.resetConfirm'))) resetAll()
+            if (window.confirm(t('settings.resetConfirm'))) {
+              resetAll()
+              useScam.getState().start('sita', 1)
+            }
           }}
         >
           🗑️ {t('settings.reset')}
