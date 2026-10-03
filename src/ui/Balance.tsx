@@ -23,7 +23,7 @@ export function Balance({ amountNpr, state, size = 'lg', className = '', base = 
     <div className={`font-pixel tabular-nums ${color} ${sizeCls} ${className}`} aria-live="polite">
       <NumberFlow
         value={Math.round(value * 10 ** digits) / 10 ** digits}
-        format={{ style: 'currency', currency, maximumFractionDigits: digits, minimumFractionDigits: digits, currencyDisplay: 'code' }}
+        format={{ style: 'currency', currency, maximumFractionDigits: digits, minimumFractionDigits: digits, currencyDisplay: currency === 'NPR' ? 'code' : 'narrowSymbol' }}
         locales={currency === 'NPR' || currency === 'INR' ? 'en-IN' : 'en-US'}
         transformTiming={{ duration: 600, easing: 'ease-out' }}
         spinTiming={{ duration: 600, easing: 'ease-out' }}
