@@ -4,7 +4,7 @@
 
 **Next Payday: walk through town on payday and survive five of the world's most common scams. Every trap teaches one rule that protects your money.**
 
-A mobile game (installable PWA, fully offline, no account, no network calls) for anyone who gets paid, sends money home, sells things online or looks for work. It is global: amounts default to US dollars (switch to EUR, GBP, INR or NPR in Settings), senders are generic ("your bank", "a delivery company", "a payment app"), and no real brands appear.
+A mobile game (installable PWA, fully offline, no account, no network calls) for anyone who gets paid, sends money home, sells things online or looks for work. It is global: pick USD, EUR, GBP, INR or NPR in Settings and every amount becomes **typical local pay and prices for that currency, never an exchange-rate conversion** (Sita's money from abroad is NPR 30,000, Bikash's week of deliveries NPR 7,000; nobody is suddenly paid lakhs). Senders are generic ("your bank", "a delivery company", "a payment app"), and no real brands appear.
 
 | Title | Pick who you are | Payday Town | The call |
 |---|---|---|---|
@@ -19,8 +19,8 @@ A mobile game (installable PWA, fully offline, no account, no network calls) for
 **Title → pick who you are → walk through town → face five scams → results.**
 
 1. **Pick a character.** Sita sews at home while her husband sends money from abroad. Bikash delivers food on his bike. Aarav just got his first salary. Each one's messages use their name and their life: Sita waits for a parcel from her husband, Bikash is offered a "team leader" job.
-2. **Payday.** You start in town with your pay. The HUD shows only who you are, your balance, "Scams faced X/5" and your phone.
-3. **Five buildings glow.** Walk to them in any order:
+2. **Payday.** You start at home with your pay. The HUD shows only who you are, which payday it is, your balance, "Scams faced X/N" and your phone.
+3. **Buildings glow.** Walk to them in any order, on the roads and grass: fences, trees, walls, stalls and water block you, and the garden gate is the way out. Arrows at the screen edge point to buildings you cannot see yet. On the first payday these five glow:
 
 | Building | The trap | The rule on the card |
 |---|---|---|
@@ -34,7 +34,19 @@ A mobile game (installable PWA, fully offline, no account, no network calls) for
 5. **The outcome.** Your balance changes on screen (losses are booked in the ledger as ScamLoss). *Then* the sender is revealed in a pixel battle scene: a shield and a VERIFY stamp if you were safe, coins stolen if not.
 6. **The rule card.** Why it was a trap, the rule, and one money tip. **Try again** replays the same encounter as practice so you can see what the other choices would have done; your first answer still counts.
 7. **Two real messages** arrive on your phone along the way (your bank confirming your pay, a family member checking in). They are safe to act on: the lesson is *verify*, not *everything is a scam*.
-8. **Results.** What you kept of your pay, your **Scam Immunity Score** (safe 20, close call 10, fell for it 0; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), the five rule cards, and a **Family Warning Card** with all five rules and Share and Copy buttons.
+8. **Results.** What you kept of your pay, your **Scam Immunity Score** for that payday (safe 20, close call 10, fell for it 0, scaled to 100; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), every rule card you have collected, and a **Family Warning Card** with those rules and Share and Copy buttons.
+9. **The gauntlet loop.** **Next payday** starts the next round: pay lands again, your money carries over, and every countdown is 15% faster (down to 60%). Payday 2 opens the south district, a loop road built from Kenney Tiny Town tiles, with six everyday traps:
+
+| Place | The trap | The rule |
+|---|---|---|
+| Home | "Hi, it's your husband. New number, phone broke, send money today, don't call" | If "family" messages from a new number asking for money, call their old number first. |
+| Café | A QR sticker on the table asks for your card number and PIN | Check where a QR code takes you before you pay, and never type your PIN into a web page. |
+| Phone repair | "3 viruses found, call support, install our app, pay for cleaning" | Real warnings never ask you to call a number or install an app to "fix" your phone. |
+| Tax office | "You owe tax. Pay in gift cards today or police come tonight" | Government offices never ask for gift cards or crypto, and never threaten arrest on the phone. |
+| Rental office | A cheap room, the owner is abroad, send the deposit to get the keys | Never pay a deposit before you have seen the place and met the owner in person. |
+| Shop | Branded shoes 80% off, bank transfer only | If a deal looks too good and they only take bank transfer, it is a trap. |
+
+   From payday 3, a seeded mix of five from all eleven places glows. A third real message, a parcel update with no link and no fee, arrives on payday 2.
 
 **The phone's Scam Checker** is a guided checklist, not a keyword score: does it ask for a code or PIN, rush you, contact you first, want an upfront fee, promise guaranteed money? It always ends with "Verify through an official number or website" and says it can miss new scams. Anything you paste is never stored.
 
@@ -44,9 +56,10 @@ A mobile game (installable PWA, fully offline, no account, no network calls) for
 
 - **Vite + React 18 + TypeScript (strict)**, Tailwind, Framer Motion, Zustand (UI state only), Vitest, vite-plugin-pwa, NumberFlow. No backend, no login, no network calls, no API keys.
 - **The money is in an engine, not the UI.** `src/engine/scamTown.ts` books payday and every scam loss as balanced double-entry postings (Wallet, Income, ScamLoss), computes the Scam Immunity Score, and shuffles choices with a seeded random generator (never `Math.random`). Only the first answer per encounter counts, so practice replays never change your balance.
-- **Content is data.** The five traps, their three choices, losses, rule cards and the two real messages are in `src/content/scamTown.ts`; characters in `src/content/characters.ts`; all text in `src/i18n/en.ts`.
+- **Content is data.** The eleven traps, their three choices, losses (as shares of the character's pay), rule cards and the three real messages are in `src/content/scamTown.ts`; local pay and prices per currency in `src/content/economy.ts`; characters in `src/content/characters.ts`; all text in `src/i18n/en.ts`.
+- **The paths work.** `scripts/build-collision.py` reads the team's map into a 4-pixel walk grid (fences, trees, buildings, stalls and water blocked; roads, grass and the plaza open). `scripts/build-district.py` builds the south district from tiles with its own blocked tiles. Sita's whole foot box is checked, and she slides around posts and door frames toward gaps.
 - **The earlier budgeting game is still in the code, switched off.** `src/config/features.ts` has `FEATURES.budgeting = false`. Setting it to `true` brings back the Money Calendar, forecast, Plan Your Week, Gap Bridge, Twin Wallets, Town Mode, Fix My Dates, Impact Lab, energy and hearts, with their engine (`simulate()`) and tests untouched.
-- **166 tests** (`npm test`): the Scam Town ledger and score, practice replays, content completeness, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), the currency helper, and every test of the budgeting engine.
+- **179 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), every message filling its placeholders in every currency, collision (fences block, the gate opens, every door reachable on foot), no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), the currency helper, and every test of the budgeting engine.
 
 ## Tools, libraries and assets
 
@@ -127,6 +140,6 @@ Long-press the coin on the title screen for **demo mode**: one character, straig
 ## Honest notes
 
 - All people, messages, phone numbers and links in the game are made up. Links use the reserved `.example` domain.
-- Amounts and currency conversions are illustrative, not live rates.
+- Pay and prices are typical local figures chosen for the game, not data. Nothing in the scam game is converted between currencies.
 - The game teaches five common patterns. Real scams change; the Scam Checker says so and always points to verifying through an official number or website.
 - It is a game about scams, not financial advice. Nothing you type leaves the phone.

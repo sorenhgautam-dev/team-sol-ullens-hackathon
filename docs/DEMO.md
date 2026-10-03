@@ -19,14 +19,16 @@
 | 0:40 | Tap **Try again**, pick **Hang up. Call the number on the back of your card**. | "Practice shows the safe path. The first answer still counts." |
 | 0:50 | **Continue**. The phone buzzes: open the message from the bank. | "This one is real. The lesson is verify, not panic." |
 | 1:00 | Tap the phone again with no message waiting: the **Scam Checker**. | "Five questions, not a keyword score. It always ends with: verify through an official number or website." |
-| 1:10 | (Pre-played) open the results: score, tier, the five rule cards, the **Family Warning Card**. | "And this is what you send to your family chat." |
+| 1:10 | (Pre-played) open the results: score, tier, the rule cards, the **Family Warning Card**. | "And this is what you send to your family chat." |
+| 1:20 | Tap **Next payday**. Pay lands again and six new places glow, including the south district. | "The gauntlet loops: new everyday traps, faster timers, and your money carries over." |
 
 ## Things to point at
 
 - The balance is a ledger: every loss is a posting to ScamLoss. Practice never touches it.
 - Choices are shuffled every time, so you cannot learn "the answer is always B".
 - Two real messages are mixed in. Treating everything as a scam is not the goal.
-- Global by default: dollars, generic senders, no brands. Currency switch in Settings.
+- Global by default: dollars, generic senders, no brands. Switch currency in Settings and the pay becomes typical local pay (NPR 30,000 for Sita, not a converted lakh).
+- The paths work: fences, trees and walls block; Sita leaves her garden through the gate.
 - The earlier budgeting game is still in the code behind one flag (`FEATURES.budgeting`).
 
 ## If something goes wrong
