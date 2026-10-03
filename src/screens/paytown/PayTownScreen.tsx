@@ -1,5 +1,5 @@
 /**
- * Payday Town: the character starts in town on payday. Five buildings glow; walk to them
+ * Scam Town: the character starts in town on payday. Five buildings glow; walk to them
  * in any order and face the trap inside. The HUD shows only who you are, your balance,
  * how many scams you have faced, and the phone. The balance comes from the ledger.
  */

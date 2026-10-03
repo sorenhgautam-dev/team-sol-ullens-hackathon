@@ -1,10 +1,10 @@
-# NEXT PAYDAY — v4: global scam-awareness game (current)
+# SCAM TOWN — v4: global scam-awareness game (current; formerly Next Payday)
 
 **This section overrides everything below it.** The game was simplified on 2026-10-03.
 
-**Pitch:** Next Payday: walk through town on payday and survive five of the world's most common scams. Every trap teaches one rule that protects your money.
+**Pitch:** Scam Town: walk through town on payday and survive five of the world's most common scams. Every trap teaches one rule that protects your money.
 
-**Core loop:** Title → Character select → Payday Town → scam encounters in any order → Results → **Next payday** (the gauntlet loop). Payday 1: bank, market, post office, job centre, investment kiosk. Payday 2: home (family "new number"), café (fake QR), phone repair (virus pop-up), tax office (gift cards), rental office (unseen room deposit), shop (bank transfer only), in the south district. Payday 3+: a seeded mix of five. Pay lands each payday, the balance carries over, countdowns get 15% faster (to 60%).
+**Core loop:** Title → Character select → Scam Town → scam encounters in any order → Results → **Next payday** (the gauntlet loop). Payday 1: bank, market, post office, job centre, investment kiosk. Payday 2: home (family "new number"), café (fake QR), phone repair (virus pop-up), tax office (gift cards), rental office (unseen room deposit), shop (bank transfer only), in the south district. Payday 3+: a seeded mix of five. Pay lands each payday, the balance carries over, countdowns get 15% faster (to 60%).
 
 - HUD shows only: portrait and name, balance, "Scams faced X/5", phone.
 - Each encounter: a short thought, then the scam as a realistic call, text, chat or payment screen with no villain shown, a countdown and personal details; three shuffled choices (fall / tempted / safe); the balance changes (ScamLoss in the ledger); then the scammer is revealed in the pixel battle scene; then a rule card (why it was a trap, the rule, one money tip) with **Try again** as practice (first answer counts). The building dims with a tick.

@@ -15,7 +15,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return { error }
   }
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[Next Payday] screen crashed', error, info.componentStack)
+    console.error('[Scam Town] screen crashed', error, info.componentStack)
   }
   render() {
     if (!this.state.error) return this.props.children

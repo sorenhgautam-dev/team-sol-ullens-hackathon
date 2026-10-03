@@ -12,7 +12,7 @@ This project was built with Claude Code (Claude) as an AI coding assistant. Ever
 - Tests (Vitest), refactoring, animation and effect code, placeholder art, CI and Pages workflows.
 - Documentation drafts: README, this file, docs/ASSESSMENT.md, docs/UI_NOTES.md, docs/AUDIT.md.
 - Upgrade-brief pass: walkable village, cash-flow strip, consequence cards, parchment art direction, Impact Lab rewrite.
-- Scam-awareness pivot: Payday Town, encounter screens, Scam Town engine, Scam Checker, results and Family Warning Card; budgeting hidden behind a flag.
+- Scam-awareness pivot (the game is now called Scam Town): the town, encounter screens, Scam Town engine, Scam Checker, results and Family Warning Card; budgeting hidden behind a flag.
 
 ## Reviewed by the team (fill in)
 - [ ] Engine daily order and the Section 3 numbers (`src/engine/simulate.ts`, tests)

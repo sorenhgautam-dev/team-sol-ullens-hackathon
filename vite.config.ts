@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Next Payday',
-        short_name: 'Next Payday',
+        name: 'Scam Town',
+        short_name: 'Scam Town',
         description: 'Survive payday: a game about the five most common money scams.',
         theme_color: '#18665F',
         background_color: '#EFE2C4',

@@ -1,6 +1,6 @@
 # Demo script (about 90 seconds)
 
-**Pitch line:** Next Payday: walk through town on payday and survive five of the world's most common scams. Every trap teaches one rule that protects your money.
+**Pitch line:** Scam Town: walk through town on payday and survive five of the world's most common scams. Every trap teaches one rule that protects your money.
 
 ## Before you start
 

@@ -1,6 +1,6 @@
 /** English strings. Keys are grouped by feature. Params use {name} placeholders. */
 export const en = {
-  'app.name': 'Next Payday',
+  'app.name': 'Scam Town',
   'app.tagline': 'Survive payday.',
   'app.pitch': 'Walk through town on payday and survive five of the world’s most common scams. Every trap teaches one rule that protects your money.',
   'app.disclaimer': 'A game about scams, not financial advice. All people and messages are made up. Nothing you type leaves this phone.',
@@ -22,9 +22,9 @@ export const en = {
   'char.nameSave': 'Save',
   'char.nameReset': 'Use {name}',
   'char.nameHint': 'Pick any name. The story, job and pay stay the same.',
-  'char.destination': 'Destination: Payday Town and Market Street',
+  'char.destination': 'Destination: Scam Town and Market Street',
   'char.educational': '100% educational',
-  'char.version': 'Next Payday v4',
+  'char.version': 'Scam Town v4',
   'char.oftenTargeted': 'Often targeted: {focus}',
   'char.paydayFreq': 'Payday: {freq}',
   'char.paydayLine': 'Payday: {amount}',
@@ -1248,7 +1248,7 @@ export const en = {
   'chapter.scams.idea': 'Urgency is a reason to check, not a reason to hurry. Check through a channel you open yourself.',
   'chapter.scams.mechanic': 'inspect clues, then verify',
 
-  'paytown.title': 'Payday Town',
+  'paytown.title': 'Scam Town',
   'town.scamsFaced': 'Scams faced {n}/{total}',
   'town.payday': 'Payday {n}',
   'town.goHint': 'Walk to a glowing building. Use the stick, then tap the button.',
@@ -1409,7 +1409,7 @@ export const en = {
   'results2.moneyRounds': 'After {n} paydays you have {end} of the {start} you were paid.',
   'results2.rules': 'Your rule cards ({n})',
   'results2.familyTitle': 'Family Warning Card: rules that protect your money',
-  'results2.familyFooter': 'If a message rushes you, stop and check with the company yourself. From the game Next Payday.',
+  'results2.familyFooter': 'If a message rushes you, stop and check with the company yourself. From the game Scam Town.',
   'results2.share': 'Share',
   'results2.copy': 'Copy',
   'results2.copied': 'Copied. Paste it to your family chat.',

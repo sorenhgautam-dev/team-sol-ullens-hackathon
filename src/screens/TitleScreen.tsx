@@ -70,7 +70,7 @@ export function TitleScreen() {
           🪙
         </motion.button>
         <h1 className="mt-5 flex gap-[0.08em] text-[34px] leading-none text-ink" style={{ textShadow: '3px 3px 0 #07080f' }}>
-          {'NEXT PAYDAY'.split('').map((ch, i) => (
+          {'SCAM TOWN'.split('').map((ch, i) => (
             <motion.span key={i} initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.05 * i, type: 'spring', stiffness: 400, damping: 18 }}>
               {ch === ' ' ? '\u00a0' : ch}
             </motion.span>

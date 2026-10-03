@@ -1,5 +1,5 @@
 /**
- * One run through Payday Town. UI state only: the balance and score are always
+ * One run through Scam Town. UI state only: the balance and score are always
  * computed by the engine (engine/scamTown.ts) from these answers.
  */
 import { create } from 'zustand'
