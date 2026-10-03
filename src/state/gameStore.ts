@@ -15,7 +15,7 @@ import { ENERGY_PER_DAY, energyCost, spendEnergy, type EnergyKind } from './ener
 import { dailySeed } from '@/engine/badges'
 import { setHapticsEnabled, setSoundEnabled } from '@/audio/sfx'
 
-export type Screen = 'title' | 'twin' | 'profile' | 'walk' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town'
+export type Screen = 'title' | 'twin' | 'profile' | 'walk' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town' | 'styleguide'
 export type Tab = 'home' | 'money' | 'people' | 'phone' | 'moves'
 export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'ledger' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | 'money' | 'people' | 'moves' | 'phone' | 'log' | 'stats' | null
 
