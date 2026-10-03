@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { convert, formatMoney } from '../currency'
+import { formatMoney } from '../currency'
 
 describe('currency helper', () => {
-  it('formats US-dollar amounts in every display currency', () => {
-    expect(formatMoney(800, 'USD', 'USD')).toBe('$800')
-    expect(formatMoney(200, 'EUR', 'USD')).toBe('€184')
-    expect(formatMoney(200, 'GBP', 'USD')).toBe('£158')
-    expect(formatMoney(100, 'INR', 'USD')).toBe('₹8,300')
-    expect(formatMoney(1.99, 'USD', 'USD')).toBe('$1.99')
+  it('formats local amounts in every currency, never converting them', () => {
+    expect(formatMoney(800, 'USD')).toBe('$800')
+    expect(formatMoney(700, 'EUR')).toBe('€700')
+    expect(formatMoney(600, 'GBP')).toBe('£600')
+    expect(formatMoney(20_000, 'INR')).toBe('₹20,000')
+    expect(formatMoney(30_000, 'NPR')).toBe('Rs. 30,000')
+    expect(formatMoney(1.99, 'USD')).toBe('$1.99')
   })
-  it('keeps the budgeting engine NPR amounts working', () => {
-    expect(formatMoney(12_000, 'NPR')).toBe('Rs. 12,000')
-    expect(convert(13_300, 'USD')).toBeCloseTo(100)
+  it('groups rupees in lakhs', () => {
+    expect(formatMoney(150_000, 'NPR')).toBe('Rs. 1,50,000')
   })
 })

@@ -9,7 +9,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { ChoiceDef, EncounterDef } from '@/engine/scamTown'
 import { firstAnswers, shuffledChoices, timerFactor, townLedger } from '@/engine/scamTown'
 import { useEncounters } from './useEncounters'
-import { useGame } from '@/state/gameStore'
 import { useScam } from '@/state/scamStore'
 import { SCAMMER_COLOUR } from '@/content/scamTown'
 import { Sheet } from '@/ui/Sheet'
@@ -35,7 +34,6 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
   const { characterId, seed, answers, answer, shown } = useScam()
   const cash = useCash()
   const { encounters, payday, round } = useEncounters()
-  const currency = useGame((s) => s.settings.currency)
   const persona = usePersonaParams()
   const [step, setStep] = useState<Step>('thought')
   const [attempt, setAttempt] = useState(0)
@@ -166,7 +164,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
                 <div className={`py-1.5 font-pixel text-[14px] uppercase text-white ${picked.loss > 0 ? 'bg-danger' : 'bg-teal'}`}>{picked.loss > 0 ? t('town.lost', { amount: cash(picked.loss) }) : t('town.kept')}</div>
                 <div className="flex flex-col items-center gap-2 px-3 pb-4 pt-3">
                   <OutcomeArt lost={picked.loss > 0} />
-                  <Balance amountNpr={shownBalance} base={currency} state={picked.loss > 0 ? 'danger' : 'safe'} size="lg" className="!text-5xl" />
+                  <Balance amount={shownBalance} state={picked.loss > 0 ? 'danger' : 'safe'} size="lg" className="!text-5xl" />
               <p className="text-[17px] leading-snug">{practice ? t('town.practiceOut', { outcome: t(picked.outcomeKey, { ...params, loss: cash(picked.loss) }) }) : t(picked.outcomeKey, { ...params, loss: lossText || cash(picked.loss) })}</p>
                 </div>
               </motion.div>

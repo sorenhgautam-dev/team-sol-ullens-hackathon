@@ -1,21 +1,20 @@
 import NumberFlow from '@number-flow/react'
 import { useGame } from '@/state/gameStore'
-import { convert, digitsFor, type Base } from '@/i18n/currency'
+import { digitsFor } from '@/i18n/currency'
 
 interface Props {
-  amountNpr: number
-  /** 'safe' green, 'warn' amber (forecast dips), 'danger' red (negative now). */
+  /** In the player's currency (Scam Town's amounts are local, never converted). */
+  amount: number
+  /** 'safe' green, 'warn' amber (some of this payday lost), 'danger' red (just lost money). */
   state: 'safe' | 'warn' | 'danger'
   size?: 'lg' | 'md' | 'sm'
   className?: string
-  /** Currency the amount is written in (the scam game uses US dollars). */
-  base?: Base
 }
 
-/** Animated money counter. Conversion is display only; the engine is NPR. */
-export function Balance({ amountNpr, state, size = 'lg', className = '', base = 'NPR' }: Props) {
+/** Animated money counter. */
+export function Balance({ amount, state, size = 'lg', className = '' }: Props) {
   const currency = useGame((s) => s.settings.currency)
-  const value = convert(amountNpr, currency, base)
+  const value = amount
   const digits = digitsFor(value, currency)
   const color = state === 'danger' ? 'text-danger' : state === 'warn' ? 'text-honey' : 'text-shield'
   const sizeCls = size === 'lg' ? 'text-3xl' : size === 'md' ? 'text-xl' : 'text-base'

@@ -141,7 +141,6 @@ export function PayTownScreen() {
   const [realOpen, setRealOpen] = useState<(typeof REAL_MESSAGES)[number] | null>(null)
 
   const { encounters, thisRound, round, payday } = useEncounters()
-  const currency = useGame((s) => s.settings.currency)
   const encountersRef = useRef(thisRound)
   encountersRef.current = thisRound
   const ledger = useMemo(() => townLedger(payday, answers, encounters, round), [payday, answers, encounters, round])
@@ -383,7 +382,7 @@ export function PayTownScreen() {
           <div className="truncate font-pixel text-[12px]">
             {name} · {t('town.payday', { n: round })}
           </div>
-          <Balance amountNpr={ledger.balance} base={currency} state={ledger.balance < payday * round ? 'warn' : 'safe'} size="md" />
+          <Balance amount={ledger.balance} state={ledger.balance < payday * round ? 'warn' : 'safe'} size="md" />
           <div className="truncate text-[12px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size, total: thisRound.length })}</div>
         </div>
         <button className="relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft" onClick={() => {

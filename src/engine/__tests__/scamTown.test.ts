@@ -227,10 +227,10 @@ describe('every message reads properly in every currency', () => {
     const { formatMoney } = await import('@/i18n/currency')
     for (const cur of CURRENCIES)
       for (const c of CHARACTERS) {
-        const params: Record<string, string | number> = { name: t(c.nameKey), card: c.persona.card, parcel: t(c.persona.parcel), job: t(c.persona.job), relative: t(c.persona.relative), item: t(c.persona.item), payday: formatMoney(paydayFor(cur, c.id), cur, cur), loss: formatMoney(1, cur, cur) }
+        const params: Record<string, string | number> = { name: t(c.nameKey), card: c.persona.card, parcel: t(c.persona.parcel), job: t(c.persona.job), relative: t(c.persona.relative), item: t(c.persona.item), payday: formatMoney(paydayFor(cur, c.id), cur), loss: formatMoney(1, cur) }
         for (const e of localEncounters(cur, c.id)) {
           const p = { ...params }
-          for (const [k, v] of Object.entries(e.amounts)) p[k] = formatMoney(v, cur, cur)
+          for (const [k, v] of Object.entries(e.amounts)) p[k] = formatMoney(v, cur)
           const keys = [e.thoughtKey, e.senderKey, ...e.lineKeys, ...(e.payKey ? [e.payKey] : []), ...e.choices.flatMap((x) => [x.labelKey, x.outcomeKey]), e.rule.whyKey, e.rule.ruleKey, e.rule.lessonKey]
           for (const k of keys) expect(t(k, p), `${cur} ${c.id} ${k}`).not.toMatch(/\{\w+\}/)
         }
