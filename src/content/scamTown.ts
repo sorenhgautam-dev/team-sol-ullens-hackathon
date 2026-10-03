@@ -137,7 +137,7 @@ export const CUES: Record<EncounterDef['building'], Cue> = {
   bank: { kind: 'ring', sound: 'ring', vibrate: [220, 120, 220] },
   market: { kind: 'shout', textKey: 'town.cue.market', sound: 'chime' },
   post: { kind: 'notify', sound: 'buzz', vibrate: [40, 60, 40] },
-  job: { kind: 'letter', textKey: 'town.cue.job', sound: 'mailbox' },
+  job: { kind: 'letter', textKey: 'town.cue.job', sound: 'notify' },
   invest: { kind: 'stranger', sound: 'coin' },
   home: { kind: 'notify', textKey: 'town.cue.home', sound: 'buzz', vibrate: [40, 60, 40] },
   cafe: { kind: 'qr', textKey: 'town.cue.cafe', sound: 'pop' },

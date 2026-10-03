@@ -173,7 +173,7 @@ export function PayTownScreen() {
   // The phone buzzes when a real message arrives.
   useEffect(() => {
     if (!pendingReal) return
-    play('mailbox')
+    play('notify')
     haptic([30, 40, 30])
   }, [pendingReal?.id])
 

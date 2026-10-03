@@ -47,7 +47,7 @@ export function PayResultsScreen() {
       if (v >= imm.score) {
         window.clearInterval(id)
         if (imm.tier === 'proof') {
-          play('wardSaved')
+          play('win')
           void confetti({ particleCount: 60, spread: 70, origin: { y: 0.3 }, colors: ['#18665f', '#e0a93b', '#fbf4e2'] })
         }
       }

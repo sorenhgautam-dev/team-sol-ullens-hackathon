@@ -67,7 +67,7 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
     setLinesShown(0)
     setLeft(Math.round(e.timerSeconds * timerFactor(round)))
     setAnswered(false)
-    play(e.channel === 'call' ? 'buzz' : 'mailbox')
+    play(e.channel === 'call' ? 'buzz' : 'notify')
     haptic([40, 60, 40])
     let n = 0
     const lines = window.setInterval(() => {
