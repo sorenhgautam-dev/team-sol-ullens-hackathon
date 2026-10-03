@@ -7,12 +7,12 @@ import { deriveGameState, type GameState } from '@/engine/gameState'
 import type { Ledger, Profile, Scenario } from '@/engine/types'
 import type { MonteCarloResult } from '@/engine/monteCarlo'
 import type { MonteCarloRequest } from '@/engine/monteCarlo.worker'
-import { DEMO_SCENARIO } from '@/content/scenario'
+import { GAME_SCENARIO } from '@/content/scenario'
 import { PROFILES, SITA } from '@/content/profiles'
 import { t } from '@/i18n'
 
 export function useScenario(): Scenario {
-  return DEMO_SCENARIO
+  return GAME_SCENARIO
 }
 
 export function useProfile(): Profile {
@@ -24,32 +24,32 @@ export function useProfile(): Profile {
 export function useLived(): Ledger {
   const { profileId, decisions, seed, day } = useGameShallow((s) => ({ profileId: s.profileId, decisions: s.decisions, seed: s.seed, day: s.day }))
   const profile = PROFILES[profileId] ?? SITA
-  return useMemo(() => lived(DEMO_SCENARIO, profile, decisions, seed, day), [profile, decisions, seed, day])
+  return useMemo(() => lived(GAME_SCENARIO, profile, decisions, seed, day), [profile, decisions, seed, day])
 }
 
 /** One typed GameState for the current day (Phase 1.1). */
 export function useGameState(): GameState {
   const { profileId, decisions, seed, day, energy } = useGameShallow((s) => ({ profileId: s.profileId, decisions: s.decisions, seed: s.seed, day: s.day, energy: s.energy }))
   const profile = PROFILES[profileId] ?? SITA
-  return useMemo(() => deriveGameState(DEMO_SCENARIO, profile, decisions, seed, day, energy, 3), [profile, decisions, seed, day, energy])
+  return useMemo(() => deriveGameState(GAME_SCENARIO, profile, decisions, seed, day, energy, 3), [profile, decisions, seed, day, energy])
 }
 
 /** The whole month as the forecast sees it (decided + foreseeable events, no scams). */
 export function useForecast(): Ledger {
   const { profileId, decisions, seed } = useGameShallow((s) => ({ profileId: s.profileId, decisions: s.decisions, seed: s.seed }))
   const profile = PROFILES[profileId] ?? SITA
-  return useMemo(() => forecast(DEMO_SCENARIO, profile, decisions, seed), [profile, decisions, seed])
+  return useMemo(() => forecast(GAME_SCENARIO, profile, decisions, seed), [profile, decisions, seed])
 }
 
 /** The finished month (all 30 days as lived). */
 export function useFullMonth(): Ledger {
   const { profileId, decisions, seed } = useGameShallow((s) => ({ profileId: s.profileId, decisions: s.decisions, seed: s.seed }))
   const profile = PROFILES[profileId] ?? SITA
-  return useMemo(() => lived(DEMO_SCENARIO, profile, decisions, seed, DEMO_SCENARIO.days), [profile, decisions, seed])
+  return useMemo(() => lived(GAME_SCENARIO, profile, decisions, seed, GAME_SCENARIO.days), [profile, decisions, seed])
 }
 
 /** Auto-played month with default choices (Twin Wallets uses the bills-only baseline so the comparison is clean). */
-export function useAutoMonth(profile: Profile, seed: number, scenario: Scenario = DEMO_SCENARIO): Ledger {
+export function useAutoMonth(profile: Profile, seed: number, scenario: Scenario = GAME_SCENARIO): Ledger {
   return useMemo(() => simulate(scenario, profile, [], seed, { autoScamResponse: 'wait' }), [scenario, profile, seed])
 }
 
@@ -102,7 +102,7 @@ export function useMonteCarlo(runs = 500): MonteCarloResult | null {
       listeners.set(id, (r) => {
         if (latest.current === id) setResult(r)
       })
-      const req: MonteCarloRequest = { id, scenario: DEMO_SCENARIO, profile, decisions, masterSeed: seed, runs }
+      const req: MonteCarloRequest = { id, scenario: GAME_SCENARIO, profile, decisions, masterSeed: seed, runs }
       w.postMessage(req)
     }, 120)
     return () => {

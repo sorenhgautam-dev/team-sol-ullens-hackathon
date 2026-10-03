@@ -8,7 +8,7 @@ import { useShallow } from 'zustand/react/shallow'
 import type { DecisionLog, PlayerAction, ScamResponse } from '@/engine/types'
 import { lived } from '@/engine/forecast'
 import { simulate } from '@/engine/simulate'
-import { DEMO_SCENARIO, DEMO_SEED } from '@/content/scenario'
+import { GAME_SCENARIO, DEMO_SEED } from '@/content/scenario'
 import { PROFILES, SITA } from '@/content/profiles'
 import type { Currency } from '@/i18n/currency'
 import { ENERGY_PER_DAY, energyCost, spendEnergy, type EnergyKind } from './energy'
@@ -204,7 +204,7 @@ export const useGame = create<GameState>()(
         const full = { ...action, id, day: s.day } as PlayerAction
         const decisions = [...s.decisions, full]
         // Ask the engine whether the action applies; refund energy if it is blocked.
-        const ledger = lived(DEMO_SCENARIO, profileOf(s.profileId), decisions, s.seed, s.day)
+        const ledger = lived(GAME_SCENARIO, profileOf(s.profileId), decisions, s.seed, s.day)
         const outcome = ledger.actionOutcomes.find((o) => o.actionId === id)
         const blocked = outcome?.status === 'blocked'
         set({ decisions, nextId: s.nextId + 1, energy: blocked ? s.energy : spent.energy })
@@ -225,10 +225,10 @@ export const useGame = create<GameState>()(
       openPending: (force = false) => {
         const s = get()
         if (s.screen === 'walk' && !force) return false
-        const ledger = lived(DEMO_SCENARIO, profileOf(s.profileId), s.decisions, s.seed, s.day)
+        const ledger = lived(GAME_SCENARIO, profileOf(s.profileId), s.decisions, s.seed, s.day)
         const today = ledger.days[s.day - 1]
         const decidedEvents = new Set(s.decisions.filter((a) => a.type === 'eventChoice').map((a) => (a.type === 'eventChoice' ? a.eventId : '')))
-        const event = DEMO_SCENARIO.events.find((e) => e.day === s.day && !decidedEvents.has(e.id))
+        const event = GAME_SCENARIO.events.find((e) => e.day === s.day && !decidedEvents.has(e.id))
         if (event) {
           set({ sheet: 'event', sheetPayload: event.id })
           return true
@@ -244,7 +244,7 @@ export const useGame = create<GameState>()(
       requestNextDay: () => {
         const s = get()
         if (get().openPending()) return
-        const ledger = lived(DEMO_SCENARIO, profileOf(s.profileId), s.decisions, s.seed, s.day)
+        const ledger = lived(GAME_SCENARIO, profileOf(s.profileId), s.decisions, s.seed, s.day)
         const today = ledger.days[s.day - 1]
         const busy = (today?.entries.length ?? 0) > 0 || s.decisions.some((a) => a.day === s.day && a.type !== 'forecastViewed')
         if (busy && !s.settings.demoMode) set({ sheet: 'goodnight', sheetPayload: null })
@@ -253,7 +253,7 @@ export const useGame = create<GameState>()(
 
       nextDay: () => {
         const s = get()
-        if (s.day >= DEMO_SCENARIO.days) {
+        if (s.day >= GAME_SCENARIO.days) {
           set({ sheet: null, sheetPayload: null, monthOver: true, screen: 'results' })
           return
         }
@@ -265,8 +265,8 @@ export const useGame = create<GameState>()(
       skipToNextEvent: () => {
         const s = get()
         if (get().openPending()) return
-        const full = simulate(DEMO_SCENARIO, profileOf(s.profileId), s.decisions, s.seed)
-        let target = DEMO_SCENARIO.days
+        const full = simulate(GAME_SCENARIO, profileOf(s.profileId), s.decisions, s.seed)
+        let target = GAME_SCENARIO.days
         for (const d of full.days) {
           if (d.day > s.day && (d.events.length > 0 || d.scams.length > 0)) {
             target = d.day
