@@ -35,7 +35,8 @@ import { CheckerSheet } from './CheckerSheet'
 import { t } from '@/i18n'
 import { haptic, play, unlockAudio } from '@/audio/sfx'
 
-const SCALE = PIXEL_SCALE.world
+/** The town is drawn at 2x (not 3x) so the player sees more of the map around them. */
+const SCALE = PIXEL_SCALE.town
 const STEP_MS = 1000 / 60
 const DOOR_RADIUS = 16
 /** How quickly the camera catches up with the walker each step (1 = locked on). */
@@ -484,7 +485,7 @@ function render(
   nearId: string | null,
   tap: (Point & { at: number }) | null,
 ) {
-  // The canvas is full screen resolution: the pixel art is drawn at 3x, and the camera can
+  // The canvas is full screen resolution: the pixel art is drawn at 2x, and the camera can
   // sit between art pixels (in screen-pixel steps), so scrolling is smooth, not jumpy.
   const S = SCALE
   const snap = (v: number) => Math.round(v * S) / S
@@ -572,6 +573,18 @@ function render(
   ctx.fillRect(sx - 5, sy, 11, 2)
   ctx.fillRect(sx - 3, sy + 2, 7, 1)
   drawOutlined(ctx, sx - 7, sy - 18, 14, 20, (c) => drawSitaTop(c, 7, 18, w.facing, Math.floor(w.odometer / 5), w.moving, false, look))
+  // "This is you": a small teal marker over the head while standing still.
+  if (!w.moving && nearId === null) {
+    const my = sy - 25 + (reduced ? 0 : Math.round(Math.sin(frame / 10)))
+    ctx.fillStyle = '#2b1d10'
+    ctx.fillRect(sx - 3, my - 1, 7, 3)
+    ctx.fillRect(sx - 2, my + 2, 5, 1)
+    ctx.fillRect(sx - 1, my + 3, 3, 1)
+    ctx.fillStyle = '#2a8a80'
+    ctx.fillRect(sx - 2, my, 5, 1)
+    ctx.fillRect(sx - 1, my + 1, 3, 1)
+    ctx.fillRect(sx, my + 2, 1, 1)
+  }
   ctx.restore()
   for (const p of folk) if (p.y > w.y) drawTownsperson(ctx, p, p.x - camX, p.y - camY)
 
