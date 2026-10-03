@@ -7,17 +7,10 @@ import { useEffect, useState } from 'react'
 import { Sheet } from '@/ui/Sheet'
 import { Button } from '@/ui/Button'
 import { t } from '@/i18n'
-
-export const CHECK_QUESTIONS = ['code', 'rush', 'first', 'fee', 'guaranteed'] as const
-type A = 'yes' | 'no' | 'unsure'
-
-export function flagsResult(answers: Partial<Record<(typeof CHECK_QUESTIONS)[number], A>>): 'none' | 'some' | 'many' {
-  const yes = Object.values(answers).filter((a) => a === 'yes').length
-  return yes >= 3 ? 'many' : yes >= 1 ? 'some' : 'none'
-}
+import { CHECK_QUESTIONS, flagsResult, type CheckAnswer as A, type CheckQuestion } from '@/content/checker'
 
 export function CheckerSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [answers, setAnswers] = useState<Partial<Record<(typeof CHECK_QUESTIONS)[number], A>>>({})
+  const [answers, setAnswers] = useState<Partial<Record<CheckQuestion, A>>>({})
   const [pasted, setPasted] = useState('')
   // Nothing is kept: closing the checker clears everything.
   useEffect(() => {
