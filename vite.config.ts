@@ -10,14 +10,14 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Next Payday',
         short_name: 'Next Payday',
         description: 'Same income. Different month.',
-        theme_color: '#F5A524',
-        background_color: '#F7F5F0',
+        theme_color: '#18665F',
+        background_color: '#EFE2C4',
         display: 'standalone',
         orientation: 'portrait',
         start_url: base,
@@ -32,13 +32,6 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: { cacheName: 'fonts', expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 } },
-          },
-        ],
       },
     }),
   ],

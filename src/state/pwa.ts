@@ -40,3 +40,6 @@ if (typeof window !== 'undefined') {
   })
   window.addEventListener('appinstalled', () => useInstall.setState({ installed: true, deferred: null }))
 }
+
+/** Service-worker update state: applied only when the player taps it on the title screen. */
+export const useUpdate = create<{ ready: boolean; offlineReady: boolean; apply: () => void }>(() => ({ ready: false, offlineReady: false, apply: () => {} }))

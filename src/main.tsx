@@ -4,11 +4,17 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App'
 import './index.css'
 import { useGame } from './state/gameStore'
+import { useUpdate } from './state/pwa'
 
 // Exposed for demo scripting and QA automation (no network, no secrets).
 ;(window as unknown as { nextPayday: typeof useGame }).nextPayday = useGame
 
-registerSW({ immediate: true })
+// Never reload a month in progress: an update waits until the player chooses to apply it from the title screen.
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh: () => useUpdate.setState({ ready: true, apply: () => void updateSW(true) }),
+  onOfflineReady: () => useUpdate.setState({ offlineReady: true }),
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameShallow } from '@/state/gameStore'
-import { useInstall } from '@/state/pwa'
+import { useInstall, useUpdate } from '@/state/pwa'
 import { useTown } from '@/state/townStore'
 import { Button } from '@/ui/Button'
 import { dailySeed } from '@/engine/badges'
@@ -21,6 +21,7 @@ export function TitleScreen() {
     toast: s.toast,
   }))
   const install = useInstall()
+  const update = useUpdate()
   const startTown = useTown((x) => x.start)
   const timer = useRef<number | null>(null)
   const canContinue = seenIntro && !monthOver && (day > 1 || decisions.length > 0)
@@ -94,6 +95,12 @@ export function TitleScreen() {
             ⬇️ {t('title.install')}
           </Button>
         )}
+        {update.ready && (
+          <Button variant="secondary" className="w-full" onClick={update.apply}>
+            🔄 {t('title.update')}
+          </Button>
+        )}
+        {update.offlineReady && !update.ready && <p className="text-center text-xs text-teal">{t('title.offlineReady')}</p>}
         {install.isIos && !install.isStandalone && <p className="text-center text-xs text-ink/60">{t('title.iosHint')}</p>}
         <div className="grid grid-cols-3 gap-2">
           <Button

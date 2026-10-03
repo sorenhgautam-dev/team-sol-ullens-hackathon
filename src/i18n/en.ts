@@ -667,6 +667,8 @@ export const en = {
   'title.play': 'Play',
   'title.continue': 'Continue month (day {day})',
   'title.install': 'Install the app',
+  'title.update': 'Update ready: tap to restart (your month is saved)',
+  'title.offlineReady': 'Saved for offline play on this device.',
   'title.installed': 'Installed',
   'title.iosHint': 'On iPhone: Share → Add to Home Screen',
   'title.settings': 'Settings',
