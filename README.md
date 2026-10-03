@@ -1,56 +1,52 @@
 # Next Payday
 
-**Same income. Different month.**  
-*Live one month. Save one town. Fix your real dates.*
+**Survive payday.**
 
-A mobile game (installable PWA, fully offline) about a problem most money apps ignore: **when** money arrives matters as much as **how much**. Two households with the same income and the same bills end the month with the same balance, but one of them spends fifteen days below zero, and that is exactly when the scammers call.
+**Next Payday: walk through town on payday and survive five of the world's most common scams. Every trap teaches one rule that protects your money.**
 
-> *The same engine that runs one household runs the whole town.*
+A mobile game (installable PWA, fully offline, no account, no network calls) for anyone who gets paid, sends money home, sells things online or looks for work. It is global: amounts default to US dollars (switch to EUR, GBP, INR or NPR in Settings), senders are generic ("your bank", "a delivery company", "a payment app"), and no real brands appear.
 
-**Play it:** https://sorenhgautam-dev.github.io/team-sol-ullens-hackathon/ (open on a phone → "Install the app")
-
-| Title | Twin Wallets | Life Mode | Forecast |
+| Title | Pick who you are | Payday Town | The call |
 |---|---|---|---|
-| ![title](docs/screenshots/title.png) | ![twin](docs/screenshots/twin-wallets.png) | ![life](docs/screenshots/life-home.png) | ![money](docs/screenshots/money-forecast.png) |
+| ![title](docs/screenshots/paytown/1-title.png) | ![pick](docs/screenshots/paytown/2-pick.png) | ![town](docs/screenshots/paytown/3-town.png) | ![call](docs/screenshots/paytown/4-call.png) |
 
-| Event card | Scam encounter | Month over | Town Mode |
+| What it cost | Who it really was | Rule card | Results |
 |---|---|---|---|
-| ![event](docs/screenshots/event-card.png) | ![scam](docs/screenshots/scam-verify.png) | ![results](docs/screenshots/results.png) | ![town](docs/screenshots/town.png) |
+| ![outcome](docs/screenshots/paytown/5-outcome.png) | ![reveal](docs/screenshots/paytown/6-reveal.png) | ![rule](docs/screenshots/paytown/7-rule-card.png) | ![results](docs/screenshots/paytown/8-results.png) |
 
-## The three things the game teaches
+## How a game goes
 
-1. **When money arrives matters as much as how much arrives.** Sita and Aarav both earn NPR 35,000 and pay NPR 28,700 in bills. Aarav is paid on day 1. Sita gets NPR 10,000 on day 1 and a NPR 25,000 remittance on day 20. Same end balance; Sita is below zero for 15 days.
-2. **Every way of bridging a gap has a cost. Find the full cost before choosing.** The Gap Bridge shows the money cost, the future obligation and the hidden cost of each option, from "ask family" (NPR 0, one heart) to an instant loan app (NPR 1,170, your contacts, and a repayment that lands two days *before* the remittance).
-3. **Urgency is a reason to verify, not a reason to act faster.** Eight original scammers message when the player is most stretched. Verifying, waiting and blocking are always free. Two real messages are mixed in, so suspicion of everything is not the lesson; calm verification is.
+**Title → pick who you are → walk through town → face five scams → results.**
 
-## What you can do in the game
+1. **Pick a character.** Sita sews at home while her husband sends money from abroad. Bikash delivers food on his bike. Aarav just got his first salary. Each one's messages use their name and their life: Sita waits for a parcel from her husband, Bikash is offered a "team leader" job.
+2. **Payday.** You start in town with your pay. The HUD shows only who you are, your balance, "Scams faced X/5" and your phone.
+3. **Five buildings glow.** Walk to them in any order:
 
-- **The month, played in four chapters** (the centrepiece). Sita walks a pixel village on the team's map. Each week opens with a chapter title card and one money concept: **Timing**, **Buffers and pending money**, **Borrowing**, **Scams**.
-- **Plan Your Week** (the main mechanic): drag this week's bills onto days of the **Money Calendar** (or tap a bill, then a day). Paying early is always fine; a date you set yourself is free; the landlord agrees to a new rent date at 3+ hearts; anything else later is paying late, with the late fee. Groceries never move. The engine previews every move at once: coin stacks, red short days, fees. Week 2 adds the emergency jar, week 3 compares borrowing offers by total repayment and due date, week 4 briefs the scam chapter.
-- **Predict, then reveal**: the night before a key day Sita asks ("Will I have enough for rent on day 5?" Yes / No / Not sure). The next morning the ledger shows what happened and why. No scores.
-- **Money Skill Cards**: ten collectible cards (cash-flow timing, due dates, late fees, liquidity, buffer, pending money, interest, total cost of a loan, verification, privacy). Each unlocks the first time it happens in your month and shows the real numbers from that moment, plus one real-life tip.
-- **Money Calendar** everywhere a graph used to be: one row of days, a coin stack per day sized by that evening's balance, bills as cards on their due day, income arrows, a lock on pending money, and red glowing short days. Comparisons (Twin Wallets, Rewind, Fix My Dates) show aligned rows.
-- **The Scam Squad**: the Phisher, the Loan Shark App, the Impersonator, the OTP Snatcher, the Fine Print, the Prize Ghost, the Job Recruiter, the Investment Guru, plus two decoys. Tap the tells, open the mock "official app" to see the truth, earn Shield points, collect the Codex. Leak your data once and the next scam knows your name, your husband's name and your remittance date.
-- **End of month**: three takeaways built from what happened in your month, each linked to its skill card; Stability Score with breakdown, Gap Cost, Shield grade, a one-line life summary, **Month Rewind** (change one past decision, everything else replays, impossible ones are marked Blocked), **What-If cards** ("Moving rent to day 21 would have removed 10 shortfall days", labelled *Your choice* or *Not your fault*), and a **Capability Report** built from behaviour, not quiz answers.
-- **Fix My Dates** (real life): enter your pay dates and bills; a Shift Finder tries every legal date change over 60 days in a Web Worker (about 80 ms), never moves fixed bills, and ranks by fewest shortfall days. The **Ask Builder** writes the polite request to your landlord, school, employer or provider. Copy, share, and "They said no" re-ranks.
-- **Town Mode**: run the Naya Tole Cooperative on a full-screen map with pan and pinch-zoom. Seven wards, each a household archetype run through the same engine. Shortfalls feed scams and scams feed shortfalls; scams spread to neighbouring wards. Eight initiatives with costs, deploy times and trade-offs, seeded weekly events, a 4-week Monte Carlo outlook, win/lose and a grade. Sita's house is highlighted in Riverside: *"Sita is one of 60 households in Riverside facing the same gap."*
-- **Impact Lab** (Settings): a 3-question check before and after a month, stored locally, with a copyable summary for testers.
+| Building | The trap | The rule on the card |
+|---|---|---|
+| Bank | A "security team" call: read out the one-time code or the account is blocked | Banks never ask for your one-time code, PIN or password. |
+| Market | Selling your old phone; the "buyer" sends a payment request: "approve to receive" | You never need to approve a payment or enter your PIN to receive money. |
+| Post office | A text: your parcel is held, pay a small fee through a link | Never pay a fee through a link in a message. Check with the company's official app or website. |
+| Job centre | A great remote job, but first pay for "training" or a "kit" | Real employers never ask you to pay to get a job. |
+| Investment kiosk | A friendly stranger: "double your money in 30 days, guaranteed" | Guaranteed high returns are a warning sign. Check the company is registered with your country's financial regulator. |
+
+4. **The encounter.** A short thought, then the scam arrives as a realistic call, text or chat with a countdown and personal details. **No villain is shown yet.** Three choices in shuffled order: one falls for it, one is a close call, one is safe.
+5. **The outcome.** Your balance changes on screen (losses are booked in the ledger as ScamLoss). *Then* the sender is revealed in a pixel battle scene: a shield and a VERIFY stamp if you were safe, coins stolen if not.
+6. **The rule card.** Why it was a trap, the rule, and one money tip. **Try again** replays the same encounter as practice so you can see what the other choices would have done; your first answer still counts.
+7. **Two real messages** arrive on your phone along the way (your bank confirming your pay, a family member checking in). They are safe to act on: the lesson is *verify*, not *everything is a scam*.
+8. **Results.** What you kept of your pay, your **Scam Immunity Score** (safe 20, close call 10, fell for it 0; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), the five rule cards, and a **Family Warning Card** with all five rules and Share and Copy buttons.
+
+**The phone's Scam Checker** is a guided checklist, not a keyword score: does it ask for a code or PIN, rush you, contact you first, want an upfront fee, promise guaranteed money? It always ends with "Verify through an official number or website" and says it can miss new scams. Anything you paste is never stored.
+
+**Demo mode** (long-press the coin on the title, or Settings): one character, starting at the bank door, so the first scam is a few seconds away. See [docs/DEMO.md](docs/DEMO.md).
 
 ## How it is built
 
-- **Vite + React 18 + TypeScript (strict)**, Tailwind, Framer Motion, Zustand (UI state only), Vitest, vite-plugin-pwa, NumberFlow, use-gesture, d3-delaunay, ZzFX, canvas-confetti. No backend, no login, no network calls.
-- **One pure engine**: `simulate(scenario, profile, decisions, seed) → Ledger` in `src/engine/simulate.ts`. Deterministic (mulberry32, never `Math.random`). Daily order: income → bills → events and scams → player decisions. The forecast is a dry run of the same engine; Monte Carlo is 500 dry runs with varied seeds in a Web Worker; Rewind, What-If, the Capability Report, the Shift Finder and the Town engine all call it. **The UI never calculates money.**
-- **Content is data** (`src/content/`): bills, profiles, events, scammers, bridges, initiatives, wards. New content needs no engine code.
-- **Every player action is logged** as a typed `PlayerAction`, which is what makes Rewind and the Capability Report possible.
-- **84 tests** (`npm test`) including the exact numbers below, determinism, forecast = actual, scam losses, privacy leak personalisation, hearts rules, energy rules, Shift Finder guarantees, town determinism and spread adjacency.
-
-| Situation | Shortfall days | Lowest balance | End balance |
-|---|---|---|---|
-| Aarav, no events | 0 | 9,300 | 9,300 |
-| Sita, no events | 15 (days 5–19) | −11,700 | 9,300 |
-| Sita, rent moved to day 21 | 0 | 300 | 9,300 |
-| Sita + bike repair 3,500 on day 9, rent moved | 5 | −3,200 | 5,800 |
-| Sita + repair, rent and school fee moved to day 21 | 0 | 800 | 5,800 |
+- **Vite + React 18 + TypeScript (strict)**, Tailwind, Framer Motion, Zustand (UI state only), Vitest, vite-plugin-pwa, NumberFlow. No backend, no login, no network calls, no API keys.
+- **The money is in an engine, not the UI.** `src/engine/scamTown.ts` books payday and every scam loss as balanced double-entry postings (Wallet, Income, ScamLoss), computes the Scam Immunity Score, and shuffles choices with a seeded random generator (never `Math.random`). Only the first answer per encounter counts, so practice replays never change your balance.
+- **Content is data.** The five traps, their three choices, losses, rule cards and the two real messages are in `src/content/scamTown.ts`; characters in `src/content/characters.ts`; all text in `src/i18n/en.ts`.
+- **The earlier budgeting game is still in the code, switched off.** `src/config/features.ts` has `FEATURES.budgeting = false`. Setting it to `true` brings back the Money Calendar, forecast, Plan Your Week, Gap Bridge, Twin Wallets, Town Mode, Fix My Dates, Impact Lab, energy and hearts, with their engine (`simulate()`) and tests untouched.
+- **166 tests** (`npm test`): the Scam Town ledger and score, practice replays, content completeness, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), the currency helper, and every test of the budgeting engine.
 
 ## Tools, libraries and assets
 
@@ -126,10 +122,11 @@ npm run typecheck
 npm run build && npm run preview
 ```
 
-Long-press the coin on the title screen for **demo mode** (fixed seeds, faster animations, a visible scam outbreak in Town Mode).
+Long-press the coin on the title screen for **demo mode**: one character, straight to the bank door. The live site at https://sorenhgautam-dev.github.io/team-sol-ullens-hackathon/ is built from `main` and still shows the earlier budgeting game until this branch is merged.
 
 ## Honest notes
 
-- Rates in the Gap Bridge are illustrative and marked as such in the app.
-- Town Mode balance is a first pass: the town starts around 40% stability and needs several initiatives to reach the 80% win line.
-- It is a planning aid, not financial advice. Your data stays on the phone.
+- All people, messages, phone numbers and links in the game are made up. Links use the reserved `.example` domain.
+- Amounts and currency conversions are illustrative, not live rates.
+- The game teaches five common patterns. Real scams change; the Scam Checker says so and always points to verifying through an official number or website.
+- It is a game about scams, not financial advice. Nothing you type leaves the phone.
