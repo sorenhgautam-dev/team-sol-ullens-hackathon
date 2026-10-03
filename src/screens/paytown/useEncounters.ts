@@ -14,7 +14,7 @@ export function useEncounters() {
   const { characterId, round, seed } = useScam()
   return useMemo(() => {
     const encounters = localEncounters(currency, characterId)
-    const ids = roundIds(round, FIRST_PAYDAY, SECOND_PAYDAY, seed)
+    const ids = roundIds(round, FIRST_PAYDAY[characterId], SECOND_PAYDAY, seed)
     const thisRound = ids.map((id) => encounters.find((e) => e.id === id)!).filter(Boolean)
     return { encounters, thisRound, round, payday: paydayFor(currency, characterId) }
   }, [currency, characterId, round, seed])

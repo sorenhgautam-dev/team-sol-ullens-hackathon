@@ -6,7 +6,7 @@ import { ECONOMIES, paydayFor } from '@/content/economy'
 import { CURRENCIES } from '@/i18n/currency'
 
 const EVERY = localEncounters('USD', 'sita')
-const ENCOUNTERS = EVERY.filter((e) => FIRST_PAYDAY.includes(e.id))
+const ENCOUNTERS = EVERY.filter((e) => FIRST_PAYDAY.sita.includes(e.id))
 import { en } from '@/i18n/en'
 
 const all = (choice: string): Answer[] => ENCOUNTERS.map((e) => ({ encounterId: e.id, choiceId: choice }))
@@ -36,7 +36,7 @@ describe('scam town ledger', () => {
     for (const cur of CURRENCIES)
       for (const c of CHARACTERS) {
         const enc = localEncounters(cur, c.id)
-        for (const ids of [FIRST_PAYDAY, SECOND_PAYDAY]) {
+        for (const ids of [FIRST_PAYDAY[c.id], SECOND_PAYDAY]) {
           const l = townLedger(paydayFor(cur, c.id), ids.map((id) => ({ encounterId: id, choiceId: 'fall' })), enc)
           expect(l.balance, `${cur} ${c.id} ${ids[0]}`).toBeGreaterThan(0)
         }
@@ -49,14 +49,14 @@ describe('scam immunity score', () => {
     expect(immunity(all('safe'), ENCOUNTERS)).toMatchObject({ score: 100, tier: 'proof' })
     expect(immunity(all('tempted'), ENCOUNTERS)).toMatchObject({ score: 50, tier: 'wiser' })
     expect(immunity(all('fall'), ENCOUNTERS)).toMatchObject({ score: 0, tier: 'easy' })
-    const mixed: Answer[] = [...all('safe').slice(0, 4), { encounterId: 'invest', choiceId: 'fall' }]
+    const mixed: Answer[] = [...all('safe').slice(0, 4), { encounterId: ENCOUNTERS[4]!.id, choiceId: 'fall' }]
     expect(immunity(mixed, ENCOUNTERS)).toMatchObject({ score: 80, tier: 'proof' })
   })
 })
 
 describe('encounter content', () => {
   it('each encounter has one fall, one tempted and one safe choice, all with text', () => {
-    expect(EVERY).toHaveLength(11)
+    expect(EVERY).toHaveLength(21)
     for (const e of EVERY) {
       expect(e.choices.map((c) => c.verdict).sort()).toEqual(['fall', 'safe', 'tempted'])
       const keys = [e.thoughtKey, e.senderKey, ...e.lineKeys, e.rule.whyKey, e.rule.ruleKey, e.rule.lessonKey, ...e.choices.flatMap((c) => [c.labelKey, c.outcomeKey])]
@@ -144,28 +144,31 @@ describe('the gauntlet loop: paydays as rounds', () => {
     expect(immunity(six, EVERY, 2)).toMatchObject({ score: 100, tier: 'proof' })
   })
 
-  it('round one is the classic five, round two the everyday six, then a seeded mix of five', () => {
-    expect(roundIds(1, FIRST_PAYDAY, SECOND_PAYDAY, 9)).toEqual(FIRST_PAYDAY)
-    expect(roundIds(2, FIRST_PAYDAY, SECOND_PAYDAY, 9)).toEqual(SECOND_PAYDAY)
-    const r3 = roundIds(3, FIRST_PAYDAY, SECOND_PAYDAY, 9)
+  it('round one is the character’s own five, round two the everyday six, then a seeded mix of five', () => {
+    const own = FIRST_PAYDAY.bikash
+    expect(roundIds(1, own, SECOND_PAYDAY, 9)).toEqual(own)
+    expect(roundIds(2, own, SECOND_PAYDAY, 9)).toEqual(SECOND_PAYDAY)
+    const r3 = roundIds(3, own, SECOND_PAYDAY, 9)
     expect(r3).toHaveLength(5)
     expect(new Set(r3).size).toBe(5)
-    expect(roundIds(3, FIRST_PAYDAY, SECOND_PAYDAY, 9)).toEqual(r3)
+    expect(r3.every((id) => [...own, ...SECOND_PAYDAY].includes(id))).toBe(true)
+    expect(roundIds(3, own, SECOND_PAYDAY, 9)).toEqual(r3)
   })
 
   it('scams start one at a time, in a fixed order, on every payday', () => {
     const list = (ids: string[]) => ids.map((id) => ({ id }))
-    const first = list(FIRST_PAYDAY)
+    const ORDER = ['bank', 'market', 'post', 'job', 'invest']
+    const first = list(ORDER)
     const safe = (id: string, round = 1): Answer => ({ encounterId: id, choiceId: `${id}_safe`, round })
     expect(currentEncounter(first, [], 1)?.id).toBe('bank')
     expect(currentEncounter(first, [safe('bank')], 1)?.id).toBe('market')
-    expect(currentEncounter(first, FIRST_PAYDAY.slice(0, 4).map((id) => safe(id)), 1)?.id).toBe('invest')
-    expect(currentEncounter(first, FIRST_PAYDAY.map((id) => safe(id)), 1)).toBeNull()
+    expect(currentEncounter(first, ORDER.slice(0, 4).map((id) => safe(id)), 1)?.id).toBe('invest')
+    expect(currentEncounter(first, ORDER.map((id) => safe(id)), 1)).toBeNull()
     // A practice replay of a done scam does not move the order on.
     expect(currentEncounter(first, [safe('bank'), safe('bank')], 1)?.id).toBe('market')
     // Next payday starts again from the top of its own list.
     const second = list(SECOND_PAYDAY)
-    expect(currentEncounter(second, FIRST_PAYDAY.map((id) => safe(id)), 2)?.id).toBe('home')
+    expect(currentEncounter(second, ORDER.map((id) => safe(id)), 2)?.id).toBe('home')
     expect(currentEncounter(second, [safe('home', 2)], 2)?.id).toBe('cafe')
   })
 
@@ -173,6 +176,38 @@ describe('the gauntlet loop: paydays as rounds', () => {
     expect(timerFactor(1)).toBe(1)
     expect(timerFactor(2)).toBeCloseTo(0.85)
     expect(timerFactor(9)).toBe(0.6)
+  })
+})
+
+describe('each character meets their own everyday scams first', () => {
+  it('five each, in building order, so the start cues come in the same order', () => {
+    for (const c of CHARACTERS) {
+      const enc = localEncounters('USD', c.id)
+      const buildings = FIRST_PAYDAY[c.id].map((id) => enc.find((e) => e.id === id)?.building)
+      expect(buildings, c.id).toEqual(['bank', 'market', 'post', 'job', 'invest'])
+    }
+  })
+
+  it('no two characters share a scam or a rule on their first payday', () => {
+    const ids = CHARACTERS.flatMap((c) => FIRST_PAYDAY[c.id])
+    expect(new Set(ids).size).toBe(15)
+    const enc = localEncounters('USD', 'sita')
+    const rules = ids.map((id) => en[enc.find((e) => e.id === id)!.rule.ruleKey as keyof typeof en])
+    expect(new Set(rules).size).toBe(15)
+  })
+
+  it('every scam has all of its text', () => {
+    for (const e of localEncounters('USD', 'aarav')) {
+      const keys = [e.thoughtKey, e.senderKey, ...e.lineKeys, ...e.choices.flatMap((c) => [c.labelKey, c.outcomeKey]), e.rule.whyKey, e.rule.ruleKey, e.rule.lessonKey]
+      for (const k of keys) expect(en[k as keyof typeof en], k).toBeTruthy()
+    }
+  })
+
+  it('the fake overpayment adds up in every currency', () => {
+    for (const cur of CURRENCIES) {
+      const a = localEncounters(cur, 'sita').find((e) => e.id === 'overpay')!.amounts
+      expect(a.paid, cur).toBe(a.price! + a.extra!)
+    }
   })
 })
 
