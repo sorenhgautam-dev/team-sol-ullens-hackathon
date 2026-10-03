@@ -4,7 +4,7 @@
  * template: hair, skin, clothes and shoes get a light and a shadow tone, lit from the
  * top-left like the team's map, with soft brown outlines. Painted frames are cached.
  */
-import { PERSON_FRAMES, PERSON_H, PERSON_W } from './peopleArt'
+import { BODIES, HEADS, KURTA, LEGS, NECK, PERSON_H, PERSON_W } from './peopleArt'
 
 export type Facing = 'down' | 'up' | 'left' | 'right'
 
@@ -71,7 +71,7 @@ function painted(look: PersonLook, key: string, mirror: boolean): HTMLCanvasElem
   const id = `${key}|${mirror ? 1 : 0}|${look.shirt}|${look.trim}|${look.hair}|${look.skin}|${look.pants}|${look.shoes}`
   const hit = cache.get(id)
   if (hit) return hit
-  const rows = PERSON_FRAMES[key]
+  const rows = personRows(key)
   if (!rows || typeof document === 'undefined') return null
   const c = document.createElement('canvas')
   c.width = PERSON_W
@@ -89,6 +89,21 @@ function painted(look: PersonLook, key: string, mirror: boolean): HTMLCanvasElem
   })
   cache.set(id, c)
   return c
+}
+
+const WALK = ['stand', 'stepA', 'stand', 'stepB'] as const
+
+/** Put a frame together from its parts: head, neck, body (arm swings on a step), legs. */
+export function personRows(key: string): readonly string[] | null {
+  const m = /^([a-z]+)_(shirt|kurta)_(down|up|right)(\d)$/.exec(key)
+  if (!m) return null
+  const [, style, top, face, n] = m as unknown as [string, string, string, string, string]
+  const leg = WALK[Number(n) % 4]!
+  const head = HEADS[style]?.[face]
+  const body = BODIES[face === 'right' && leg === 'stepA' ? 'right_swing' : face]
+  const legs = LEGS[face === 'right' ? 'right' : 'down']?.[leg]
+  if (!head || !body || !legs) return null
+  return [...head, NECK[face]!, ...body, ...(top === 'kurta' ? [KURTA[face]!, ...legs.slice(1)] : legs)]
 }
 
 /** The frame name for a look, facing and walk step (0..3). */
