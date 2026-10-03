@@ -17,6 +17,7 @@ import { ImpactLabScreen, ImpactPreScreen, ImpactPostScreen } from '@/screens/Im
 import { TownScreen } from '@/screens/town/TownScreen'
 import { WalkScreen } from '@/screens/walk/WalkScreen'
 import { StyleguideScreen } from '@/screens/StyleguideScreen'
+import { CardsScreen } from '@/screens/CardsScreen'
 
 export default function App() {
   const screen = useGame((s) => s.screen)
@@ -32,6 +33,7 @@ export default function App() {
         {screen === 'profile' && <ProfileSelectScreen />}
         {screen === 'walk' && <WalkScreen />}
         {screen === 'styleguide' && <StyleguideScreen />}
+        {screen === 'cards' && <CardsScreen />}
         {screen === 'results' && <ResultsScreen />}
         {screen === 'rewind' && <RewindScreen />}
         {screen === 'capability' && <CapabilityScreen />}
