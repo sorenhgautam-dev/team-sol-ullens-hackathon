@@ -23,9 +23,23 @@ OPEN = [
     (180, 172, 32, 12),  # in front of the clock tower door
     (24, 280, 24, 12),   # bank steps
     (36, 456, 24, 30),   # the dirt path from Sita's door out through the garden gate
+    (136, 418, 24, 16),  # cobbles and a faint grid line read as specks on the main road
+    (138, 454, 22, 18),
 ]
 BLOCK = [
     (296, 0, 9, 537),    # the frame on the right edge of the artwork
+    (4, 212, 56, 68),    # the bank's flat roof is light like a path; the steps below stay open
+    # Tree tops are the same green as the grass, so each canopy is blocked by hand.
+    (190, 206, 28, 32),  # by the market
+    (0, 288, 22, 36),    # west edge, by the bank
+    (24, 298, 30, 34),
+    (2, 332, 28, 16),
+    (266, 372, 28, 14),  # east, by the workshop garden
+    (2, 496, 22, 8),     # the row along the south edge (the garden path runs between them)
+    (28, 494, 20, 10),
+    (114, 492, 22, 10),
+    (170, 500, 26, 8),
+    (250, 502, 30, 8),
 ]
 
 

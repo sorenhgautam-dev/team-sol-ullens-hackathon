@@ -82,6 +82,19 @@ describe('collision from the map: fences, trees and the district', () => {
     expect(isWalkable(150, 338)).toBe(true) // market plaza
   })
 
+  it('roofs and tree tops are solid, and the main road has no stray specks', () => {
+    expect(isWalkable(30, 228)).toBe(false) // the bank's flat roof
+    expect(isWalkable(204, 218)).toBe(false) // tree top by the market
+    expect(isWalkable(38, 312)).toBe(false) // tree top west of the plaza
+    expect(isWalkable(38, 500)).toBe(false) // tree tops along the south edge
+    expect(isWalkable(124, 498)).toBe(false)
+    expect(isWalkable(280, 380)).toBe(false) // tree top east of the workshop garden
+    expect(isWalkable(148, 428)).toBe(true) // cobbles on the main road, once read as specks
+    expect(isWalkable(148, 464)).toBe(true)
+    expect(isWalkable(80, 502)).toBe(true) // the garden path between the south trees
+    expect(isWalkable(36, 292)).toBe(true) // the bank steps
+  })
+
   it('the world now runs past the bottom of the town into the south district', () => {
     expect(WORLD_H).toBeGreaterThan(MAP_H)
     expect(isWalkable(146, MAP_H + 8)).toBe(true) // the town road continues into the district
