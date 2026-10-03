@@ -14,10 +14,11 @@ import type { Currency } from '@/i18n/currency'
 import { ENERGY_PER_DAY, energyCost, spendEnergy, type EnergyKind } from './energy'
 import { dailySeed } from '@/engine/badges'
 import { setHapticsEnabled, setSoundEnabled } from '@/audio/sfx'
+import { useLearn } from './learnStore'
 
-export type Screen = 'title' | 'twin' | 'profile' | 'walk' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town' | 'styleguide'
+export type Screen = 'title' | 'twin' | 'profile' | 'walk' | 'results' | 'rewind' | 'capability' | 'codex' | 'settings' | 'debug' | 'fixDates' | 'impact' | 'impactPre' | 'impactPost' | 'town' | 'styleguide' | 'cards'
 export type Tab = 'home' | 'money' | 'people' | 'phone' | 'moves'
-export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'ledger' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | 'money' | 'people' | 'moves' | 'phone' | 'log' | 'stats' | null
+export type SheetKind = 'gapBridge' | 'calendar' | 'mailbox' | 'moneyTrail' | 'ledger' | 'why' | 'goodnight' | 'event' | 'scam' | 'codexEntry' | 'money' | 'people' | 'moves' | 'phone' | 'log' | 'stats' | 'plan' | null
 
 export interface Settings {
   sound: boolean
@@ -136,6 +137,7 @@ export const useGame = create<GameState>()(
 
       startMonth: (profileId, seed, dailyCode = null) => {
         const s = get()
+        useLearn.getState().newMonth()
         const newSeed = seed ?? (s.settings.demoMode ? DEMO_SEED : DEMO_SEED + s.monthsPlayed * 7)
         set({
           profileId,
