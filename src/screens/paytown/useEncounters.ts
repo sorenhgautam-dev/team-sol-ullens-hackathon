@@ -11,11 +11,13 @@ import { roundIds } from '@/engine/scamTown'
 
 export function useEncounters() {
   const currency = useGame((s) => s.settings.currency)
+  const demo = useGame((s) => s.settings.demoMode)
   const { characterId, round, seed } = useScam()
   return useMemo(() => {
     const encounters = localEncounters(currency, characterId)
-    const ids = roundIds(round, FIRST_PAYDAY[characterId], SECOND_PAYDAY, seed)
+    // A new order every run; demo mode keeps the listed order so the pitch starts at the bank.
+    const ids = roundIds(round, FIRST_PAYDAY[characterId], SECOND_PAYDAY, seed, !demo)
     const thisRound = ids.map((id) => encounters.find((e) => e.id === id)!).filter(Boolean)
     return { encounters, thisRound, round, payday: paydayFor(currency, characterId) }
-  }, [currency, characterId, round, seed])
+  }, [currency, characterId, round, seed, demo])
 }

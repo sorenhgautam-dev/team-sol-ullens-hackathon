@@ -146,8 +146,8 @@ describe('the gauntlet loop: paydays as rounds', () => {
 
   it('round one is the character’s own five, round two the everyday six, then a seeded mix of five', () => {
     const own = FIRST_PAYDAY.bikash
-    expect(roundIds(1, own, SECOND_PAYDAY, 9)).toEqual(own)
-    expect(roundIds(2, own, SECOND_PAYDAY, 9)).toEqual(SECOND_PAYDAY)
+    expect([...roundIds(1, own, SECOND_PAYDAY, 9)].sort()).toEqual([...own].sort())
+    expect([...roundIds(2, own, SECOND_PAYDAY, 9)].sort()).toEqual([...SECOND_PAYDAY].sort())
     const r3 = roundIds(3, own, SECOND_PAYDAY, 9)
     expect(r3).toHaveLength(5)
     expect(new Set(r3).size).toBe(5)
@@ -155,7 +155,17 @@ describe('the gauntlet loop: paydays as rounds', () => {
     expect(roundIds(3, own, SECOND_PAYDAY, 9)).toEqual(r3)
   })
 
-  it('scams start one at a time, in a fixed order, on every payday', () => {
+  it('the order is shuffled for each run, the same for the same seed, and fixed in demo mode', () => {
+    const own = FIRST_PAYDAY.sita
+    expect(roundIds(1, own, SECOND_PAYDAY, 42)).toEqual(roundIds(1, own, SECOND_PAYDAY, 42))
+    const firsts = new Set(Array.from({ length: 30 }, (_, s) => roundIds(1, own, SECOND_PAYDAY, s)[0]))
+    expect(firsts.size).toBeGreaterThan(2) // not always the bank first
+    const orders = new Set(Array.from({ length: 30 }, (_, s) => roundIds(2, own, SECOND_PAYDAY, s).join()))
+    expect(orders.size).toBeGreaterThan(10)
+    expect(roundIds(1, own, SECOND_PAYDAY, 42, false)).toEqual(own) // demo mode
+  })
+
+  it('scams start one at a time, in the payday’s order, on every payday', () => {
     const list = (ids: string[]) => ids.map((id) => ({ id }))
     const ORDER = ['bank', 'market', 'post', 'job', 'invest']
     const first = list(ORDER)
@@ -180,7 +190,7 @@ describe('the gauntlet loop: paydays as rounds', () => {
 })
 
 describe('each character meets their own everyday scams first', () => {
-  it('five each, in building order, so the start cues come in the same order', () => {
+  it('five each, one at each place: bank, market, post office, job centre and kiosk', () => {
     for (const c of CHARACTERS) {
       const enc = localEncounters('USD', c.id)
       const buildings = FIRST_PAYDAY[c.id].map((id) => enc.find((e) => e.id === id)?.building)

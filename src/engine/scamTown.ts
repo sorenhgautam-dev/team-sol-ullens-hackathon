@@ -132,10 +132,22 @@ export function shuffledChoices(e: EncounterDef, seed: number, attempt: number):
   return out
 }
 
-/** Which buildings glow on a payday: the classic five, then the everyday six, then a seeded mix of five. */
-export function roundIds(round: number, first: string[], second: string[], seed: number): string[] {
-  if (round <= 1) return first
-  if (round === 2) return second
+/**
+ * Which scams come up on a payday, in the order they start: the character's own five,
+ * then the everyday six, then a seeded mix of five. The order is shuffled for each run
+ * and payday (same seed, same order); `shuffle: false` keeps the listed order (demo mode).
+ */
+export function roundIds(round: number, first: string[], second: string[], seed: number, shuffle = true): string[] {
+  if (round <= 2) {
+    const list = [...(round <= 1 ? first : second)]
+    if (!shuffle) return list
+    const rng = subRng(seed, `order:${round}`)
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1))
+      ;[list[i], list[j]] = [list[j]!, list[i]!]
+    }
+    return list
+  }
   const all = [...first, ...second]
   const rng = subRng(seed, `round:${round}`)
   for (let i = all.length - 1; i > 0; i--) {
@@ -146,7 +158,7 @@ export function roundIds(round: number, first: string[], second: string[], seed:
 }
 
 /**
- * Scams start one at a time, in the payday's fixed order: the current one is the first
+ * Scams start one at a time, in the payday's order: the current one is the first
  * not yet faced this payday. Null once every scam of the payday is done.
  */
 export function currentEncounter<T extends { id: string }>(thisRound: T[], answers: Answer[], round: number): T | null {
