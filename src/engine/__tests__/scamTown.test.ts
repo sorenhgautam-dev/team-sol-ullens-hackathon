@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { currentEncounter, immunity, roundIds, shuffledChoices, timerFactor, townLedger, type Answer } from '../scamTown'
-import { FIRST_PAYDAY, SECOND_PAYDAY, localEncounters, REAL_MESSAGES } from '@/content/scamTown'
+import { CUES, FIRST_PAYDAY, SECOND_PAYDAY, localEncounters, REAL_MESSAGES } from '@/content/scamTown'
 import { CHARACTERS } from '@/content/characters'
 import { ECONOMIES, paydayFor } from '@/content/economy'
 import { CURRENCIES } from '@/i18n/currency'
@@ -64,6 +64,16 @@ describe('encounter content', () => {
       for (const key of keys) expect(key in en, key).toBe(true)
       expect(e.choices.find((c) => c.verdict === 'safe')!.loss).toBe(0)
     }
+  })
+
+  it('every scam building has a start cue, and every cue text exists', () => {
+    for (const e of localEncounters('USD', 'sita')) {
+      const cue = CUES[e.building]
+      expect(cue, e.building).toBeDefined()
+      if (cue.textKey) expect(en[cue.textKey as keyof typeof en], cue.textKey).toBeTruthy()
+    }
+    expect(CUES.bank.kind).toBe('ring')
+    expect(en['town.cue.market']).toContain('{name}')
   })
 
   it('there are at least two real messages, each with text', () => {

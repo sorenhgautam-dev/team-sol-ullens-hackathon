@@ -9,6 +9,7 @@ import type { EncounterDef } from '@/engine/scamTown'
 import type { Currency } from '@/i18n/currency'
 import { ECONOMIES, nice } from './economy'
 import type { CharacterId } from './characters'
+import type { SfxName } from '@/audio/sfx'
 
 /** A share of the payday, an economy constant, or a multiple of another amount. */
 type Money = number | 'fee' | 'hourly' | 'coffee' | { times: string; by: number }
@@ -86,6 +87,32 @@ export function localEncounters(currency: Currency, character: CharacterId, spec
 }
 
 /** Real messages that are safe to act on: the lesson is "verify", not "everything is a scam". */
+/**
+ * How each scam starts: one at a time, the current building shows a cue above it
+ * (a ringing phone, a shout, a notification...) with a sound and, for calls and buzzes, a vibration.
+ */
+export type CueKind = 'ring' | 'shout' | 'notify' | 'letter' | 'stranger' | 'alert' | 'tag' | 'qr'
+export interface Cue {
+  kind: CueKind
+  /** Short text on the cue; may use {name}. */
+  textKey?: string
+  sound: SfxName
+  vibrate?: number[]
+}
+export const CUES: Record<EncounterDef['building'], Cue> = {
+  bank: { kind: 'ring', sound: 'ring', vibrate: [220, 120, 220] },
+  market: { kind: 'shout', textKey: 'town.cue.market', sound: 'chime' },
+  post: { kind: 'notify', sound: 'buzz', vibrate: [40, 60, 40] },
+  job: { kind: 'letter', textKey: 'town.cue.job', sound: 'mailbox' },
+  invest: { kind: 'stranger', sound: 'coin' },
+  home: { kind: 'notify', textKey: 'town.cue.home', sound: 'buzz', vibrate: [40, 60, 40] },
+  cafe: { kind: 'qr', textKey: 'town.cue.cafe', sound: 'pop' },
+  tech: { kind: 'alert', textKey: 'town.cue.tech', sound: 'buzz', vibrate: [60, 40, 60] },
+  gov: { kind: 'letter', textKey: 'town.cue.gov', sound: 'thud' },
+  rental: { kind: 'shout', textKey: 'town.cue.rental', sound: 'chime' },
+  shop: { kind: 'tag', textKey: 'town.cue.shop', sound: 'coin' },
+}
+
 export interface RealMessage {
   id: string
   /** Arrives after this many scams have been faced in this payday. */

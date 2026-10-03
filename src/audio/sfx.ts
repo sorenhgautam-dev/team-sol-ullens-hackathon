@@ -18,6 +18,7 @@ export type SfxName =
   | 'tap'
   | 'bad'
   | 'wardSaved'
+  | 'ring'
 
 // prettier-ignore
 const PATCHES: Record<SfxName, (number | undefined)[]> = {
@@ -34,6 +35,7 @@ const PATCHES: Record<SfxName, (number | undefined)[]> = {
   tap:       [.3, , 700, , .02, .04, 1, 1.5, , , , , , , , , , .4],
   bad:       [1, , 140, .03, .2, .4, 3, 1.5, -2, , , , , .8, , .3, , .6, .1],
   wardSaved: [, , 523, .02, .2, .5, 1, 1.3, , , 262, .12, .08, , , , , .7, .1],
+  ring:      [.5, , 1320, .01, .45, .05, , 1, , , , , .05, , , , , .8, , .9],
 }
 
 let enabled = true
