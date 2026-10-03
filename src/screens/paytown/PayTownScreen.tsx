@@ -597,6 +597,18 @@ function render(
 
   if (!reduced) drawBirds(ctx, frame, camX, camY)
 
+  // A soft vignette, like light falling off at the edges of a photo, ties the map, the tiles and the people together.
+  const base = ctx.getTransform()
+  ctx.setTransform(1, 0, 0, 1, 0, 0)
+  const cw = ctx.canvas.width
+  const chh = ctx.canvas.height
+  const vg = ctx.createRadialGradient(cw / 2, chh * 0.55, Math.min(cw, chh) * 0.38, cw / 2, chh * 0.55, Math.max(cw, chh) * 0.78)
+  vg.addColorStop(0, 'rgba(43,29,16,0)')
+  vg.addColorStop(1, 'rgba(43,29,16,0.26)')
+  ctx.fillStyle = vg
+  ctx.fillRect(0, 0, cw, chh)
+  ctx.setTransform(base)
+
   // The current scam off screen: an arrow at the edge points the way.
   for (const e of encounters) {
     if (done.has(e.id) || cue?.id !== e.id) continue
