@@ -21,6 +21,7 @@ import { StyleguideScreen } from '@/screens/StyleguideScreen'
 import { CardsScreen } from '@/screens/CardsScreen'
 import { PickScreen } from '@/screens/paytown/PickScreen'
 import { PayTownScreen } from '@/screens/paytown/PayTownScreen'
+import { PayResultsScreen } from '@/screens/paytown/PayResultsScreen'
 
 export default function App() {
   const raw = useGame((s) => s.screen)
@@ -41,6 +42,7 @@ export default function App() {
         {screen === 'cards' && <CardsScreen />}
         {screen === 'pick' && <PickScreen />}
         {screen === 'paytown' && <PayTownScreen />}
+        {screen === 'payresults' && <PayResultsScreen />}
         {screen === 'results' && <ResultsScreen />}
         {screen === 'rewind' && <RewindScreen />}
         {screen === 'capability' && <CapabilityScreen />}
