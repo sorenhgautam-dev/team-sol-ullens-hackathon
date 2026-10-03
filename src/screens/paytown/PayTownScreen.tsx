@@ -50,6 +50,8 @@ export function PayTownScreen() {
   const [near, setNear] = useState<EncounterDef | null>(null)
   const [open, setOpen] = useState<EncounterDef | null>(null)
   const [phone, setPhone] = useState<'real' | 'checker' | null>(null)
+  // The opened real message stays on screen until closed, even once it counts as handled.
+  const [realOpen, setRealOpen] = useState<(typeof REAL_MESSAGES)[number] | null>(null)
 
   const ledger = useMemo(() => townLedger(ch.payday, answers, ENCOUNTERS), [ch.payday, answers])
   const done = useMemo(() => new Set(firstAnswers(answers).map((a) => a.encounterId)), [answers])
@@ -197,7 +199,10 @@ export function PayTownScreen() {
           <div className="text-[13px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size })}</div>
         </div>
         <Balance amountNpr={ledger.balance} base="USD" state={ledger.balance < ch.payday ? 'warn' : 'safe'} size="lg" />
-        <button className="relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft" onClick={() => setPhone(pendingReal ? 'real' : 'checker')} aria-label={pendingReal ? t('town.newMessage') : t('town.phone')}>
+        <button className="relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft" onClick={() => {
+            setRealOpen(pendingReal)
+            setPhone(pendingReal ? 'real' : 'checker')
+          }} aria-label={pendingReal ? t('town.newMessage') : t('town.phone')}>
           <PxIcon name="message" />
           {pendingReal && <span className="absolute -right-1 -top-1 h-4 w-4 bg-danger blink" aria-hidden />}
         </button>
@@ -206,7 +211,13 @@ export function PayTownScreen() {
       <div ref={holderRef} className="relative min-h-0 flex-1" onPointerDown={unlockAudio}>
         <canvas ref={canvasRef} width={vw} height={vh} className="pixelated block" style={{ width: vw * SCALE, height: vh * SCALE }} role="img" aria-label={t('paytown.title')} />
         {pendingReal && !busy && (
-          <button className="absolute right-2 top-2 bg-card px-2 py-1 text-[13px] font-bold pixel-frame-soft" onClick={() => setPhone('real')}>
+          <button
+            className="absolute right-2 top-2 bg-card px-2 py-1 text-[13px] font-bold pixel-frame-soft"
+            onClick={() => {
+              setRealOpen(pendingReal)
+              setPhone('real')
+            }}
+          >
             <PxIcon name="message" size={12} /> {t('town.newMessage')}
           </button>
         )}
@@ -222,7 +233,13 @@ export function PayTownScreen() {
       </div>
 
       <EncounterSheet encounter={open} onClose={() => setOpen(null)} />
-      <RealMessageSheet message={phone === 'real' ? pendingReal : null} onClose={() => setPhone(null)} />
+      <RealMessageSheet
+        message={phone === 'real' ? realOpen : null}
+        onClose={() => {
+          setPhone(null)
+          setRealOpen(null)
+        }}
+      />
       <CheckerSheet open={phone === 'checker'} onClose={() => setPhone(null)} />
       <Toasts />
     </div>
