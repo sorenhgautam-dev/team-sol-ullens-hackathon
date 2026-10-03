@@ -12,8 +12,7 @@ import { CHARACTERS, CHARACTERS_BY_ID, NAME_MAX, cleanName, type Character, type
 import { paydayFor } from '@/content/economy'
 import { Button } from '@/ui/Button'
 import { PxIcon, type IconName } from '@/ui/PxIcon'
-import { drawOutlined } from '@/ui/pixel/sprites'
-import { drawPortrait } from '@/ui/pixel/portraits'
+import { PixelPortrait } from '@/ui/pixel/PixelPortrait'
 import { useCash } from '@/ui/useMoney'
 import { useCharacterName } from './persona'
 import { t } from '@/i18n'
@@ -202,17 +201,9 @@ function CitizenCard({ c, selected, onSelect }: { c: Character; selected: boolea
 }
 
 function Portrait({ id, badge }: { id: CharacterId; badge: string }) {
-  const ref = useRef<HTMLCanvasElement>(null)
-  useEffect(() => {
-    const ctx = ref.current?.getContext('2d')
-    if (!ctx) return
-    ctx.imageSmoothingEnabled = false
-    ctx.clearRect(0, 0, 32, 32)
-    drawOutlined(ctx, 1, 1, 30, 30, (c) => drawPortrait(c, id))
-  }, [id])
   return (
     <div className="relative h-[72px] w-[72px] shrink-0" style={{ boxShadow: '0 0 0 3px var(--frame-dark)' }}>
-      <canvas ref={ref} width={32} height={32} className="pixelated block h-full w-full" aria-hidden />
+      <PixelPortrait id={id} size={72} />
       <span className="absolute -bottom-2 right-[-6px] bg-ink px-1 font-pixel text-[9px] text-[#f5c26b]">{badge}</span>
     </div>
   )

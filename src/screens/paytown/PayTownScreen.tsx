@@ -24,6 +24,7 @@ import { PIXEL_SCALE } from '@/ui/palette'
 import { Balance } from '@/ui/Balance'
 import { Button } from '@/ui/Button'
 import { PxIcon } from '@/ui/PxIcon'
+import { PixelPortrait } from '@/ui/pixel/PixelPortrait'
 import { Toasts } from '@/ui/Toasts'
 import { Joystick } from '@/screens/walk/Joystick'
 import { EncounterSheet } from './EncounterSheet'
@@ -352,8 +353,8 @@ export function PayTownScreen() {
     <div className="relative flex h-full flex-col overflow-hidden bg-[#2b1d10] text-ink">
       {/* HUD: who, balance, scams faced, phone. Nothing else. */}
       <header className="flex items-center gap-2 bg-paper px-3 pb-2 pt-[max(8px,env(safe-area-inset-top))]">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-card text-3xl pixel-frame-soft" aria-hidden>
-          {ch.emoji}
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden bg-card pixel-frame-soft" aria-hidden>
+          <PixelPortrait id={characterId} size={44} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="truncate font-pixel text-[12px]">

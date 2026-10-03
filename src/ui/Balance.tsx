@@ -23,7 +23,9 @@ export function Balance({ amountNpr, state, size = 'lg', className = '', base = 
     <div className={`font-pixel tabular-nums ${color} ${sizeCls} ${className}`} aria-live="polite">
       <NumberFlow
         value={Math.round(value * 10 ** digits) / 10 ** digits}
-        format={{ style: 'currency', currency, maximumFractionDigits: digits, minimumFractionDigits: digits, currencyDisplay: currency === 'NPR' ? 'code' : 'narrowSymbol' }}
+        // Rupees read "Rs. 30,000", as everywhere else in the game.
+        format={currency === 'NPR' ? { maximumFractionDigits: digits, minimumFractionDigits: digits } : { style: 'currency', currency, maximumFractionDigits: digits, minimumFractionDigits: digits, currencyDisplay: 'narrowSymbol' }}
+        prefix={currency === 'NPR' ? 'Rs. ' : undefined}
         locales={currency === 'NPR' || currency === 'INR' ? 'en-IN' : 'en-US'}
         transformTiming={{ duration: 600, easing: 'ease-out' }}
         spinTiming={{ duration: 600, easing: 'ease-out' }}
