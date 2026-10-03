@@ -16,6 +16,8 @@ interface ScamState {
   answers: Answer[]
   /** How many times each encounter has been shown (for shuffling and practice). */
   attempts: Record<string, number>
+  /** The player's own names for the characters (empty = the default name). */
+  names: Partial<Record<CharacterId, string>>
   /** Real messages handled: `${round}:${id}` -> choice id. */
   real: Record<string, string>
   start: (characterId: CharacterId, seed: number) => void
@@ -24,6 +26,7 @@ interface ScamState {
   answer: (a: Answer) => void
   shown: (encounterId: string) => number
   handleReal: (id: string, choiceId: string) => void
+  setName: (id: CharacterId, name: string) => void
 }
 
 export const useScam = create<ScamState>()(
@@ -35,6 +38,7 @@ export const useScam = create<ScamState>()(
       answers: [],
       attempts: {},
       real: {},
+      names: {},
       start: (characterId, seed) => set({ characterId, seed, round: 1, answers: [], attempts: {}, real: {} }),
       nextRound: () => set((s) => ({ round: s.round + 1, attempts: {} })),
       answer: (a) => set((s) => ({ answers: [...s.answers, a] })),
@@ -43,6 +47,7 @@ export const useScam = create<ScamState>()(
         set((s) => ({ attempts: { ...s.attempts, [encounterId]: n + 1 } }))
         return n
       },
+      setName: (id, name) => set((s) => ({ names: { ...s.names, [id]: name } })),
       handleReal: (id, choiceId) => set((s) => (s.real[id] ? s : { real: { ...s.real, [id]: choiceId } })),
     }),
     { name: 'next-payday-scamtown-v1' },

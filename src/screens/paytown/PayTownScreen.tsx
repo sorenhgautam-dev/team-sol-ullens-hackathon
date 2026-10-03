@@ -24,6 +24,7 @@ import { Toasts } from '@/ui/Toasts'
 import { Joystick } from '@/screens/walk/Joystick'
 import { EncounterSheet } from './EncounterSheet'
 import { RealMessageSheet } from './RealMessageSheet'
+import { useCharacterName } from './persona'
 import { CheckerSheet } from './CheckerSheet'
 import { t } from '@/i18n'
 import { haptic, play, unlockAudio } from '@/audio/sfx'
@@ -64,6 +65,7 @@ export function PayTownScreen() {
   const demo = useGame((s) => s.settings.demoMode)
   const { characterId, answers, real } = useScam()
   const ch = CHARACTERS_BY_ID[characterId]
+  const name = useCharacterName(characterId)
   const reduced = useReducedMotion()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const holderRef = useRef<HTMLDivElement>(null)
@@ -245,7 +247,7 @@ export function PayTownScreen() {
         </span>
         <div className="min-w-0 flex-1">
           <div className="truncate font-pixel text-[12px]">
-            {t(ch.nameKey)} · {t('town.payday', { n: round })}
+            {name} · {t('town.payday', { n: round })}
           </div>
           <Balance amountNpr={ledger.balance} base={currency} state={ledger.balance < payday * round ? 'warn' : 'safe'} size="md" />
           <div className="truncate text-[12px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size, total: thisRound.length })}</div>
