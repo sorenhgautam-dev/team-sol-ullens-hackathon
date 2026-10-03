@@ -4,6 +4,7 @@ import { useGameShallow } from '@/state/gameStore'
 import { useInstall, useUpdate } from '@/state/pwa'
 import { useTown } from '@/state/townStore'
 import { Button } from '@/ui/Button'
+import { PxIcon } from '@/ui/PxIcon'
 import { dailySeed } from '@/engine/badges'
 import { t } from '@/i18n'
 import { FEATURES } from '@/config/features'
@@ -87,7 +88,7 @@ export function TitleScreen() {
           </Button>
         )}
         <Button variant={FEATURES.budgeting && canContinue ? 'secondary' : 'primary'} size="lg" className="w-full" onClick={() => (FEATURES.budgeting ? go(seenIntro ? 'profile' : 'twin') : settings.demoMode ? startRun('sita') : go('pick'))}>
-          🎮 {t('title.play')}
+          <PxIcon name="play" size={12} /> {t('title.play')}
         </Button>
         {FEATURES.budgeting && (
           <Button variant="secondary" className="w-full" onClick={startDaily}>
@@ -121,12 +122,12 @@ export function TitleScreen() {
               📅 {t('fix.title')}
             </Button>
             <Button variant="ghost" onClick={() => go('settings')}>
-              ⚙️ {t('title.settings')}
+              <PxIcon name="settings" size={12} /> {t('title.settings')}
             </Button>
           </div>
         ) : (
           <Button variant="ghost" className="w-full" onClick={() => go('settings')}>
-            ⚙️ {t('title.settings')}
+            <PxIcon name="settings" size={12} /> {t('title.settings')}
           </Button>
         )}
         <p className="pt-2 text-center text-[11px] text-ink/50">{t('app.disclaimer')}</p>
