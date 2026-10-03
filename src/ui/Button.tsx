@@ -4,11 +4,11 @@ import { play, unlockAudio, haptic } from '@/audio/sfx'
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'shield'
 
 const styles: Record<Variant, string> = {
-  primary: 'pixel-btn bg-marigold text-[#07080f]',
+  primary: 'pixel-btn bg-teal text-white',
   secondary: 'pixel-btn bg-card2 text-ink',
   ghost: 'bg-transparent text-ink/80 font-pixel uppercase tracking-wide',
-  danger: 'pixel-btn bg-danger text-[#07080f]',
-  shield: 'pixel-btn bg-shield text-[#07080f]',
+  danger: 'pixel-btn bg-danger text-white',
+  shield: 'pixel-btn bg-card text-teal',
 }
 
 export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {

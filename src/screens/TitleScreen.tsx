@@ -4,7 +4,6 @@ import { useGameShallow } from '@/state/gameStore'
 import { useInstall } from '@/state/pwa'
 import { useTown } from '@/state/townStore'
 import { Button } from '@/ui/Button'
-import { PixelSkyline } from '@/ui/PixelSkyline'
 import { dailySeed } from '@/engine/badges'
 import { t } from '@/i18n'
 import { haptic, play } from '@/audio/sfx'
@@ -41,7 +40,19 @@ export function TitleScreen() {
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-paper pb-[max(24px,env(safe-area-inset-bottom))] text-ink">
-      <PixelSkyline className="absolute inset-x-0 top-0" />
+      {/* The team's town map as the backdrop: the same world the game is played in. */}
+      <div className="absolute inset-x-0 top-0 h-[58%] overflow-hidden" aria-hidden>
+        <motion.img
+          src={`${import.meta.env.BASE_URL}sprites/town-map.png`}
+          alt=""
+          className="pixelated absolute left-0 top-0 w-full"
+          initial={{ y: 0 }}
+          animate={{ y: [0, -120, 0] }}
+          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+          draggable={false}
+        />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(239,226,196,0) 40%, var(--paper) 100%)' }} />
+      </div>
       <div className="relative flex flex-1 flex-col items-center justify-end px-6 pb-4 text-center" style={{ minHeight: 300 }}>
         <motion.button
           className="pixel-frame flex h-20 w-20 select-none items-center justify-center bg-marigold text-5xl"
@@ -64,7 +75,7 @@ export function TitleScreen() {
         </h1>
         <p className="mt-3 font-pixel-soft text-lg text-honey">{t('app.tagline')}</p>
         <p className="mt-1 text-sm text-ink/70">{t('app.pitch')}</p>
-        {settings.demoMode && <span className="mt-3 bg-ink px-3 py-1 font-pixel text-xs text-paper">DEMO</span>}
+        {settings.demoMode && <span className="mt-3 bg-ink px-3 py-1 font-pixel text-xs text-card">DEMO</span>}
       </div>
       <div className="relative mx-auto w-full max-w-sm space-y-2 px-6">
         {canContinue && (

@@ -53,11 +53,15 @@ export function Joystick({ onChange, size = 124 }: Props) {
       aria-label="Move"
       aria-valuenow={0}
     >
-      <div className="absolute inset-0 bg-[#07080f]/55" style={{ boxShadow: 'inset 0 0 0 3px #f4f1e8, inset 0 0 0 5px #07080f' }} />
-      <div className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 bg-[#f4f1e8]/50" />
+      <div className="absolute inset-0 bg-card2" style={{ boxShadow: 'inset 0 0 0 3px var(--frame-dark), inset 0 0 0 5px var(--card)' }} />
+      {/* four-way arrows */}
+      <div className="absolute left-1/2 top-2 h-0 w-0 -translate-x-1/2 border-x-[6px] border-b-[7px] border-x-transparent border-b-[var(--ink-soft)]" />
+      <div className="absolute bottom-2 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[7px] border-x-transparent border-t-[var(--ink-soft)]" />
+      <div className="absolute left-2 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-r-[7px] border-y-transparent border-r-[var(--ink-soft)]" />
+      <div className="absolute right-2 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-l-[7px] border-y-transparent border-l-[var(--ink-soft)]" />
       <div
-        className="absolute left-1/2 top-1/2 bg-marigold"
-        style={{ width: 36, height: 36, transform: `translate(calc(-50% + ${knob.x}px), calc(-50% + ${knob.y}px))`, boxShadow: '0 0 0 3px #07080f, 0 3px 0 3px #07080f' }}
+        className="absolute left-1/2 top-1/2 bg-teal"
+        style={{ width: 36, height: 36, transform: `translate(calc(-50% + ${knob.x}px), calc(-50% + ${knob.y}px))`, boxShadow: '0 0 0 3px var(--frame-dark), 0 3px 0 3px var(--frame-dark), inset 0 0 0 3px #2a8a80' }}
       />
     </div>
   )
