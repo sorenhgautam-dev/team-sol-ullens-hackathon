@@ -128,3 +128,44 @@ export function drawStamp(ctx: Ctx, text: string, x: number, y: number, color: s
   ctx.fillText(text, 0, 1)
   ctx.restore()
 }
+
+/* ---------- consistent ink outline for code-drawn sprites ---------- */
+
+const outlineCache = new Map<string, { art: HTMLCanvasElement; mask: HTMLCanvasElement }>()
+const INK = '#2b1d10'
+
+/**
+ * Draw a sprite with the same 1 px ink outline the recoloured vendor art has.
+ * `draw` paints in local coordinates inside a w×h box whose top-left lands at (x, y).
+ */
+export function drawOutlined(ctx: Ctx, x: number, y: number, w: number, h: number, draw: (c: Ctx) => void) {
+  const key = `${w}x${h}`
+  let pair = outlineCache.get(key)
+  if (!pair) {
+    const mk = () => {
+      const c = document.createElement('canvas')
+      c.width = w + 2
+      c.height = h + 2
+      return c
+    }
+    pair = { art: mk(), mask: mk() }
+    outlineCache.set(key, pair)
+  }
+  const a = pair.art.getContext('2d')!
+  const m = pair.mask.getContext('2d')!
+  a.clearRect(0, 0, w + 2, h + 2)
+  a.save()
+  a.translate(1, 1)
+  draw(a)
+  a.restore()
+  m.globalCompositeOperation = 'source-over'
+  m.clearRect(0, 0, w + 2, h + 2)
+  m.drawImage(pair.art, 0, 0)
+  m.globalCompositeOperation = 'source-in'
+  m.fillStyle = INK
+  m.fillRect(0, 0, w + 2, h + 2)
+  const ox = Math.round(x) - 1
+  const oy = Math.round(y) - 1
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) ctx.drawImage(pair.mask, ox + dx, oy + dy)
+  ctx.drawImage(pair.art, ox, oy)
+}
