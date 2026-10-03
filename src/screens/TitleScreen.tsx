@@ -4,6 +4,7 @@ import { useGameShallow } from '@/state/gameStore'
 import { useInstall } from '@/state/pwa'
 import { useTown } from '@/state/townStore'
 import { Button } from '@/ui/Button'
+import { PixelSkyline } from '@/ui/PixelSkyline'
 import { t } from '@/i18n'
 import { haptic, play } from '@/audio/sfx'
 
@@ -37,28 +38,33 @@ export function TitleScreen() {
   }
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-between overflow-hidden bg-cream px-6 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(40px,env(safe-area-inset-top))] text-ink">
-      <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-marigold/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-sky/30 blur-3xl" />
-      <div className="relative flex flex-1 flex-col items-center justify-center text-center">
+    <div className="relative flex h-full flex-col overflow-hidden bg-paper pb-[max(24px,env(safe-area-inset-bottom))] text-ink">
+      <PixelSkyline className="absolute inset-x-0 top-0" />
+      <div className="relative flex flex-1 flex-col items-center justify-end px-6 pb-4 text-center" style={{ minHeight: 300 }}>
         <motion.button
-          className="select-none text-8xl"
+          className="pixel-frame flex h-20 w-20 select-none items-center justify-center bg-marigold text-5xl"
           whileTap={{ scale: 0.9 }}
           onPointerDown={startHold}
           onPointerUp={endHold}
           onPointerLeave={endHold}
           aria-label={t('app.name')}
           animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'steps(6)' }}
         >
           🪙
         </motion.button>
-        <h1 className="mt-4 text-5xl font-black leading-none tracking-tight">{t('app.name')}</h1>
-        <p className="mt-3 text-lg font-bold text-ink/70">{t('app.tagline')}</p>
-        <p className="mt-1 text-sm text-ink/50">{t('app.pitch')}</p>
-        {settings.demoMode && <span className="mt-3 rounded-full bg-ink px-3 py-1 text-xs font-bold text-paper">🎬 demo</span>}
+        <h1 className="mt-5 flex gap-[0.08em] text-[34px] leading-none text-ink" style={{ textShadow: '3px 3px 0 #07080f' }}>
+          {'NEXT PAYDAY'.split('').map((ch, i) => (
+            <motion.span key={i} initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.05 * i, type: 'spring', stiffness: 400, damping: 18 }}>
+              {ch === ' ' ? '\u00a0' : ch}
+            </motion.span>
+          ))}
+        </h1>
+        <p className="mt-3 font-pixel-soft text-lg text-honey">{t('app.tagline')}</p>
+        <p className="mt-1 text-sm text-ink/70">{t('app.pitch')}</p>
+        {settings.demoMode && <span className="mt-3 bg-ink px-3 py-1 font-pixel text-xs text-paper">DEMO</span>}
       </div>
-      <div className="relative w-full max-w-sm space-y-2">
+      <div className="relative mx-auto w-full max-w-sm space-y-2 px-6">
         {canContinue && (
           <Button variant="primary" size="lg" className="w-full" onClick={() => go('life')}>
             ▶️ {t('title.continue', { day })}

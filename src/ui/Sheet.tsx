@@ -25,12 +25,12 @@ export function Sheet({ open, onClose, title, children, height = 'tall', hideClo
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
         >
-          <div className="absolute inset-0 bg-ink/40" onClick={onClose} aria-hidden />
+          <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden />
           <motion.section
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className={`relative flex w-full flex-col overflow-hidden rounded-t-[28px] bg-paper text-ink shadow-2xl ${h}`}
+            className={`relative flex w-full flex-col overflow-hidden bg-paper text-ink ${height === 'full' ? '' : 'pixel-frame-soft border-t-4 border-ink'} ${h}`}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -42,7 +42,7 @@ export function Sheet({ open, onClose, title, children, height = 'tall', hideClo
               if (info.offset.y > 120 && onClose) onClose()
             }}
           >
-            {height !== 'full' && <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-ink/15" />}
+            {height !== 'full' && <div className="mx-auto mt-2 h-1 w-12 bg-ink/30" />}
             {(title || !hideClose) && (
               <header className="flex items-center justify-between px-5 pb-2 pt-3">
                 <h2 className="text-lg font-extrabold">{title}</h2>

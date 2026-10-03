@@ -16,7 +16,7 @@ export function SettingsScreen() {
           {t('settings.back')}
         </Button>
       </div>
-      <ul className="mt-4 divide-y divide-ink/5 rounded-card bg-card shadow-sm">
+      <ul className="mt-4 divide-y divide-ink/5 rounded-card bg-card pixel-frame-soft">
         <Toggle label={`🔊 ${t('settings.sound')}`} value={settings.sound} onChange={(v) => setSettings({ sound: v })} />
         <Toggle label={`📳 ${t('settings.haptics')}`} value={settings.haptics} onChange={(v) => setSettings({ haptics: v })} />
         <Toggle label={`🐢 ${t('settings.reducedMotion')}`} value={settings.reducedMotion} onChange={(v) => setSettings({ reducedMotion: v })} />
@@ -77,7 +77,7 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
         className={`relative h-8 w-14 rounded-full transition-colors ${value ? 'bg-shield' : 'bg-ink/20'}`}
         onClick={() => onChange(!value)}
       >
-        <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${value ? 'translate-x-7' : 'translate-x-1'}`} />
+        <span className={`absolute top-1 h-6 w-6 rounded-full bg-card shadow transition-transform ${value ? 'translate-x-7' : 'translate-x-1'}`} />
       </button>
     </li>
   )

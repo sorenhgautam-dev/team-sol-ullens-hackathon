@@ -1,31 +1,27 @@
+@import '@fontsource/silkscreen/400.css';
+@import '@fontsource/silkscreen/700.css';
+@import '@fontsource/pixelify-sans/400.css';
+@import '@fontsource/pixelify-sans/600.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Arcade pixel palette. The whole game runs on this dark dusk theme. */
 :root {
-  --paper: #f7f5f0;
-  --card: #ffffff;
-  --ink: #1e2a44;
-  --ink-rgb: 30 42 68;
-  --cream: #fff4e0;
-  --shell: #e9e4d8;
-  color-scheme: light;
+  --paper: #141633;
+  --card: #1f2147;
+  --card-2: #2a2d5c;
+  --ink: #f4f1e8;
+  --ink-rgb: 244 241 232;
+  --cream: #2b2340;
+  --shell: #07080f;
+  --frame: #f4f1e8;
+  --frame-dark: #07080f;
+  color-scheme: dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #171a23;
-    --card: #222634;
-    --ink: #eef0f6;
-    --ink-rgb: 238 240 246;
-    --cream: #2a2436;
-    --shell: #0d0f15;
-    color-scheme: dark;
-  }
 }
 
 html,
@@ -39,8 +35,29 @@ body {
   background: var(--shell);
   color: var(--ink);
   font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
   font-variant-numeric: tabular-nums;
   overscroll-behavior: none;
+}
+
+/* Pixel type: headings, numbers and buttons. Body text stays in the readable font. */
+.font-pixel,
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Silkscreen', 'Pixelify Sans', monospace;
+  letter-spacing: 0.02em;
+}
+.font-pixel-soft {
+  font-family: 'Pixelify Sans', 'Silkscreen', monospace;
+}
+
+img,
+canvas,
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .phone-shell {
@@ -69,24 +86,98 @@ body {
 
 @media (min-width: 480px) and (min-height: 900px) {
   .phone {
-    border-radius: 40px;
     box-shadow:
-      0 0 0 10px #1e2a44,
-      0 30px 60px rgba(0, 0, 0, 0.35);
+      0 0 0 4px #f4f1e8,
+      0 0 0 10px #07080f,
+      0 0 0 14px #2a2d5c,
+      0 30px 60px rgba(0, 0, 0, 0.6);
   }
 }
 
 @layer components {
+  /* 9-slice-style pixel frame drawn with hard-edged box shadows (no images needed). */
+  .pixel-frame {
+    border-radius: 0 !important;
+    background: var(--card);
+    box-shadow:
+      0 0 0 2px var(--frame-dark),
+      0 0 0 4px var(--frame),
+      0 0 0 6px var(--frame-dark),
+      6px 6px 0 6px var(--frame-dark);
+  }
+  .pixel-frame-soft {
+    border-radius: 0 !important;
+    background: var(--card);
+    box-shadow:
+      0 0 0 2px var(--frame-dark),
+      0 0 0 3px var(--card-2);
+  }
+  .pixel-inset {
+    border-radius: 0 !important;
+    background: var(--paper);
+    box-shadow:
+      inset 0 0 0 2px var(--frame-dark),
+      inset 0 0 0 3px var(--card-2);
+  }
+  .pixel-btn {
+    border-radius: 0 !important;
+    font-family: 'Silkscreen', 'Pixelify Sans', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow:
+      0 0 0 2px var(--frame-dark),
+      0 4px 0 2px var(--frame-dark);
+    transition:
+      transform 0.06s steps(2),
+      box-shadow 0.06s steps(2);
+  }
+  .pixel-btn:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow:
+      0 0 0 2px var(--frame-dark),
+      0 0 0 2px var(--frame-dark);
+  }
   .input {
-    @apply w-full rounded-xl border border-ink/10 bg-card px-2 py-1.5 text-sm font-normal text-ink;
+    @apply w-full border-0 bg-paper px-2 py-1.5 text-sm font-normal text-ink;
+    border-radius: 0;
+    box-shadow: inset 0 0 0 2px var(--frame-dark);
+  }
+  .pixel-meter {
+    border-radius: 0 !important;
+    background: var(--frame-dark);
+    box-shadow: 0 0 0 2px var(--card-2);
+  }
+  .pixel-meter > * {
+    border-radius: 0 !important;
+    background-image: repeating-linear-gradient(90deg, transparent 0 6px, rgba(0, 0, 0, 0.25) 6px 8px);
+  }
+  .scanlines::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px);
+    mix-blend-mode: multiply;
   }
 }
 
-/* Home Street idle motion: transform and opacity only. */
+/* Every rounded utility becomes square: pixel UI has no round corners. */
+.rounded-card,
+.rounded-2xl,
+.rounded-3xl,
+.rounded-xl,
+.rounded-lg,
+.rounded-full,
+.rounded-t-\[28px\],
+.rounded-tl-md {
+  border-radius: 0 !important;
+}
+
+/* Idle motion: transform and opacity only. */
 .spot {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s steps(3);
 }
 .spot:active {
   transform: scale(0.96);
@@ -94,7 +185,7 @@ body {
 .sway {
   transform-box: fill-box;
   transform-origin: 50% 0%;
-  animation: sway 4s ease-in-out infinite alternate;
+  animation: sway 4s steps(6) infinite alternate;
 }
 @keyframes sway {
   from {
@@ -107,7 +198,7 @@ body {
 .tail {
   transform-box: fill-box;
   transform-origin: 20% 80%;
-  animation: tail 1.8s ease-in-out infinite;
+  animation: tail 1.8s steps(4) infinite;
 }
 @keyframes tail {
   0%,
@@ -123,7 +214,7 @@ body {
   }
 }
 .smoke {
-  animation: smoke 4s linear infinite;
+  animation: smoke 4s steps(8) infinite;
 }
 @keyframes smoke {
   from {
@@ -136,7 +227,7 @@ body {
   }
 }
 .twinkle {
-  animation: twinkle 2.4s ease-in-out infinite alternate;
+  animation: twinkle 2.4s steps(2) infinite alternate;
 }
 @keyframes twinkle {
   from {
@@ -147,15 +238,41 @@ body {
   }
 }
 .danger-pulse {
-  animation: dangerPulse 1.6s ease-in-out infinite alternate;
+  animation: dangerPulse 1.6s steps(4) infinite alternate;
 }
 @keyframes dangerPulse {
   from {
-    opacity: 0.08;
+    opacity: 0.1;
   }
   to {
-    opacity: 0.22;
+    opacity: 0.3;
   }
+}
+.blink {
+  animation: blink 1s steps(2) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.shake {
+  animation: shake 0.3s steps(6);
+}
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 2px); }
+  40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, -1px); }
+  80% { transform: translate(3px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+.flash-white {
+  animation: flashWhite 0.18s steps(2);
+}
+@keyframes flashWhite {
+  0%, 100% { filter: none; }
+  50% { filter: brightness(10) saturate(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {

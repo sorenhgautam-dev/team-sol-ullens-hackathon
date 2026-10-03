@@ -14,10 +14,10 @@ interface Props {
 export function Balance({ amountNpr, state, size = 'lg', className = '' }: Props) {
   const currency = useGame((s) => s.settings.currency)
   const digits = currency === 'NPR' || currency === 'INR' ? 0 : 2
-  const color = state === 'danger' ? 'text-danger' : state === 'warn' ? 'text-amber-500' : 'text-green-600'
-  const sizeCls = size === 'lg' ? 'text-4xl' : size === 'md' ? 'text-2xl' : 'text-lg'
+  const color = state === 'danger' ? 'text-danger' : state === 'warn' ? 'text-honey' : 'text-shield'
+  const sizeCls = size === 'lg' ? 'text-3xl' : size === 'md' ? 'text-xl' : 'text-base'
   return (
-    <div className={`font-extrabold tabular-nums ${color} ${sizeCls} ${className}`} aria-live="polite">
+    <div className={`font-pixel tabular-nums ${color} ${sizeCls} ${className}`} aria-live="polite">
       <NumberFlow
         value={Math.round(convert(amountNpr, currency) * 10 ** digits) / 10 ** digits}
         format={{ style: 'currency', currency, maximumFractionDigits: digits, minimumFractionDigits: digits, currencyDisplay: 'code' }}
