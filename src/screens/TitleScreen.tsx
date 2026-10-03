@@ -6,6 +6,7 @@ import { useTown } from '@/state/townStore'
 import { Button } from '@/ui/Button'
 import { dailySeed } from '@/engine/badges'
 import { t } from '@/i18n'
+import { FEATURES } from '@/config/features'
 import { haptic, play } from '@/audio/sfx'
 
 export function TitleScreen() {
@@ -84,12 +85,14 @@ export function TitleScreen() {
             ▶️ {t('title.continue', { day })}
           </Button>
         )}
-        <Button variant={canContinue ? 'secondary' : 'primary'} size="lg" className="w-full" onClick={() => go(seenIntro ? 'profile' : 'twin')}>
+        <Button variant={canContinue ? 'secondary' : 'primary'} size="lg" className="w-full" onClick={() => go(FEATURES.budgeting && !seenIntro ? 'twin' : 'profile')}>
           🎮 {t('title.play')}
         </Button>
-        <Button variant="secondary" className="w-full" onClick={startDaily}>
-          📅 {t('title.daily')} · {dailySeed().code}
-        </Button>
+        {FEATURES.budgeting && (
+          <Button variant="secondary" className="w-full" onClick={startDaily}>
+            📅 {t('title.daily')} · {dailySeed().code}
+          </Button>
+        )}
         {install.deferred && !install.installed && (
           <Button variant="shield" className="w-full" onClick={() => void install.install()}>
             ⬇️ {t('title.install')}
@@ -102,23 +105,29 @@ export function TitleScreen() {
         )}
         {update.offlineReady && !update.ready && <p className="text-center text-xs text-teal">{t('title.offlineReady')}</p>}
         {install.isIos && !install.isStandalone && <p className="text-center text-xs text-ink/60">{t('title.iosHint')}</p>}
-        <div className="grid grid-cols-3 gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              startTown(settings.demoMode ? 1 : Date.now() % 100000, { demoOutbreak: settings.demoMode })
-              go('town')
-            }}
-          >
-            🗺️ {t('title.town')}
-          </Button>
-          <Button variant="ghost" onClick={() => go('fixDates')}>
-            📅 {t('fix.title')}
-          </Button>
-          <Button variant="ghost" onClick={() => go('settings')}>
+        {FEATURES.budgeting ? (
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                startTown(settings.demoMode ? 1 : Date.now() % 100000, { demoOutbreak: settings.demoMode })
+                go('town')
+              }}
+            >
+              🗺️ {t('title.town')}
+            </Button>
+            <Button variant="ghost" onClick={() => go('fixDates')}>
+              📅 {t('fix.title')}
+            </Button>
+            <Button variant="ghost" onClick={() => go('settings')}>
+              ⚙️ {t('title.settings')}
+            </Button>
+          </div>
+        ) : (
+          <Button variant="ghost" className="w-full" onClick={() => go('settings')}>
             ⚙️ {t('title.settings')}
           </Button>
-        </div>
+        )}
         <p className="pt-2 text-center text-[11px] text-ink/50">{t('app.disclaimer')}</p>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { MotionConfig } from 'framer-motion'
+import { BUDGETING_SCREENS, FEATURES } from '@/config/features'
 import { useGame } from '@/state/gameStore'
 import { useReducedMotion } from '@/state/hooks'
 import { PhoneFrame } from '@/ui/PhoneFrame'
@@ -20,7 +21,9 @@ import { StyleguideScreen } from '@/screens/StyleguideScreen'
 import { CardsScreen } from '@/screens/CardsScreen'
 
 export default function App() {
-  const screen = useGame((s) => s.screen)
+  const raw = useGame((s) => s.screen)
+  // Budgeting screens are hidden behind the feature flag: they fall back to the title.
+  const screen = !FEATURES.budgeting && BUDGETING_SCREENS.has(raw) ? 'title' : raw
   const go = useGame((s) => s.go)
   const reduced = useReducedMotion()
   if (screen === 'debug') return <DebugPage />

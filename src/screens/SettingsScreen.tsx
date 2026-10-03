@@ -3,6 +3,7 @@ import { useInstall } from '@/state/pwa'
 import type { Currency } from '@/i18n/currency'
 import { Button } from '@/ui/Button'
 import { t } from '@/i18n'
+import { FEATURES } from '@/config/features'
 
 export function SettingsScreen() {
   const { settings, setSettings, go, resetAll, monthOver, day } = useGameShallow((s) => ({ settings: s.settings, setSettings: s.setSettings, go: s.go, resetAll: s.resetAll, monthOver: s.monthOver, day: s.day }))
@@ -42,15 +43,19 @@ export function SettingsScreen() {
           </Button>
         )}
         {install.isIos && !install.isStandalone && <p className="text-center text-xs text-ink/60">{t('title.iosHint')}</p>}
-        <Button className="w-full" onClick={() => go('impact')}>
-          🧪 {t('settings.impact')}
-        </Button>
-        <Button className="w-full" onClick={() => go('fixDates')}>
-          📅 {t('fix.title')}
-        </Button>
-        <Button className="w-full" onClick={() => go('debug')}>
-          🛠️ {t('debug.title')}
-        </Button>
+        {FEATURES.budgeting && (
+          <>
+            <Button className="w-full" onClick={() => go('impact')}>
+              🧪 {t('settings.impact')}
+            </Button>
+            <Button className="w-full" onClick={() => go('fixDates')}>
+              📅 {t('fix.title')}
+            </Button>
+            <Button className="w-full" onClick={() => go('debug')}>
+              🛠️ {t('debug.title')}
+            </Button>
+          </>
+        )}
         <Button
           variant="danger"
           className="w-full"
