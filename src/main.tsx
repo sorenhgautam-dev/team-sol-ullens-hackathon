@@ -7,12 +7,9 @@ import { useGame } from './state/gameStore'
 import { useUpdate } from './state/pwa'
 
 // Exposed for demo scripting and QA automation (no network, no secrets).
-;(window as unknown as { nextPayday: typeof useGame }).nextPayday = useGame
+;(window as unknown as { scamTown: typeof useGame }).scamTown = useGame
 
-// /styleguide or #styleguide opens the style guide directly.
-if (/styleguide\/?$/.test(location.pathname) || location.hash === '#styleguide') useGame.setState({ screen: 'styleguide' })
-
-// Never reload a month in progress: an update waits until the player chooses to apply it from the title screen.
+// Never reload in the middle of a payday: an update waits until the player chooses to apply it from the title screen.
 const updateSW = registerSW({
   immediate: true,
   onNeedRefresh: () => useUpdate.setState({ ready: true, apply: () => void updateSW(true) }),

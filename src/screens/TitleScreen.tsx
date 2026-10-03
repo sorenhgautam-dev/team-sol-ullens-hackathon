@@ -2,32 +2,17 @@ import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameShallow } from '@/state/gameStore'
 import { useInstall, useUpdate } from '@/state/pwa'
-import { useTown } from '@/state/townStore'
 import { Button } from '@/ui/Button'
 import { PxIcon } from '@/ui/PxIcon'
-import { dailySeed } from '@/engine/badges'
 import { t } from '@/i18n'
-import { FEATURES } from '@/config/features'
 import { startRun } from '@/screens/paytown/PickScreen'
 import { haptic, play } from '@/audio/sfx'
 
 export function TitleScreen() {
-  const { go, seenIntro, day, monthOver, decisions, settings, setSettings, toast, startDaily } = useGameShallow((s) => ({
-    go: s.go,
-    startDaily: s.startDaily,
-    seenIntro: s.seenIntro,
-    day: s.day,
-    monthOver: s.monthOver,
-    decisions: s.decisions,
-    settings: s.settings,
-    setSettings: s.setSettings,
-    toast: s.toast,
-  }))
+  const { go, settings, setSettings, toast } = useGameShallow((s) => ({ go: s.go, settings: s.settings, setSettings: s.setSettings, toast: s.toast }))
   const install = useInstall()
   const update = useUpdate()
-  const startTown = useTown((x) => x.start)
   const timer = useRef<number | null>(null)
-  const canContinue = seenIntro && !monthOver && (day > 1 || decisions.length > 0)
 
   const startHold = () => {
     timer.current = window.setTimeout(() => {
@@ -82,19 +67,9 @@ export function TitleScreen() {
         {settings.demoMode && <span className="mt-3 bg-ink px-3 py-1 font-pixel text-xs text-card">DEMO</span>}
       </div>
       <div className="relative mx-auto w-full max-w-sm space-y-2 px-6">
-        {FEATURES.budgeting && canContinue && (
-          <Button variant="primary" size="lg" className="w-full" onClick={() => go('walk')}>
-            ▶️ {t('title.continue', { day })}
-          </Button>
-        )}
-        <Button variant={FEATURES.budgeting && canContinue ? 'secondary' : 'primary'} size="lg" className="w-full" onClick={() => (FEATURES.budgeting ? go(seenIntro ? 'profile' : 'twin') : settings.demoMode ? startRun('sita') : go('pick'))}>
+        <Button variant="primary" size="lg" className="w-full" onClick={() => (settings.demoMode ? startRun('sita') : go('pick'))}>
           <PxIcon name="play" size={12} /> {t('title.play')}
         </Button>
-        {FEATURES.budgeting && (
-          <Button variant="secondary" className="w-full" onClick={startDaily}>
-            📅 {t('title.daily')} · {dailySeed().code}
-          </Button>
-        )}
         {install.deferred && !install.installed && (
           <Button variant="shield" className="w-full" onClick={() => void install.install()}>
             ⬇️ {t('title.install')}
@@ -107,29 +82,9 @@ export function TitleScreen() {
         )}
         {update.offlineReady && !update.ready && <p className="text-center text-xs text-teal">{t('title.offlineReady')}</p>}
         {install.isIos && !install.isStandalone && <p className="text-center text-xs text-ink/60">{t('title.iosHint')}</p>}
-        {FEATURES.budgeting ? (
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                startTown(settings.demoMode ? 1 : Date.now() % 100000, { demoOutbreak: settings.demoMode })
-                go('town')
-              }}
-            >
-              🗺️ {t('title.town')}
-            </Button>
-            <Button variant="ghost" onClick={() => go('fixDates')}>
-              📅 {t('fix.title')}
-            </Button>
-            <Button variant="ghost" onClick={() => go('settings')}>
-              <PxIcon name="settings" size={12} /> {t('title.settings')}
-            </Button>
-          </div>
-        ) : (
-          <Button variant="ghost" className="w-full" onClick={() => go('settings')}>
-            <PxIcon name="settings" size={12} /> {t('title.settings')}
-          </Button>
-        )}
+        <Button variant="ghost" className="w-full" onClick={() => go('settings')}>
+          <PxIcon name="settings" size={12} /> {t('title.settings')}
+        </Button>
         <p className="pt-2 text-center text-[11px] text-ink/50">{t('app.disclaimer')}</p>
       </div>
     </div>
