@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         name: 'Next Payday',
         short_name: 'Next Payday',
-        description: 'Same income. Different month.',
+        description: 'Survive payday: a game about the five most common money scams.',
         theme_color: '#18665F',
         background_color: '#EFE2C4',
         display: 'standalone',
