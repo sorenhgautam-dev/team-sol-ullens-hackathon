@@ -10,7 +10,8 @@ This project was built with Claude Code (Claude) as an AI coding assistant. Ever
 ## Claude Code
 - Code implementation: engine, content data files, UI, state, workers, PWA setup.
 - Tests (Vitest), refactoring, animation and effect code, placeholder art, CI and Pages workflows.
-- Documentation drafts: README, this file, docs/ASSESSMENT.md, docs/UI_NOTES.md.
+- Documentation drafts: README, this file, docs/ASSESSMENT.md, docs/UI_NOTES.md, docs/AUDIT.md.
+- Upgrade-brief pass: walkable village, cash-flow strip, consequence cards, parchment art direction, Impact Lab rewrite.
 
 ## Reviewed by the team (fill in)
 - [ ] Engine daily order and the Section 3 numbers (`src/engine/simulate.ts`, tests)
@@ -18,6 +19,7 @@ This project was built with Claude Code (Claude) as an AI coding assistant. Ever
 - [ ] Scam Squad content and tells (`src/content/enemies.ts`, `src/i18n/en.ts`)
 - [ ] Shift Finder ranking (`src/engine/shiftFinder.ts`)
 - [ ] Town Mode rules (`src/engine/town.ts`, `src/engine/spread.ts`)
-- [ ] Impact Lab questions and summary
+- [ ] Impact Lab situations and their best answers (`src/content/impactQuestions.ts`)
+- [ ] Consequence card wording (`src/engine/consequence.ts`, `conseq.*` strings)
 
-Updated at the end of Phase 0.
+Updated after the upgrade-brief pass (2026-10-03).
