@@ -1251,7 +1251,7 @@ export const en = {
   'paytown.title': 'Scam Town',
   'town.scamsFaced': 'Scams faced {n}/{total}',
   'town.payday': 'Payday {n}',
-  'town.goHint': 'Something is happening! Follow the arrow. Use the stick, then tap the button.',
+  'town.goHint': 'Something is happening! Tap the building to walk there, or use the stick.',
   'town.cue.market': '{name}! Over here!',
   'town.cue.job': 'You’re hired!',
   'town.cue.home': 'New number',

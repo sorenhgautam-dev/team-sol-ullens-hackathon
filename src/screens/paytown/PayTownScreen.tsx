@@ -13,7 +13,8 @@ import { currentEncounter, firstAnswers, townLedger, type EncounterDef } from '@
 import { CUES, REAL_MESSAGES } from '@/content/scamTown'
 import { useEncounters } from './useEncounters'
 import { CHARACTERS_BY_ID } from '@/content/characters'
-import { MAP_H, PLACES, WORLD_H, WORLD_W, startWalker, stepWalker, type Rect, type WalkerState } from '@/walk/map'
+import { PLACES, WALK_SPEED, WORLD_H, WORLD_W, startWalker, stepWalker, type Rect, type WalkerState } from '@/walk/map'
+import { findPath, type Point } from '@/walk/path'
 import { DISTRICT_COLS, DISTRICT_DOORS, DISTRICT_GROUND, DISTRICT_OBJECTS, DISTRICT_ROWS, DISTRICT_TOP, TILE } from '@/walk/district'
 import tilesUrl from '@/assets/pixel/tiles.png'
 import { drawOutlined } from '@/ui/pixel/sprites'
@@ -35,6 +36,8 @@ import { haptic, play, unlockAudio } from '@/audio/sfx'
 const SCALE = PIXEL_SCALE.world
 const STEP_MS = 1000 / 60
 const DOOR_RADIUS = 16
+/** How quickly the camera catches up with the walker each step (1 = locked on). */
+const CAM_EASE = 0.16
 /** The pause after a rule card before the next scam's cue pops up, and before the first one. */
 const NEXT_CUE_MS = 2000
 const FIRST_CUE_MS = 600
@@ -50,6 +53,13 @@ interface ShownCue {
   building: EncounterDef['building']
   at: number
   label: string
+}
+
+/** A tap-to-walk route: waypoints left, and the scam to open on arrival (if the tap was on its building). */
+interface Route {
+  points: Point[]
+  enter: string | null
+  stuck: number
 }
 
 /** Which map building houses each encounter: the team's town, or the south district. */
@@ -92,9 +102,14 @@ export function PayTownScreen() {
   const district = useRef<HTMLCanvasElement | null>(null)
   const walker = useRef<WalkerState>(startWalker())
   const input = useRef({ dx: 0, dy: 0 })
+  const cam = useRef<Point | null>(null)
+  const route = useRef<Route | null>(null)
+  const tapMark = useRef<(Point & { at: number }) | null>(null)
   const frame = useRef(0)
   const [vw, setVw] = useState(130)
   const [vh, setVh] = useState(150)
+  const view = useRef({ w: vw, h: vh })
+  view.current = { w: vw, h: vh }
   const [near, setNear] = useState<EncounterDef | null>(null)
   const [open, setOpen] = useState<EncounterDef | null>(null)
   const [phone, setPhone] = useState<'real' | 'checker' | null>(null)
@@ -129,6 +144,8 @@ export function PayTownScreen() {
       w.y = bank.y + 2
     }
     walker.current = w
+    cam.current = null
+    route.current = null
   }, [demo, round])
 
   // The phone buzzes when a real message arrives.
@@ -180,6 +197,7 @@ export function PayTownScreen() {
     ;(window as unknown as { __teleport?: (x: number, y: number) => void }).__teleport = (x, y) => {
       walker.current.x = x
       walker.current.y = y
+      route.current = null
     }
   }, [])
 
@@ -196,8 +214,27 @@ export function PayTownScreen() {
     const step = () => {
       frame.current++
       const w = walker.current
-      if (!busy) stepWalker(w, input.current.dx, input.current.dy)
-      else w.moving = false
+      // The stick or keys always win over a tap-to-walk route.
+      const steering = Math.hypot(input.current.dx, input.current.dy) > 0.15
+      if (steering) route.current = null
+      let arrived: string | null = null
+      if (busy) w.moving = false
+      else if (route.current) arrived = followRoute(w, route.current)
+      else stepWalker(w, input.current.dx, input.current.dy)
+      if (arrived !== null || (route.current && route.current.points.length === 0)) {
+        route.current = null
+        tapMark.current = null
+      }
+      // The camera eases after the walker instead of snapping to it.
+      const v = view.current
+      const tx = Math.min(WORLD_W - v.w, Math.max(0, w.x - v.w / 2))
+      const ty = Math.min(WORLD_H - v.h, Math.max(0, w.y - v.h * 0.55))
+      const c = cam.current
+      if (!c || reduced || Math.hypot(tx - c.x, ty - c.y) > 80) cam.current = { x: tx, y: ty }
+      else {
+        c.x += (tx - c.x) * CAM_EASE
+        c.y += (ty - c.y) * CAM_EASE
+      }
       if (w.odometer > 40 && !walkedRef.current) {
         walkedRef.current = true
         setWalked(true)
@@ -214,6 +251,11 @@ export function PayTownScreen() {
         setNear(found)
         if (found) play('tap')
       }
+      // Tapped the building whose turn it is: go straight in on arrival.
+      if (arrived && found?.id === arrived && !doneRef.current.has(arrived)) {
+        play('pop')
+        setOpen(found)
+      }
     }
     const loop = (now: number) => {
       acc += Math.min(250, now - last)
@@ -224,7 +266,7 @@ export function PayTownScreen() {
         step()
         n++
       }
-      render(ctx, canvas.width, canvas.height, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current, cueRef.current, nearId)
+      if (cam.current) render(ctx, view.current.w, view.current.h, cam.current, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current, cueRef.current, nearId, route.current ? tapMark.current : null)
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
@@ -272,6 +314,33 @@ export function PayTownScreen() {
     }
   }, [busy, allDone, near, go])
 
+  // Tap to walk: tap any spot to walk there along the paths; tap the building whose turn it is to walk in.
+  const onTap = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    unlockAudio()
+    if (busy) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const c = cam.current ?? { x: 0, y: 0 }
+    const p = { x: c.x + (e.clientX - rect.left) / SCALE, y: c.y + (e.clientY - rect.top) / SCALE }
+    let target: Point = p
+    let enter: string | null = null
+    for (const enc of encountersRef.current) {
+      if (doneRef.current.has(enc.id) || enc.id !== cueRef.current?.id) continue
+      const place = doorOf(enc.building)
+      const a = cueAnchor(place)
+      const b = place.body
+      const onBody = b && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h
+      if (onBody || Math.hypot(p.x - place.door.x, p.y - place.door.y) < 20 || Math.hypot(p.x - a.x, p.y - (a.y - 12)) < 22) {
+        target = place.door
+        enter = enc.id
+      }
+    }
+    const path = findPath(walker.current, target)
+    if (!path) return
+    route.current = { points: path, enter, stuck: 0 }
+    tapMark.current = { ...path[path.length - 1]!, at: frame.current }
+    play('tap')
+  }
+
   const onStick = useCallback((dx: number, dy: number) => {
     input.current = { dx, dy }
   }, [])
@@ -303,7 +372,7 @@ export function PayTownScreen() {
       </header>
 
       <div ref={holderRef} className="relative min-h-0 flex-1" onPointerDown={unlockAudio}>
-        <canvas ref={canvasRef} width={vw} height={vh} className="pixelated block" style={{ width: vw * SCALE, height: vh * SCALE }} role="img" aria-label={t('paytown.title')} />
+        <canvas ref={canvasRef} width={vw * SCALE} height={vh * SCALE} className="block touch-none" style={{ width: vw * SCALE, height: vh * SCALE }} role="img" aria-label={t('paytown.title')} onPointerDown={onTap} />
         {pendingReal && !busy && (
           <button
             className="absolute right-2 top-2 bg-card px-2 py-1 text-[13px] font-bold pixel-frame-soft"
@@ -346,10 +415,39 @@ export function PayTownScreen() {
   )
 }
 
+/** One step along a tap-to-walk route. Returns the scam to open when the walk ends at its door. */
+function followRoute(w: WalkerState, r: Route): string | null {
+  const wp = r.points[0]
+  if (!wp) return r.enter
+  const dx = wp.x - w.x
+  const dy = wp.y - w.y
+  const dist = Math.hypot(dx, dy)
+  if (dist <= 1.2) {
+    r.points.shift()
+    if (r.points.length === 0) {
+      w.moving = false
+      return r.enter ?? ''
+    }
+    return null
+  }
+  const bx = w.x
+  const by = w.y
+  stepWalker(w, dx, dy, Math.min(WALK_SPEED, dist))
+  // Pushed against something for a while (a closed door, say)? Give up quietly.
+  if (Math.hypot(w.x - bx, w.y - by) < 0.05) {
+    if (++r.stuck > 20) {
+      r.points.length = 0
+      return ''
+    }
+  } else r.stuck = 0
+  return null
+}
+
 function render(
   ctx: CanvasRenderingContext2D,
   vw: number,
   vh: number,
+  camera: Point,
   w: WalkerState,
   frame: number,
   map: HTMLImageElement | null,
@@ -360,17 +458,35 @@ function render(
   encounters: EncounterDef[],
   cue: ShownCue | null,
   nearId: string | null,
+  tap: (Point & { at: number }) | null,
 ) {
-  const camX = Math.round(Math.min(WORLD_W - vw, Math.max(0, w.x - vw / 2)))
-  const camY = Math.round(Math.min(WORLD_H - vh, Math.max(0, w.y - vh * 0.55)))
+  // The canvas is full screen resolution: the pixel art is drawn at 3x, and the camera can
+  // sit between art pixels (in screen-pixel steps), so scrolling is smooth, not jumpy.
+  const S = SCALE
+  const snap = (v: number) => Math.round(v * S) / S
+  const fx = snap(camera.x)
+  const fy = snap(camera.y)
+  const camX = Math.floor(fx)
+  const camY = Math.floor(fy)
+  ctx.setTransform(1, 0, 0, 1, 0, 0)
+  ctx.imageSmoothingEnabled = false
   ctx.fillStyle = '#5f8f4e'
-  ctx.fillRect(0, 0, vw, vh)
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  ctx.setTransform(S, 0, 0, S, Math.round((camX - fx) * S), Math.round((camY - fy) * S))
   // The team's town on top, the south district below it.
-  if (map && camY < MAP_H) ctx.drawImage(map, camX, camY, vw, Math.min(vh, MAP_H - camY), 0, 0, vw, Math.min(vh, MAP_H - camY))
-  if (district && camY + vh > DISTRICT_TOP) {
-    const sy = Math.max(0, camY - DISTRICT_TOP)
-    const dy = Math.max(0, DISTRICT_TOP - camY)
-    ctx.drawImage(district, camX, sy, vw, vh - dy, 0, dy, vw, vh - dy)
+  if (map) ctx.drawImage(map, -camX, -camY)
+  if (district) ctx.drawImage(district, -camX, DISTRICT_TOP - camY)
+
+  // Where a tap is walking to: a small blinking diamond.
+  if (tap && !reduced ? frame % 30 < 22 : !!tap) {
+    const tx = Math.round(tap!.x - camX)
+    const ty = Math.round(tap!.y - camY)
+    ctx.fillStyle = '#2b1d10'
+    ctx.fillRect(tx - 1, ty - 3, 3, 7)
+    ctx.fillRect(tx - 3, ty - 1, 7, 3)
+    ctx.fillStyle = '#f5c26b'
+    ctx.fillRect(tx, ty - 2, 1, 5)
+    ctx.fillRect(tx - 2, ty, 5, 1)
   }
 
   for (const e of encounters) {
@@ -405,9 +521,19 @@ function render(
     drawText(ctx, t(`town.building.${e.building}`), dx, dy - 40, done.has(e.id) ? '#c9ac7a' : '#fbf4e2', 7)
   }
 
-  const sx = Math.round(w.x - camX)
-  const sy = Math.round(w.y - camY)
+  // The walker sits between art pixels too, so it glides with the camera; a soft shadow grounds it.
+  const wx = snap(w.x) - camX
+  const wy = snap(w.y) - camY
+  const sx = Math.round(wx)
+  const sy = Math.round(wy)
+  ctx.save()
+  ctx.translate(wx - sx, wy - sy)
+  ctx.fillStyle = 'rgba(43,29,16,0.28)'
+  ctx.fillRect(sx - 3, sy - 1, 7, 1)
+  ctx.fillRect(sx - 5, sy, 11, 2)
+  ctx.fillRect(sx - 3, sy + 2, 7, 1)
   drawOutlined(ctx, sx - 7, sy - 18, 14, 20, (c) => drawSitaTop(c, 7, 18, w.facing, Math.floor(w.odometer / 5), w.moving, false, look))
+  ctx.restore()
 
   // The current scam's cue, drawn over everything so it is never hidden.
   if (cue) {
