@@ -17,7 +17,7 @@ import { PLACES, WALK_SPEED, WORLD_H, WORLD_W, startWalker, stepWalker, type Rec
 import { findPath, type Point } from '@/walk/path'
 import { DISTRICT_COLS, DISTRICT_DOORS, DISTRICT_GROUND, DISTRICT_OBJECTS, DISTRICT_ROWS, DISTRICT_SIGNS, DISTRICT_TOP, TILE } from '@/walk/district'
 import tilesUrl from '@/assets/pixel/tiles.png'
-import { drawText } from '@/ui/pixel/topdown'
+import { drawText } from '@/ui/pixel/text'
 import { drawCue, drawDoorArrow } from '@/ui/pixel/cues'
 import { drawPerson, PERSON_TOP, type PersonLook } from '@/ui/pixel/people'
 import { drawBirds, drawCloudShadows, drawFountainSparkle, drawTownsperson, townsfolk } from '@/ui/pixel/ambient'

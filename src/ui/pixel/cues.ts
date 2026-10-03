@@ -7,7 +7,7 @@
 import type { CueKind } from '@/content/scamTown'
 import { PALETTE as P } from '@/ui/palette'
 import { drawPerson, type PersonLook } from './people'
-import { drawText } from './topdown'
+import { drawText } from './text'
 
 type Ctx = CanvasRenderingContext2D
 const FONT = '7px Silkscreen, monospace'
