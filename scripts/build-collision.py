@@ -22,6 +22,7 @@ C = 4
 OPEN = [
     (180, 172, 32, 12),  # in front of the clock tower door
     (24, 280, 24, 12),   # bank steps
+    (36, 456, 24, 30),   # the dirt path from Sita's door out through the garden gate
 ]
 BLOCK = [
     (296, 0, 9, 537),    # the frame on the right edge of the artwork

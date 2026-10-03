@@ -117,6 +117,22 @@ export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_
     s.y += ny
     moved = true
   }
+  // Corner sliding: blocked by a fence post or a door frame with a gap just to one side? Slide toward the gap.
+  if (!moved) {
+    const vertical = Math.abs(ny) > Math.abs(nx)
+    for (let d = 1; d <= 6 && !moved; d++) {
+      for (const side of [-1, 1]) {
+        const ox = vertical ? side * d : 0
+        const oy = vertical ? 0 : side * d
+        if (isWalkable(s.x + ox + (vertical ? 0 : nx), s.y + oy + (vertical ? ny : 0), maxY) && isWalkable(s.x + Math.sign(ox) * speed * 0.6, s.y + Math.sign(oy) * speed * 0.6, maxY)) {
+          s.x += Math.sign(ox) * speed * 0.6
+          s.y += Math.sign(oy) * speed * 0.6
+          moved = true
+          break
+        }
+      }
+    }
+  }
   s.moving = moved
   if (moved) s.odometer += speed
   if (Math.abs(dx) > Math.abs(dy)) s.facing = dx > 0 ? 'right' : 'left'

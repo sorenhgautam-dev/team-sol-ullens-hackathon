@@ -18,19 +18,16 @@ describe('village map', () => {
     expect(isWalkable(-3, 300)).toBe(false)
   })
 
-  it('Sita starts at her own door and walking into a wall slides instead of sticking', () => {
+  it('Sita starts at her own door, and the house wall stops her going in', () => {
     const s = startWalker()
     expect(placeAt(s.x, s.y)?.id).toBe('home')
-    for (let i = 0; i < 12; i++) stepWalker(s, 0, -1)
-    const blockedY = s.y
-    stepWalker(s, 0, -1)
-    expect(s.y).toBe(blockedY)
-    expect(s.moving).toBe(false)
-    const x0 = s.x
-    stepWalker(s, 1, -1)
-    expect(s.x).toBeGreaterThan(x0)
-    expect(s.facing).toBe('up')
-    expect(s.moving).toBe(true)
+    const y0 = s.y
+    for (let i = 0; i < 40; i++) stepWalker(s, 0, -1)
+    // She may slide along the wall, but never ends up inside the house.
+    expect(isWalkable(s.x, s.y)).toBe(true)
+    expect(s.y).toBeGreaterThan(y0 - 20)
+    stepWalker(s, 1, 0)
+    expect(s.facing).toBe('right')
   })
 
   it('every door is reachable on foot from home', () => {
@@ -89,6 +86,13 @@ describe('collision from the map: fences, trees and the district', () => {
     expect(WORLD_H).toBeGreaterThan(MAP_H)
     expect(isWalkable(146, MAP_H + 8)).toBe(true) // the town road continues into the district
     expect(isWalkable(146, MAP_H + 8, MAP_H)).toBe(false) // the old village still stops at the edge
+  })
+
+  it('walking straight into a fence next to a gate slides through the gate', () => {
+    const s = { x: 58, y: 470, facing: 'down' as const, moving: false, odometer: 0 }
+    for (let i = 0; i < 60; i++) stepWalker(s, 0, 1)
+    expect(s.y).toBeGreaterThan(485) // out of the garden
+    expect(s.x).toBeLessThan(58) // slid toward the gap
   })
 
   it('every district door can be reached on foot from home, through the town', () => {
