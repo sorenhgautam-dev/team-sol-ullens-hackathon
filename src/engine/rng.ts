@@ -29,6 +29,3 @@ export function subRng(seed: number, label: string): Rng {
   return mulberry32((seed ^ hashString(label)) >>> 0)
 }
 
-export function pickInt(rng: Rng, min: number, max: number): number {
-  return min + Math.floor(rng() * (max - min + 1))
-}

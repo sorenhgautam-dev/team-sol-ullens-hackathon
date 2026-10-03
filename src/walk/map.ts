@@ -52,8 +52,8 @@ export const WALK_SPEED = 1.15
  * buildings, stalls and water are solid; roads, grass and the plaza are open. Below the
  * town, the south district's tiles decide (scripts/build-district.py).
  */
-function solidAt(px: number, py: number, maxY: number): boolean {
-  if (px < 1 || px >= WORLD_W - 1 || py < 1 || py >= maxY) return true
+function solidAt(px: number, py: number): boolean {
+  if (px < 1 || px >= WORLD_W - 1 || py < 1 || py >= WORLD_H) return true
   if (py < DISTRICT_TOP) {
     const cx = Math.floor(px / CELL)
     const cy = Math.floor(py / CELL)
@@ -66,13 +66,13 @@ function solidAt(px: number, py: number, maxY: number): boolean {
   return DISTRICT_BLOCKED[r]![c] !== '.'
 }
 
-/** True when Sita's feet can stand at (x, y). `maxY` limits the world (the old village stops at the town edge). */
-export function isWalkable(x: number, y: number, maxY: number = WORLD_H): boolean {
+/** True when the walker's feet can stand at (x, y). */
+export function isWalkable(x: number, y: number): boolean {
   const l = x - SITA_HALF_W
   const r = x + SITA_HALF_W - 0.01
   const t = y - SITA_FEET_H
   const b = y - 0.01
-  return !solidAt(l, t, maxY) && !solidAt(r, t, maxY) && !solidAt(l, b, maxY) && !solidAt(r, b, maxY) && !solidAt(x, b, maxY)
+  return !solidAt(l, t) && !solidAt(r, t) && !solidAt(l, b) && !solidAt(r, b) && !solidAt(x, b)
 }
 
 export type Facing = 'down' | 'up' | 'left' | 'right'
@@ -93,7 +93,7 @@ export function startWalker(): WalkerState {
 }
 
 /** Move by a unit-ish vector, sliding along obstacles. Mutates and returns the state. */
-export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_SPEED, maxY: number = WORLD_H): WalkerState {
+export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_SPEED): WalkerState {
   const len = Math.hypot(dx, dy)
   if (len < 0.15) {
     s.moving = false
@@ -102,11 +102,11 @@ export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_
   const nx = (dx / len) * speed
   const ny = (dy / len) * speed
   let moved = false
-  if (Math.abs(nx) > 0.01 && isWalkable(s.x + nx, s.y, maxY)) {
+  if (Math.abs(nx) > 0.01 && isWalkable(s.x + nx, s.y)) {
     s.x += nx
     moved = true
   }
-  if (Math.abs(ny) > 0.01 && isWalkable(s.x, s.y + ny, maxY)) {
+  if (Math.abs(ny) > 0.01 && isWalkable(s.x, s.y + ny)) {
     s.y += ny
     moved = true
   }
@@ -117,7 +117,7 @@ export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_
       for (const side of [-1, 1]) {
         const ox = vertical ? side * d : 0
         const oy = vertical ? 0 : side * d
-        if (isWalkable(s.x + ox + (vertical ? 0 : nx), s.y + oy + (vertical ? ny : 0), maxY) && isWalkable(s.x + Math.sign(ox) * speed * 0.6, s.y + Math.sign(oy) * speed * 0.6, maxY)) {
+        if (isWalkable(s.x + ox + (vertical ? 0 : nx), s.y + oy + (vertical ? ny : 0)) && isWalkable(s.x + Math.sign(ox) * speed * 0.6, s.y + Math.sign(oy) * speed * 0.6)) {
           s.x += Math.sign(ox) * speed * 0.6
           s.y += Math.sign(oy) * speed * 0.6
           moved = true

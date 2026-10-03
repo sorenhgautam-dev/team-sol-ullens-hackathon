@@ -50,6 +50,6 @@ export const useScam = create<ScamState>()(
       setName: (id, name) => set((s) => ({ names: { ...s.names, [id]: name } })),
       handleReal: (id, choiceId) => set((s) => (s.real[id] ? s : { real: { ...s.real, [id]: choiceId } })),
     }),
-    { name: 'next-payday-scamtown-v1' },
+    { name: 'scam-town-run-v1' },
   ),
 )

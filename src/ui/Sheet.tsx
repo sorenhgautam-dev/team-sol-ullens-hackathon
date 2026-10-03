@@ -12,7 +12,7 @@ interface SheetProps {
   hideClose?: boolean
 }
 
-/** Bottom sheet used for tabs' sub-views, Gap Bridge, mailbox, goodnight, events and scams. */
+/** Bottom sheet for the scam encounters, real messages and the Scam Checker. */
 export function Sheet({ open, onClose, title, children, height = 'tall', hideClose }: SheetProps) {
   const h = height === 'full' ? 'h-full rounded-none' : height === 'tall' ? 'max-h-[88%]' : 'max-h-[88%]'
   return (

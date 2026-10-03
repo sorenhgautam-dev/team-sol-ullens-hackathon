@@ -80,7 +80,6 @@ describe('collision from the map: fences, trees and the district', () => {
   it('the world now runs past the bottom of the town into the south district', () => {
     expect(WORLD_H).toBeGreaterThan(MAP_H)
     expect(isWalkable(146, MAP_H + 8)).toBe(true) // the town road continues into the district
-    expect(isWalkable(146, MAP_H + 8, MAP_H)).toBe(false) // the old village still stops at the edge
   })
 
   it('walking straight into a fence next to a gate slides through the gate', () => {

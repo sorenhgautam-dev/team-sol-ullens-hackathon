@@ -50,25 +50,7 @@ export const en = {
   'char.aarav.relative': 'your mum',
   'char.aarav.item': 'my old phone',
 
-  /* ---- Events ---- */
-
-  /* ---- Gap Bridge ---- */
-
-  /* ---- Life Log ---- */
-
-  /* ---- Scam Squad ---- */
-
-  /* tells: phrase shown in the message, and why it matters */
-
-  /* encounter UI */
-
-  /* ---- Mailbox ---- */
-
-  /* ---- Life Mode UI ---- */
-
-  /* ---- Results ---- */
-
-  /* ---- Title / intro / settings ---- */
+  /* ---- Title and settings ---- */
   'title.play': 'Play',
   'title.install': 'Install the app',
   'title.update': 'Update ready: tap to restart (your game is saved)',
@@ -90,11 +72,7 @@ export const en = {
   'settings.back': 'Back',
   'settings.version': 'Offline-ready. No account, no network calls.',
 
-  /* ---- Fix My Dates ---- */
-
-  /* ---- Impact Lab ---- */
-
-  /* ---- Town Mode ---- */
+  /* ---- Scam Town ---- */
 
   'common.close': 'Close',
   'common.back': 'Back',
