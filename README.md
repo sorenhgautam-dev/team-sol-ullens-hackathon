@@ -6,7 +6,7 @@
 
 A mobile game (installable PWA, fully offline, no account, no network calls) for anyone who gets paid, sends money home, sells things online or looks for work. It is global: pick USD, EUR, GBP, INR or NPR in Settings and every amount becomes **typical local pay and prices for that currency, never an exchange-rate conversion** (Sita's money from abroad is Rs. 30,000, Bikash's week of deliveries Rs. 7,000). Senders are generic ("your bank", "a delivery company", "a payment app"), and no real brands appear.
 
-*Built by **Team Sol** for the Ullens Hack-a-thon (FinTech). Earlier builds were called Next Payday.*
+*Built by **Team Sol** for the Ullens Hack-a-thon (FinTech).*
 
 | Title | Pick who you are | Scam Town | The call |
 |---|---|---|---|
@@ -26,7 +26,7 @@ Payday is when people have the most money in their account, and it is exactly wh
 
 ## What our team did
 
-- **The idea and the pivot.** We started with a budgeting life-sim (still in the code, switched off), then decided to rebuild the whole game around scam awareness and make it global.
+- **The idea.** A global game about the scams that hit people on payday, where you feel the pressure of a scam before you learn the rule that beats it.
 - **The scams and their rules.** We chose the five core traps (bank code call, "approve to receive" payment, parcel fee link, pay-to-work job, guaranteed returns), wrote the rule each one teaches, and asked for more everyday traps for later paydays. We insisted on real messages mixed in, so the lesson is *verify*, not *fear*.
 - **The game design.** Payday as the moment of risk. Fall, close-call and safe choices with no villain shown until after you decide. The money changes first and the scammer is revealed second. "Try again" replays an encounter, a Scam Immunity Score with three tiers, a Family Warning Card to share, a Scam Checker on the phone, and a gauntlet loop of paydays.
 - **Realistic money.** We called for typical local pay in every currency instead of converted amounts, so nobody is paid lakhs by accident.
@@ -36,7 +36,7 @@ Payday is when people have the most money in their account, and it is exactly wh
 
 ## How we built it
 
-We wrote the specs and briefs (`CLAUDE.md`, `NEXT_PAYDAY_MASTER_PROMPT.md`, `Next_Payday_Claude_Upgrade_Brief.md`), made the designs, and worked with **Claude Code** (Anthropic) as our AI pair-programmer: we described each feature, reviewed and playtested what came back, and asked for changes until it played the way we wanted. Claude Code wrote most of the implementation code and tests and the placeholder art; commits it worked on carry a `Co-Authored-By: Claude` trailer, and [docs/AI_USAGE.md](docs/AI_USAGE.md) lists who did what.
+We wrote the specs and briefs (now kept in `CLAUDE.md`), made the designs, and worked with **Claude Code** (Anthropic) as our AI pair-programmer: we described each feature, reviewed and playtested what came back, and asked for changes until it played the way we wanted. Claude Code wrote most of the implementation code and tests and the placeholder art; commits it worked on carry a `Co-Authored-By: Claude` trailer, and [docs/AI_USAGE.md](docs/AI_USAGE.md) lists who did what.
 
 ## How a game goes
 
@@ -84,8 +84,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 - **The money is in an engine, not the UI.** `src/engine/scamTown.ts` books payday and every scam loss as balanced double-entry postings (Wallet, Income, ScamLoss), computes the Scam Immunity Score, and shuffles choices with a seeded random generator (never `Math.random`). Only the first answer per encounter counts, so practice replays never change your balance.
 - **Content is data.** The twenty-one traps (each citizen's own five, plus the everyday six), their three choices, losses (as shares of the character's pay), rule cards and the three real messages are in `src/content/scamTown.ts`; local pay and prices per currency in `src/content/economy.ts`; characters in `src/content/characters.ts`; all text in `src/i18n/en.ts`.
 - **The paths work.** `scripts/build-collision.py` reads the team's map into a 4-pixel walk grid (fences, trees, buildings, stalls and water blocked; roads, grass and the plaza open). `scripts/build-district.py` builds the south district from tiles with its own blocked tiles. The walker's whole foot box is checked, and they slide around posts and door frames toward gaps. An audit of every reachable spot found the bank roof and some tree tops walkable; they are now blocked by hand in the script. **Tap to walk** (`src/walk/path.ts`) finds a shortest path on the same grid with the same rule, then walks it in straight lines. The town is drawn at full screen resolution with the art at 2x, wide enough to see the streets around you, and the camera eases after the walker in screen-pixel steps. Townsfolk walk their rounds on real paths, cloud shadows drift over the map and birds fly over, just for show (`src/ui/pixel/ambient.ts`).
-- **The earlier budgeting game is still in the code, switched off.** `src/config/features.ts` has `FEATURES.budgeting = false`. Setting it to `true` brings back the Money Calendar, forecast, Plan Your Week, Gap Bridge, Twin Wallets, Town Mode, Fix My Dates, Impact Lab, energy and hearts, with their engine (`simulate()`) and tests untouched.
-- **196 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), each citizen's own five scams with fifteen different rules, every message filling its placeholders in every currency, collision (fences block, the gate opens, roofs and tree tops are solid, every door reachable on foot), tap to walk (the real walker reaches all 14 doors without touching a wall), editable names, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), the currency helper, and every test of the budgeting engine.
+- **51 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), each citizen's own five scams with fifteen different rules, every message filling its placeholders in every currency, collision (fences block, the gate opens, roofs and tree tops are solid, every door reachable on foot), tap to walk (the real walker reaches all 14 doors without touching a wall), editable names, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), and the currency helper.
 
 ## Tools, libraries and assets
 
@@ -96,7 +95,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 | Claude Code (Anthropic) | AI pair-programmer under our direction (see "How we built it") |
 | Node.js 20, npm | Running, testing and building the app |
 | Vite, React, TypeScript, Tailwind | The app itself (versions below) |
-| Vitest | 196 automated tests |
+| Vitest | 51 automated tests |
 | Python 3 + Pillow | Our asset scripts: recolouring the vendor art (`scripts/unify-assets.py`), building the walk grid from the town map (`scripts/build-collision.py`), building the south district from tiles (`scripts/build-district.py`) |
 | Headless Chromium | Scripted playtests and the screenshots in this README |
 | Git, GitHub, GitHub Actions, GitHub Pages | Version control, CI (typecheck, tests, build) and the live site |
@@ -109,8 +108,6 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 | zustand | 5.0.15 | MIT | UI state and saved games |
 | framer-motion | 11.18.2 | MIT | Transitions and sheets |
 | @number-flow/react | 0.5.14 | MIT | Animated balance |
-| @use-gesture/react | 10.3.1 | MIT | Pinch-zoom on the old town map, swipeable cards (budgeting mode) |
-| d3-delaunay | 6.0.4 | ISC | Ward shapes in the old Town Mode (budgeting mode) |
 | zzfx | 1.4.0 | MIT | Sound effects, generated in code |
 | canvas-confetti | 1.9.4 | ISC | Celebration when you score Scam-proof |
 | @fontsource/nunito | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
@@ -130,7 +127,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 | tailwindcss | 3.4.19 | MIT |
 | postcss | 8.5.28 | MIT |
 | autoprefixer | 10.6.1 | MIT |
-| @types/react, @types/react-dom, @types/node, @types/canvas-confetti, @types/d3-delaunay | various | MIT |
+| @types/react, @types/react-dom, @types/node, @types/canvas-confetti | various | MIT |
 
 **Fonts.** All are bundled through @fontsource and work offline. None are loaded from the internet.
 
@@ -140,7 +137,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 | Silkscreen | SIL Open Font License 1.1 | Pixel headings and buttons |
 | Pixelify Sans | SIL Open Font License 1.1 | Pixel accents |
 
-**Pre-made asset packs.** Originals and their licence files are in `public/assets/vendor/`. `scripts/unify-assets.py` recolours them into the game's single palette (`src/ui/palette.ts`) and adds the same ink outline as the rest of the art. The style guide at `/styleguide` shows every result.
+**Pre-made asset packs.** Originals and their licence files are in `public/assets/vendor/`. `scripts/unify-assets.py` recolours them into the game's single palette (`src/ui/palette.ts`) and adds the same ink outline as the rest of the art.
 
 | Pack | Author | Licence | What we use |
 |---|---|---|---|
@@ -172,7 +169,7 @@ npm run typecheck
 npm run build && npm run preview
 ```
 
-Long-press the coin on the title screen for **demo mode**: one character, straight to the bank door. The live site at https://sorenhgautam-dev.github.io/team-sol-ullens-hackathon/ is built from `main` and still shows the earlier budgeting game until this branch is merged.
+Long-press the coin on the title screen for **demo mode**: one character, straight to the bank door. The live site at https://sorenhgautam-dev.github.io/team-sol-ullens-hackathon/ is built from `main`, which does not have this branch yet.
 
 ## Honest notes
 
