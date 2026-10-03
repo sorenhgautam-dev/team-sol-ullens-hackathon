@@ -4,11 +4,11 @@ import { play, unlockAudio, haptic } from '@/audio/sfx'
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'shield'
 
 const styles: Record<Variant, string> = {
-  primary: 'pixel-btn bg-teal text-white',
-  secondary: 'pixel-btn bg-card2 text-ink',
+  primary: 'pixel-btn pixel-btn-primary text-white',
+  secondary: 'pixel-btn text-ink',
   ghost: 'bg-transparent text-ink/80 font-pixel uppercase tracking-wide',
-  danger: 'pixel-btn bg-danger text-white',
-  shield: 'pixel-btn bg-card text-teal',
+  danger: 'pixel-btn pixel-btn-danger text-white',
+  shield: 'pixel-btn text-teal',
 }
 
 export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
@@ -18,7 +18,7 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
 }
 
 export function Button({ variant = 'secondary', size = 'md', silent, className = '', onClick, children, ...rest }: ButtonProps) {
-  const sizes = size === 'lg' ? 'min-h-[56px] px-6 text-base' : size === 'sm' ? 'min-h-[40px] px-3 text-[11px]' : 'min-h-[48px] px-4 text-[13px]'
+  const sizes = size === 'lg' ? 'min-h-[56px] px-3 text-base' : size === 'sm' ? 'min-h-[44px] px-1 text-[11px]' : 'min-h-[48px] px-2 text-[13px]'
   return (
     <motion.button
       whileTap={{ scale: 0.98 }}
