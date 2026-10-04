@@ -28,8 +28,11 @@ export function PayResultsScreen() {
   const { answers, nextRound } = useScam()
   const cash = useCash()
   const { encounters, thisRound, round, payday } = useEncounters()
-  // Rule cards collected over every payday so far.
-  const seen = useMemo(() => encounters.filter((e) => firstAnswers(answers).some((a) => a.encounterId === e.id)), [encounters, answers])
+  // Rule cards collected over every payday so far, in the order they were played.
+  const seen = useMemo(() => {
+    const ids = [...new Set(firstAnswers(answers).map((a) => a.encounterId))]
+    return ids.map((id) => encounters.find((e) => e.id === id)).filter((e): e is EncounterDef => !!e)
+  }, [encounters, answers])
   const params = usePersonaParams()
   const ledger = useMemo(() => townLedger(payday, answers, encounters, round), [payday, answers, encounters, round])
   const imm = useMemo(() => immunity(answers, encounters, round), [answers, encounters, round])
