@@ -173,6 +173,9 @@ export function PayTownScreen() {
   }, [])
 
   const busy = !!open || !!phone || budget
+  // The scam sheet covers the whole town, so the town isn't drawn under it (its own animations get the phone's time).
+  const covered = useRef(false)
+  covered.current = !!open
   const walkedRef = useRef(false)
 
   // Pop up the current scam's cue: at the start, and about two seconds after each rule card.
@@ -271,7 +274,7 @@ export function PayTownScreen() {
         acc -= STEP_MS
         step()
       }
-      if (cam.current) render(ctx, view.current.w, view.current.h, cam.current, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current, cueRef.current, nearId ?? null, route.current ? tapMark.current : null)
+      if (cam.current && !covered.current) render(ctx, view.current.w, view.current.h, cam.current, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current, cueRef.current, nearId ?? null, route.current ? tapMark.current : null)
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
