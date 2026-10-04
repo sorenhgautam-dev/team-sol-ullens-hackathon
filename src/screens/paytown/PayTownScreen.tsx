@@ -109,6 +109,21 @@ function buildDistrict(tiles: HTMLImageElement): HTMLCanvasElement {
       ctx.fillRect(x + 3 + (h % 9), y + 4 + (h % 7), 1, 1)
       ctx.fillRect(x + 9 + (h % 5), y + 10 + (h % 4), 2, 1)
     }
+  // Match the team's map: its colours are deeper and warmer than the tiles. The gains come from
+  // the map's own grass and dirt (measured), so the district reads as the same painted town.
+  const img = ctx.getImageData(0, 0, c.width, c.height)
+  const px = img.data
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i + 3] === 0) continue
+    const r = px[i]!
+    const g = px[i + 1]!
+    const b = px[i + 2]!
+    const [kr, kg, kb] = g > r && g > b ? [0.96, 0.79, 0.64] : [0.88, 0.8, 0.7]
+    px[i] = r * kr
+    px[i + 1] = g * kg
+    px[i + 2] = b * kb
+  }
+  ctx.putImageData(img, 0, 0)
   return c
 }
 const ROAD_TILE = 25
