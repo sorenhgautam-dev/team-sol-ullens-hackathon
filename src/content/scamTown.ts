@@ -96,20 +96,20 @@ export const REAL_SPECS: EncounterSpec[] = [
 ]
 
 /** How often each building is real on a payday (the rest are scams). A real bank branch is a safe place. */
-const REAL_ODDS: Partial<Record<EncounterDef['building'], number>> = { bank: 0.8, post: 0.8 }
+const REAL_ODDS: Partial<Record<EncounterDef['building'], number>> = { bank: 0.5, post: 0.5 }
 /** Demo mode is fixed and predictable: the same mix every time (the bank's call is a scam, first). */
 export const DEMO_MIX: Record<EncounterDef['building'], 'real' | 'scam'> = { bank: 'scam', market: 'real', post: 'real', job: 'scam', invest: 'scam', home: 'scam', cafe: 'real', tech: 'scam', gov: 'real', rental: 'scam', shop: 'real', pharmacy: 'real', bakery: 'real', school: 'real' }
 
 /**
  * Each payday the seed decides, building by building, whether what happens there is real or
- * a scam (bank and post office about 80% real, the rest about half). The same building can be
+ * a scam (scams are most of it: bank and post office about half real, the rest about 30%). The same building can be
  * safe one payday and a trap the next.
  */
 export function mixRound(ids: string[], round: number, seed: number, demo: boolean): string[] {
   return ids.map((id) => {
     const building = ENCOUNTER_SPECS.find((x) => x.id === id)?.building
     if (!building) return id
-    const real = demo ? DEMO_MIX[building] === 'real' : subRng(seed, `mix:${round}:${building}`)() < (REAL_ODDS[building] ?? 0.5)
+    const real = demo ? DEMO_MIX[building] === 'real' : subRng(seed, `mix:${round}:${building}`)() < (REAL_ODDS[building] ?? 0.3)
     return real ? `genuine_${building}` : id
   })
 }

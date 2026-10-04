@@ -78,7 +78,7 @@ describe('encounter content', () => {
     }
   })
 
-  it('each payday mixes real and scam by building, bank and post office mostly real; demo is fixed', () => {
+  it('each payday mixes real and scam by building, mostly scams; demo is fixed', () => {
     const ids = FIRST_PAYDAY.sita
     let bankReal = 0
     let marketReal = 0
@@ -87,9 +87,10 @@ describe('encounter content', () => {
       if (mix[0] === 'genuine_bank') bankReal++
       if (mix[1] === 'genuine_market') marketReal++
     }
-    expect(bankReal).toBeGreaterThan(140) // about 80%
-    expect(marketReal).toBeGreaterThan(70) // about half
-    expect(marketReal).toBeLessThan(130)
+    expect(bankReal).toBeGreaterThan(70) // about half
+    expect(bankReal).toBeLessThan(130)
+    expect(marketReal).toBeGreaterThan(35) // about 30%: scams are most of it
+    expect(marketReal).toBeLessThan(85)
     expect(mixRound(ids, 1, 5, true)).toEqual(mixRound(ids, 1, 99, true)) // demo: the same every time
     expect(mixRound(ids, 1, 5, true)[0]).toBe('bank') // the demo opens with the bank-call scam
     // The same building can be real one payday and a scam the next.
@@ -240,17 +241,14 @@ describe('the gauntlet loop: paydays as rounds', () => {
 })
 
 describe('real stakes: rent and food are due at the end of every payday', () => {
-  it('one scam still leaves enough for rent and food; any two do not, in every currency', () => {
+  it('no scams pays the rent; any two scams leave you short, in every currency', () => {
     for (const cur of CURRENCIES)
       for (const c of CHARACTERS) {
         const enc = localEncounters(cur, c.id)
         const pay = paydayFor(cur, c.id)
         const bills = billsFor(cur, c.id).total
         const own = FIRST_PAYDAY[c.id]
-        for (const id of own) {
-          const one = townLedger(pay, [{ encounterId: id, choiceId: 'accept' }], enc).balance
-          expect(rentCheck(one, bills).win, `${cur} ${c.id} one fall: ${id}`).toBe(true)
-        }
+        expect(rentCheck(townLedger(pay, [], enc).balance, bills).win, `${cur} ${c.id} no scams`).toBe(true)
         for (let i = 0; i < own.length; i++)
           for (let j = i + 1; j < own.length; j++) {
             const two = townLedger(pay, [{ encounterId: own[i]!, choiceId: 'accept' }, { encounterId: own[j]!, choiceId: 'accept' }], enc).balance

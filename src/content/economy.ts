@@ -43,10 +43,10 @@ export function paydayFor(currency: Currency, character: CharacterId): number {
 
 /**
  * What every payday has to cover before the next one: rent and food, as shares of that
- * character's own pay. That leaves about 28%: one scam still leaves enough for rent,
- * two or three do not.
+ * character's own pay, about 80% as for many real households. That leaves under a fifth:
+ * one scam can already leave you short, two always do.
  */
-export const BILL_SHARES = { rent: 0.45, food: 0.27 }
+export const BILL_SHARES = { rent: 0.52, food: 0.3 }
 
 export function billsFor(currency: Currency, character: CharacterId): { rent: number; food: number; total: number } {
   const pay = paydayFor(currency, character)
