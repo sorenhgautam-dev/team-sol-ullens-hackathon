@@ -135,6 +135,49 @@ export function rentCheck(balance: number, bills: number): { win: boolean; leftO
   return { win: balance >= bills, leftOver: Math.max(0, balance - bills), shortBy: Math.max(0, bills - balance) }
 }
 
+/** One decision on a payday: what it was, real or scam, what the player did, and the money. */
+export interface RecordRow {
+  encounterId: string
+  building: EncounterDef['building']
+  channel: EncounterDef['channel']
+  real: boolean
+  choiceId: string
+  moneyIn: number
+  moneyOut: number
+  missed: number
+}
+
+/** Every decision of one payday, in the order they were made (first answers only). */
+export function paydayRecord(answers: Answer[], encounters: EncounterDef[], round: number): RecordRow[] {
+  const rows: RecordRow[] = []
+  for (const a of firstAnswers(answers, round)) {
+    const e = encounters.find((x) => x.id === a.encounterId)
+    const c = choiceOf(encounters, a)
+    if (!e || !c) continue
+    rows.push({ encounterId: e.id, building: e.building, channel: e.channel, real: !!e.real, choiceId: c.id, moneyIn: c.gain ?? 0, moneyOut: (c.cost ?? 0) + c.loss, missed: c.missed ?? 0 })
+  }
+  return rows
+}
+
+/** Two or three personal tips from the actual decisions: what went wrong first, then what went right. */
+export function paydayTips(rows: RecordRow[]): { key: string; n?: number; amount?: number }[] {
+  const tips: { key: string; n?: number; amount?: number }[] = []
+  const fell = rows.filter((r) => !r.real && r.choiceId === 'accept')
+  const links = fell.filter((r) => r.channel === 'text').length
+  const calls = fell.filter((r) => r.channel === 'call').length
+  const paid = fell.filter((r) => r.channel === 'chat' || r.channel === 'payment').length
+  const realNo = rows.filter((r) => r.real && r.choiceId === 'refuse')
+  const checked = rows.filter((r) => r.choiceId === 'verify').length
+  if (links) tips.push({ key: 'tips.links', n: links })
+  if (calls) tips.push({ key: 'tips.calls', n: calls })
+  if (paid) tips.push({ key: 'tips.paid', n: paid })
+  if (realNo.length) tips.push({ key: 'tips.realNo', n: realNo.length, amount: realNo.reduce((s, r) => s + r.missed + r.moneyOut, 0) })
+  if (!fell.length && rows.length) tips.push({ key: 'tips.noScams' })
+  if (checked >= 2) tips.push({ key: 'tips.checked', n: checked })
+  if (!tips.length) tips.push({ key: 'tips.start' })
+  return tips.slice(0, 3)
+}
+
 export type Tier = 'proof' | 'wiser' | 'easy'
 
 /** Scam Immunity Score out of 100 for one payday (or all of them): safe 20, tempted 10, fall 0 per scam, scaled to 100. */

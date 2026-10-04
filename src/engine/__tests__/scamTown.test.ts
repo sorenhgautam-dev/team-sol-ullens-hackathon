@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { currentEncounter, immunity, rentCheck, roundIds, shuffledChoices, timerFactor, townLedger, type Answer } from '../scamTown'
+import { currentEncounter, immunity, paydayRecord, paydayTips, rentCheck, roundIds, shuffledChoices, timerFactor, townLedger, type Answer } from '../scamTown'
 import { CUES, FIRST_PAYDAY, SECOND_PAYDAY, localEncounters, mixRound, REAL_MESSAGES } from '@/content/scamTown'
 import { CHARACTERS } from '@/content/characters'
 import { ECONOMIES, billsFor, paydayFor } from '@/content/economy'
@@ -271,6 +271,31 @@ describe('real stakes: rent and food are due at the end of every payday', () => 
     expect(rentCheck(townLedger(800, fall, enc, 1, bills).balance, bills).win).toBe(false)
     expect(townLedger(800, fall, enc, 2, bills).balance).toBe(800)
     expect(rentCheck(500, 580)).toEqual({ win: false, leftOver: 0, shortBy: 80 })
+  })
+})
+
+describe('the payday record and personal tips', () => {
+  it('records every decision with its money, and tips come from the actual mistakes', () => {
+    const enc = localEncounters('USD', 'sita')
+    const answers = [
+      { encounterId: 'post', choiceId: 'accept', round: 1 }, // paid a fee through a link
+      { encounterId: 'genuine_bank', choiceId: 'refuse', round: 1 }, // ignored a real refund
+      { encounterId: 'job', choiceId: 'verify', round: 1 },
+      { encounterId: 'genuine_market', choiceId: 'verify', round: 1 },
+    ]
+    const rows = paydayRecord(answers, enc, 1)
+    expect(rows.map((r) => [r.encounterId, r.real, r.choiceId])).toEqual([['post', false, 'accept'], ['genuine_bank', true, 'refuse'], ['job', false, 'verify'], ['genuine_market', true, 'verify']])
+    expect(rows[0]!.moneyOut).toBeGreaterThan(0)
+    expect(rows[1]!.missed).toBeGreaterThan(0)
+    expect(rows[3]!.moneyIn).toBeGreaterThan(0)
+    const tips = paydayTips(rows).map((t) => t.key)
+    expect(tips).toEqual(['tips.links', 'tips.realNo', 'tips.checked'])
+  })
+
+  it('a clean payday gets praise, not a list of mistakes', () => {
+    const enc = localEncounters('USD', 'sita')
+    const rows = paydayRecord(FIRST_PAYDAY.sita.map((id) => ({ encounterId: id, choiceId: 'verify', round: 1 })), enc, 1)
+    expect(paydayTips(rows).map((t) => t.key)).toEqual(['tips.noScams', 'tips.checked'])
   })
 })
 

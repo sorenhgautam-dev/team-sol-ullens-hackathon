@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameShallow } from '@/state/gameStore'
 import { useScam } from '@/state/scamStore'
-import { firstAnswers, immunity, rentCheck, townLedger } from '@/engine/scamTown'
+import { firstAnswers, immunity, paydayRecord, paydayTips, rentCheck, townLedger } from '@/engine/scamTown'
 import { useEncounters } from './useEncounters'
 import type { EncounterDef } from '@/engine/scamTown'
 import { Button } from '@/ui/Button'
@@ -38,6 +38,8 @@ export function PayResultsScreen() {
   const params = usePersonaParams()
   const ledger = useMemo(() => townLedger(payday, answers, encounters, round, bills.total), [payday, answers, encounters, round, bills.total])
   const check = rentCheck(ledger.balance, bills.total)
+  const rows = useMemo(() => paydayRecord(answers, encounters, round), [answers, encounters, round])
+  const tips = useMemo(() => paydayTips(rows), [rows])
   const [verdict, setVerdict] = useState(true)
   const imm = useMemo(() => immunity(answers, encounters, round), [answers, encounters, round])
   const lostThisRound = ledger.entries.filter((e) => e.kind === 'scam_loss' && e.round === round).reduce((n, e) => n - e.amount, 0)
@@ -127,6 +129,30 @@ export function PayResultsScreen() {
           })}
         </ul>
         <p className="mt-2 text-[12px] text-ink/60">{t('results2.scoring')}</p>
+      </section>
+
+      {/* The record of this payday's decisions, then tips from the actual mistakes. */}
+      <section className="pixel-frame mt-3 p-3">
+        <h2 className="text-[14px]">{t('results2.record')}</h2>
+        <ul className="mt-2 space-y-1 text-[14px]">
+          {rows.map((r) => (
+            <li key={r.encounterId} className="flex items-center gap-2">
+              <span className={`w-12 shrink-0 px-1 text-center font-pixel text-[10px] uppercase text-white ${r.real ? 'bg-teal' : 'bg-danger'}`}>{r.real ? t('record.real') : t('record.scam')}</span>
+              <span className="min-w-0 flex-1">
+                <b>{t(`town.building.${r.building}`)}</b>: {t(`record.${r.choiceId}`)}
+              </span>
+              <span className="shrink-0 font-bold tabular-nums">
+                {r.moneyIn ? <span className="text-teal">{t('record.in', { amount: cash(r.moneyIn) })}</span> : r.moneyOut ? <span className="text-danger">{t('record.out', { amount: cash(r.moneyOut) })}</span> : r.missed ? <span className="text-ink/60">{t('record.missed', { amount: cash(r.missed) })}</span> : '·'}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <h2 className="mt-3 text-[14px]">{t('results2.tips')}</h2>
+        <ul className="mt-1 list-disc space-y-1 pl-5 text-[14px] leading-snug">
+          {tips.map((tip) => (
+            <li key={tip.key}>{t(tip.key, { n: tip.n ?? 0, amount: tip.amount ? cash(tip.amount) : '' })}</li>
+          ))}
+        </ul>
       </section>
 
       {/* The gauntlet loop: the next payday brings new traps and faster timers. */}
