@@ -42,8 +42,9 @@ import phone from 'pixelarticons/svg/smartphone.svg'
 import coins from 'pixelarticons/svg/coins.svg'
 import chevronRight from 'pixelarticons/svg/chevron-right.svg'
 import chevronLeft from 'pixelarticons/svg/chevron-left.svg'
+import calculator from 'pixelarticons/svg/calculator.svg'
 
-export const ICONS = { coin, wallet, calendar, mail, message, home, building, sun, moon, heart, shield, lock, check, close, arrowUp, arrowDown, arrowLeft, arrowRight, zap, user, users, clock, reload, search, gift, store, briefcase, card, play, book, settings, map, pencil, pin, qr, trend, phone, coins, chevronRight, chevronLeft }
+export const ICONS = { coin, wallet, calendar, mail, message, home, building, sun, moon, heart, shield, lock, check, close, arrowUp, arrowDown, arrowLeft, arrowRight, zap, user, users, clock, reload, search, gift, store, briefcase, card, play, book, settings, map, pencil, pin, qr, trend, phone, coins, chevronRight, chevronLeft, calculator }
 export type IconName = keyof typeof ICONS
 
 /** 24-unit grid icons; size should be a multiple of 12 so the pixels stay whole. */

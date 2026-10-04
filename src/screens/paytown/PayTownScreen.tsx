@@ -33,6 +33,7 @@ import { EncounterSheet } from './EncounterSheet'
 import { RealMessageSheet } from './RealMessageSheet'
 import { useCharacterName } from './persona'
 import { CheckerSheet } from './CheckerSheet'
+import { BudgetSheet } from './BudgetSheet'
 import { t } from '@/i18n'
 import { haptic, play, unlockAudio } from '@/audio/sfx'
 
@@ -152,6 +153,7 @@ export function PayTownScreen() {
   const [near, setNear] = useState<EncounterDef | null>(null)
   const [open, setOpen] = useState<EncounterDef | null>(null)
   const [phone, setPhone] = useState<'real' | 'checker' | null>(null)
+  const [budget, setBudget] = useState(false)
   const [walked, setWalked] = useState(false)
   // The opened real message stays on screen until closed, even once it counts as handled.
   const [realOpen, setRealOpen] = useState<(typeof REAL_MESSAGES)[number] | null>(null)
@@ -219,7 +221,7 @@ export function PayTownScreen() {
     return () => ro.disconnect()
   }, [])
 
-  const busy = !!open || !!phone
+  const busy = !!open || !!phone || budget
   const walkedRef = useRef(false)
 
   // Pop up the current scam's cue: at the start, and about two seconds after each rule card.
@@ -413,6 +415,9 @@ export function PayTownScreen() {
           <div className="truncate text-[12px] font-bold text-ink/70">{t('town.scamsFaced', { n: doneCount, total: thisRound.length })}</div>
           <div className={`truncate text-[12px] font-bold ${ledger.balance < bills.total ? 'text-danger' : 'text-ink/70'}`}>{t('town.billsDue', { amount: cash(bills.total) })}</div>
         </div>
+        <button className="flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft" onClick={() => setBudget(true)} aria-label={t('budget.title')}>
+          <PxIcon name="calculator" />
+        </button>
         <button className={`relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft ${phoneScam ? 'animate-pulse' : ''}`} onClick={() => {
             if (phoneScam) return setOpen(phoneScam)
             setRealOpen(pendingReal)
@@ -467,6 +472,7 @@ export function PayTownScreen() {
         }}
       />
       <CheckerSheet open={phone === 'checker'} onClose={() => setPhone(null)} />
+      <BudgetSheet open={budget} onClose={() => setBudget(false)} money={ledger.balance} rent={bills.rent} food={bills.food} />
       <Toasts />
     </div>
   )
