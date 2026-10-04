@@ -9,6 +9,7 @@ This project was built with Claude Code (Claude) as an AI coding assistant. Ever
 - Decisions during the build: English-only text, realistic local pay with no currency conversion, each character's own everyday scams, a shuffled order, the gauntlet loop, fences and working paths, tap to walk, editable names, the name Scam Town, a wider view, more realistic sprites, commit size rules, what to cut.
 
 ## Built together
+- **The engine:** Soren and Rayan worked on it with Claude Code; its rules come from the team's spec (losses booked to ScamLoss, safe 20 / close call 10 / fell for it 0, three tiers). Claude Code wrote the current code (`src/engine/scamTown.ts`).
 - **The scam encounters beyond the first five:** the team asked for everyday scams for each character, set the direction (scams that really happen, not dramatic ones) and playtested them; Claude Code drafted the scenarios and wording.
 - **Local pay per currency:** the team set the rule (typical local pay, no currency conversion, no one paid lakhs) and tested it; Claude Code picked the figures.
 - **The walk grid, south district and people scripts:** the team asked for working paths and fences, a bigger map and more realistic sprites, and tested each one; Claude Code wrote the scripts.
@@ -16,7 +17,7 @@ This project was built with Claude Code (Claude) as an AI coding assistant. Ever
 - **App icon:** the team named the game Scam Town; Claude Code drew the icon.
 
 ## Claude Code
-- Code implementation: engine, content data files, UI, state, PWA setup.
+- Code implementation: content data files, UI, state, PWA setup, and the engine code together with the team (above).
 - Tests (Vitest), refactoring, animation and effect code, placeholder art (the people, portraits, cues and reveal scene), CI and Pages workflows.
 - Documentation drafts: README, this file, docs/UI_NOTES.md, docs/SPRITES_NEEDED.md, docs/DEMO.md.
 

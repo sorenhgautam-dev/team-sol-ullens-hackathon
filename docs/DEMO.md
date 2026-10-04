@@ -5,7 +5,7 @@
 ## Before you start
 
 1. `npm run dev`, open http://localhost:5173 on a phone-sized window (390 × 844), or install the app on a phone.
-2. Long-press the coin on the title screen until "Demo mode on" appears (or turn it on in Settings). Demo mode plays as Sita and starts at the bank door.
+2. Long-press the coin on the title screen until "Demo mode on" appears (or turn it on in Settings). Demo mode plays as Sita, starts at the bank door and keeps the scams in a fixed order (bank first). Normal play shuffles the order every run.
 
 ## The run
 
@@ -27,8 +27,9 @@
 - The balance is a ledger: every loss is a posting to ScamLoss. Practice never touches it.
 - Choices are shuffled every time, so you cannot learn "the answer is always B".
 - Two real messages are mixed in. Treating everything as a scam is not the goal.
-- Global by default: dollars, generic senders, no brands. Switch currency in Settings and the pay becomes typical local pay (NPR 30,000 for Sita, not a converted lakh).
-- The paths work: fences, trees and walls block; Sita leaves her garden through the gate.
+- Global by default: dollars, generic senders, no brands. Switch currency in Settings and the pay becomes typical local pay (Rs. 30,000 for Sita, not a converted lakh).
+- Each citizen meets their own everyday scams first: the tailor, the rider and the office worker each get five different ones.
+- The paths work: fences, trees and walls block. Tap a building and Sita walks there along the roads and goes in.
 
 ## If something goes wrong
 
