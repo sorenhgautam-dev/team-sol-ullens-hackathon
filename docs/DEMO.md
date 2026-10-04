@@ -12,14 +12,14 @@
 | Time | Do | Say |
 |---|---|---|
 | 0:00 | Title screen. | "It's payday. Five scams are waiting in town. Every one of them is real-world common." |
-| 0:05 | Tap **Play**. You are at the bank and its phone starts ringing. Tap **Go in: Bank**. | "Sita's pay just landed: 800 dollars. Scams come one at a time, and the bank calls first." |
+| 0:05 | Tap **Play**. Sita's phone rings: tap **Your phone is ringing**. Point at "Rent + food due: $580" in the HUD. | "Sita's pay just landed: 800 dollars, and $580 of it is rent and food. Scammers pretend to be the bank by phone." |
 | 0:10 | Tap **Continue** on her thought. The call arrives. | "No villain on screen. Just a call that knows her name and her card ending 4821, with a countdown." |
-| 0:20 | Choose **Read out the code**. | "Most people do. The balance drops by 200, and only *then* do we see who it was." |
+| 0:20 | Choose **Do what they ask**. | "Most people do. The balance drops by 200, and only *then* do we see who it was. One more like that and she can't pay rent." |
 | 0:30 | **Who was it really?** then **Rule card**. | "One rule: banks never ask for your one-time code, PIN or password." |
-| 0:40 | Tap **Try again**, pick **Hang up. Call the number on the back of your card**. | "Practice shows the safe path. The first answer still counts." |
+| 0:40 | Tap **Try again**, pick **Check first**. Then walk to the market: this time it is a real buyer paying cash. | "Practice shows the safe path. And not everything is a scam: real ones pay you, and saying no costs you." |
 | 0:50 | **Continue**. The phone buzzes: open the message from the bank. | "This one is real. The lesson is verify, not panic." |
 | 1:00 | Tap the phone again with no message waiting: the **Scam Checker**. | "Five questions, not a keyword score. It always ends with: verify through an official number or website." |
-| 1:10 | (Pre-played) open the results: score, tier, the rule cards, the **Family Warning Card**. | "And this is what you send to your family chat." |
+| 1:10 | (Pre-played) open the results: "Rent paid!" or "Short for rent", the record of every decision, personal tips, the **Family Warning Card**. Tap the calculator for the budget helper. | "Every choice is in the record, the tips come from your own mistakes, and this is what you send to your family chat." |
 | 1:20 | Tap **Next payday**. Pay lands again and six new everyday traps come up one at a time, including in the south district. | "The gauntlet loops: new everyday traps, faster timers, and your money carries over." |
 
 ## Things to point at
