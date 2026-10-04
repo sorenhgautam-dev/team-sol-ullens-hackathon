@@ -161,15 +161,17 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
           {step === 'outcome' && picked && (
             <motion.div key="outcome" className="flex flex-1 flex-col justify-center gap-3 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <motion.div initial={{ scale: 0.92, y: 10 }} animate={{ scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 22 }} className="bg-card" style={{ boxShadow: '0 0 0 3px var(--frame-dark), 6px 6px 0 3px var(--frame-dark)' }}>
-                <div className={`py-1.5 font-pixel text-[14px] uppercase text-white ${picked.loss > 0 ? 'bg-danger' : 'bg-teal'}`}>{picked.loss > 0 ? t('town.lost', { amount: cash(picked.loss) }) : t('town.kept')}</div>
+                <div className={`py-1.5 font-pixel text-[14px] uppercase ${picked.loss > 0 ? 'bg-danger text-white' : picked.cost || picked.missed ? 'bg-marigold text-ink' : 'bg-teal text-white'}`}>
+                  {picked.loss > 0 ? t('town.lost', { amount: cash(picked.loss) }) : picked.gain ? t('town.gotMoney', { amount: cash(picked.gain) }) : picked.cost ? t('town.paidMoney', { amount: cash(picked.cost) }) : picked.missed ? t('town.missedMoney', { amount: cash(picked.missed) }) : t('town.kept')}
+                </div>
                 <div className="flex flex-col items-center gap-2 px-3 pb-4 pt-3">
-                  <OutcomeArt lost={picked.loss > 0} />
+                  <OutcomeArt lost={picked.loss > 0 || !!picked.cost} />
                   <Balance amount={shownBalance} state={picked.loss > 0 ? 'danger' : 'safe'} size="lg" className="!text-5xl" />
               <p className="text-[17px] leading-snug">{practice ? t('town.practiceOut', { outcome: t(picked.outcomeKey, { ...params, loss: cash(picked.loss) }) }) : t(picked.outcomeKey, { ...params, loss: lossText || cash(picked.loss) })}</p>
                 </div>
               </motion.div>
-              <Button variant="primary" size="lg" className="mt-2 w-full" onClick={() => setStep('reveal')}>
-                {t('town.whoWasIt')}
+              <Button variant="primary" size="lg" className="mt-2 w-full" onClick={() => setStep(e.real ? 'rule' : 'reveal')}>
+                {e.real ? t('town.ruleTitle') : t('town.whoWasIt')}
               </Button>
             </motion.div>
           )}
@@ -207,15 +209,16 @@ export function RuleCard({ encounter: e, params, compact }: { encounter: Encount
     <div className="pixel-frame p-2 text-ink">
       <div className="flex items-center gap-2">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-teal text-white">
-          <PxIcon name="shield" />
+          <PxIcon name={e.real ? 'check' : 'shield'} />
         </span>
         <span className="font-pixel text-[12px] uppercase">{t(`town.building.${e.building}`)}</span>
+        {e.real && <span className="ml-auto bg-teal px-2 py-0.5 font-pixel text-[10px] uppercase text-white">{t('town.real')}</span>}
       </div>
       <p className="mt-2 text-[19px] font-extrabold leading-snug">{t(e.rule.ruleKey, params)}</p>
       {!compact && (
         <>
           <p className="mt-2 text-[15px] leading-snug">
-            <span className="font-bold">{t('town.why')}: </span>
+            <span className="font-bold">{e.real ? t('town.whyReal') : t('town.why')}: </span>
             {t(e.rule.whyKey, params)}
           </p>
           <p className="mt-1 bg-paper p-1 text-[15px] leading-snug">

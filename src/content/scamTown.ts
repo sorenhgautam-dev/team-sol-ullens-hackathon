@@ -8,6 +8,7 @@
 import type { EncounterDef } from '@/engine/scamTown'
 import type { Currency } from '@/i18n/currency'
 import { ECONOMIES, nice } from './economy'
+import { subRng } from '@/engine/rng'
 import type { CharacterId } from './characters'
 import type { SfxName } from '@/audio/sfx'
 
@@ -26,6 +27,8 @@ export interface EncounterSpec {
   money: Record<string, Money>
   /** Loss for each risky choice: a money key, or a share of the payday (0 = no money lost). */
   loss: { fall: string | number; tempted: string | number }
+  /** A real interaction: which money key comes in or goes out when accepted, and what saying no costs. */
+  real?: { gain?: string; cost?: string; refuseCost?: string; refuseMissed?: string }
 }
 
 export const ENCOUNTER_SPECS: EncounterSpec[] = [
@@ -69,6 +72,45 @@ export const SCAMMER_COLOUR: Record<string, string> = {
 }
 
 /**
+ * Real, safe interactions: one per building. Money moves normally (Income and Expenses).
+ * They look like the scams on purpose; the clues are in the details (in person, a receipt,
+ * money coming to you, nothing asked for a code). Saying no to a real one costs a little.
+ */
+const R = (id: string, building: EncounterDef['building'], lines: number, money: EncounterSpec['money'], real: NonNullable<EncounterSpec['real']>): EncounterSpec => ({ id, building, scammer: '', channel: 'chat', lines, timerSeconds: 22, money, loss: { fall: 0, tempted: 0 }, real })
+export const REAL_SPECS: EncounterSpec[] = [
+  R('genuine_bank', 'bank', 3, { refund: 0.05 }, { gain: 'refund', refuseMissed: 'refund' }),
+  R('genuine_market', 'market', 2, { price: 0.06 }, { gain: 'price', refuseMissed: 'price' }),
+  R('genuine_post', 'post', 2, { fee: 'fee', late: 0.03 }, { cost: 'fee', refuseCost: 'late' }),
+  R('genuine_job', 'job', 2, { shift: 0.05 }, { gain: 'shift', refuseMissed: 'shift' }),
+  R('genuine_invest', 'invest', 2, { pass: 0.04, singles: 0.06 }, { cost: 'pass', refuseCost: 'singles' }),
+  R('genuine_home', 'home', 2, { back: 0.04 }, { gain: 'back', refuseMissed: 'back' }),
+  R('genuine_cafe', 'cafe', 2, { coffee: 'coffee' }, { gain: 'coffee', refuseMissed: 'coffee' }),
+  R('genuine_tech', 'tech', 2, { fix: 0.04, more: 0.07 }, { cost: 'fix', refuseCost: 'more' }),
+  R('genuine_gov', 'gov', 2, { refund: 0.05 }, { gain: 'refund', refuseMissed: 'refund' }),
+  R('genuine_rental', 'rental', 2, { back: 0.06 }, { gain: 'back', refuseMissed: 'back' }),
+  R('genuine_shop', 'shop', 2, { price: 0.05, more: 0.07 }, { cost: 'price', refuseCost: 'more' }),
+]
+
+/** How often each building is real on a payday (the rest are scams). A real bank branch is a safe place. */
+const REAL_ODDS: Partial<Record<EncounterDef['building'], number>> = { bank: 0.8, post: 0.8 }
+/** Demo mode is fixed and predictable: the same mix every time (the bank's call is a scam, first). */
+export const DEMO_MIX: Record<EncounterDef['building'], 'real' | 'scam'> = { bank: 'scam', market: 'real', post: 'real', job: 'scam', invest: 'scam', home: 'scam', cafe: 'real', tech: 'scam', gov: 'real', rental: 'scam', shop: 'real' }
+
+/**
+ * Each payday the seed decides, building by building, whether what happens there is real or
+ * a scam (bank and post office about 80% real, the rest about half). The same building can be
+ * safe one payday and a trap the next.
+ */
+export function mixRound(ids: string[], round: number, seed: number, demo: boolean): string[] {
+  return ids.map((id) => {
+    const building = ENCOUNTER_SPECS.find((x) => x.id === id)?.building
+    if (!building) return id
+    const real = demo ? DEMO_MIX[building] === 'real' : subRng(seed, `mix:${round}:${building}`)() < (REAL_ODDS[building] ?? 0.5)
+    return real ? `genuine_${building}` : id
+  })
+}
+
+/**
  * Each character's first payday: five everyday scams that fit their life, each teaching
  * its own rule. Always in building order (bank, market, post office, job centre, kiosk),
  * so the start cues come in the same order for everyone. Demo mode plays Sita's.
@@ -84,7 +126,7 @@ export const SECOND_PAYDAY = ['home', 'cafe', 'tech', 'gov', 'rental', 'shop']
 const k = (id: string, part: string) => `town.${id}.${part}`
 
 /** The encounters with real local amounts for this currency and character. */
-export function localEncounters(currency: Currency, character: CharacterId, specs: EncounterSpec[] = ENCOUNTER_SPECS): EncounterDef[] {
+export function localEncounters(currency: Currency, character: CharacterId, specs: EncounterSpec[] = [...ENCOUNTER_SPECS, ...REAL_SPECS]): EncounterDef[] {
   const econ = ECONOMIES[currency]
   const payday = econ.payday[character]
   return specs.map((s) => {
@@ -99,8 +141,23 @@ export function localEncounters(currency: Currency, character: CharacterId, spec
     for (const [key, m] of Object.entries(s.money)) if (typeof m !== 'object') amounts[key] = resolve(m)
     for (const [key, m] of Object.entries(s.money)) if (typeof m === 'object') amounts[key] = 'plus' in m ? (amounts[m.plus[0]] ?? 0) + (amounts[m.plus[1]] ?? 0) : (amounts[m.times] ?? 0) * m.by
     const lossOf = (l: string | number) => (typeof l === 'string' ? (amounts[l] ?? 0) : l > 0 ? nice(payday * l, currency) : 0)
+    const money = (key?: string) => (key ? (amounts[key] ?? 0) : 0)
+    const choices: EncounterDef['choices'] = s.real
+      ? [
+          { id: 'accept', verdict: 'safe', labelKey: 'town.choice.accept', outcomeKey: k(s.id, 'accept.out'), loss: 0, gain: money(s.real.gain), cost: money(s.real.cost) },
+          { id: 'verify', verdict: 'safe', labelKey: 'town.choice.verify', outcomeKey: k(s.id, 'verify.out'), loss: 0, gain: money(s.real.gain), cost: money(s.real.cost) },
+          { id: 'refuse', verdict: 'tempted', labelKey: 'town.choice.refuse', outcomeKey: k(s.id, 'refuse.out'), loss: 0, cost: money(s.real.refuseCost), missed: money(s.real.refuseMissed) },
+        ]
+      : [
+          { id: 'accept', verdict: 'fall', labelKey: 'town.choice.accept', outcomeKey: k(s.id, 'fall.out'), loss: lossOf(s.loss.fall) },
+          { id: 'verify', verdict: 'safe', labelKey: 'town.choice.verify', outcomeKey: k(s.id, 'safe.out'), loss: 0 },
+          { id: 'refuse', verdict: 'safe', labelKey: 'town.choice.refuse', outcomeKey: 'town.refuse.scam', loss: 0 },
+        ]
     return {
       id: s.id,
+      real: !!s.real,
+      // Scams pretending to be the bank or the post office arrive on the phone while you walk.
+      via: !s.real && (s.building === 'bank' || s.building === 'post') ? 'phone' : undefined,
       building: s.building,
       scammer: s.scammer,
       channel: s.channel,
@@ -111,11 +168,7 @@ export function localEncounters(currency: Currency, character: CharacterId, spec
       payStyle: s.pay,
       timerSeconds: s.timerSeconds,
       amounts,
-      choices: [
-        { id: 'fall', verdict: 'fall', labelKey: k(s.id, 'fall'), outcomeKey: k(s.id, 'fall.out'), loss: lossOf(s.loss.fall) },
-        { id: 'tempted', verdict: 'tempted', labelKey: k(s.id, 'tempted'), outcomeKey: k(s.id, 'tempted.out'), loss: lossOf(s.loss.tempted) },
-        { id: 'safe', verdict: 'safe', labelKey: k(s.id, 'safe'), outcomeKey: k(s.id, 'safe.out'), loss: 0 },
-      ],
+      choices,
       rule: { whyKey: k(s.id, 'why'), ruleKey: k(s.id, 'rule'), lessonKey: k(s.id, 'lesson') },
     }
   })

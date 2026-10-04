@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { currentEncounter, immunity, rentCheck, roundIds, shuffledChoices, timerFactor, townLedger, type Answer } from '../scamTown'
-import { CUES, FIRST_PAYDAY, SECOND_PAYDAY, localEncounters, REAL_MESSAGES } from '@/content/scamTown'
+import { CUES, FIRST_PAYDAY, SECOND_PAYDAY, localEncounters, mixRound, REAL_MESSAGES } from '@/content/scamTown'
 import { CHARACTERS } from '@/content/characters'
 import { ECONOMIES, billsFor, paydayFor } from '@/content/economy'
 import { CURRENCIES } from '@/i18n/currency'
@@ -13,22 +13,22 @@ const all = (choice: string): Answer[] => ENCOUNTERS.map((e) => ({ encounterId: 
 
 describe('scam town ledger', () => {
   it('payday lands, and every loss is booked to ScamLoss with balanced postings', () => {
-    const l = townLedger(800, all('fall'), ENCOUNTERS)
-    const lost = ENCOUNTERS.reduce((s, e) => s + e.choices.find((c) => c.id === 'fall')!.loss, 0)
+    const l = townLedger(800, all('accept'), ENCOUNTERS)
+    const lost = ENCOUNTERS.reduce((s, e) => s + e.choices.find((c) => c.id === 'accept')!.loss, 0)
     expect(l.balance).toBe(800 - lost)
     expect(l.accounts.ScamLoss).toBe(lost)
-    expect(l.accounts.Wallet + l.accounts.Income + l.accounts.ScamLoss).toBe(0)
+    expect(l.accounts.Wallet + l.accounts.Income + l.accounts.Expenses + l.accounts.ScamLoss + l.accounts.Bills).toBe(0)
     for (const e of l.entries) expect(e.postings.reduce((s, p) => s + p.delta, 0)).toBe(0)
   })
 
   it('safe answers keep the whole payday', () => {
-    const l = townLedger(800, all('safe'), ENCOUNTERS)
+    const l = townLedger(800, all('verify'), ENCOUNTERS)
     expect(l.balance).toBe(800)
     expect(l.entries).toHaveLength(1)
   })
 
   it('only the first answer counts: a practice replay never changes the ledger', () => {
-    const a: Answer[] = [{ encounterId: 'bank', choiceId: 'fall' }, { encounterId: 'bank', choiceId: 'safe' }]
+    const a: Answer[] = [{ encounterId: 'bank', choiceId: 'accept' }, { encounterId: 'bank', choiceId: 'verify' }]
     expect(townLedger(800, a, ENCOUNTERS).balance).toBe(600)
   })
 
@@ -37,7 +37,7 @@ describe('scam town ledger', () => {
       for (const c of CHARACTERS) {
         const enc = localEncounters(cur, c.id)
         for (const ids of [FIRST_PAYDAY[c.id], SECOND_PAYDAY]) {
-          const l = townLedger(paydayFor(cur, c.id), ids.map((id) => ({ encounterId: id, choiceId: 'fall' })), enc)
+          const l = townLedger(paydayFor(cur, c.id), ids.map((id) => ({ encounterId: id, choiceId: 'accept' })), enc)
           expect(l.balance, `${cur} ${c.id} ${ids[0]}`).toBeGreaterThan(0)
         }
       }
@@ -46,24 +46,74 @@ describe('scam town ledger', () => {
 
 describe('scam immunity score', () => {
   it('safe 20, tempted 10, fall 0, with the three tiers', () => {
-    expect(immunity(all('safe'), ENCOUNTERS)).toMatchObject({ score: 100, tier: 'proof' })
-    expect(immunity(all('tempted'), ENCOUNTERS)).toMatchObject({ score: 50, tier: 'wiser' })
-    expect(immunity(all('fall'), ENCOUNTERS)).toMatchObject({ score: 0, tier: 'easy' })
-    const mixed: Answer[] = [...all('safe').slice(0, 4), { encounterId: ENCOUNTERS[4]!.id, choiceId: 'fall' }]
+    expect(immunity(all('verify'), ENCOUNTERS)).toMatchObject({ score: 100, tier: 'proof' })
+    expect(immunity(all('refuse'), ENCOUNTERS)).toMatchObject({ score: 100, tier: 'proof' }) // saying no to a scam is safe
+    const realNo = ['genuine_bank', 'genuine_market'].map((id) => ({ encounterId: id, choiceId: 'refuse' }))
+    expect(immunity(realNo, EVERY)).toMatchObject({ score: 50, tier: 'wiser' }) // saying no to real ones costs points
+    expect(immunity(all('accept'), ENCOUNTERS)).toMatchObject({ score: 0, tier: 'easy' })
+    const mixed: Answer[] = [...all('verify').slice(0, 4), { encounterId: ENCOUNTERS[4]!.id, choiceId: 'accept' }]
     expect(immunity(mixed, ENCOUNTERS)).toMatchObject({ score: 80, tier: 'proof' })
   })
 })
 
 describe('encounter content', () => {
-  it('each encounter has one fall, one tempted and one safe choice, all with text', () => {
-    expect(EVERY).toHaveLength(21)
+  it('every encounter offers do it / check first / say no, all with text', () => {
+    expect(EVERY).toHaveLength(32) // 21 scams and 11 real interactions
     for (const e of EVERY) {
-      expect(e.choices.map((c) => c.verdict).sort()).toEqual(['fall', 'safe', 'tempted'])
+      expect(e.choices.map((c) => c.id)).toEqual(['accept', 'verify', 'refuse'])
       const keys = [e.thoughtKey, e.senderKey, ...e.lineKeys, e.rule.whyKey, e.rule.ruleKey, e.rule.lessonKey, ...e.choices.flatMap((c) => [c.labelKey, c.outcomeKey])]
       if (e.payKey) keys.push(e.payKey)
       for (const key of keys) expect(key in en, key).toBe(true)
-      expect(e.choices.find((c) => c.verdict === 'safe')!.loss).toBe(0)
+      // Checking first is always safe and never costs money to a scam.
+      expect(e.choices[1]!.verdict).toBe('safe')
+      expect(e.choices[1]!.loss).toBe(0)
+      if (e.real) {
+        expect(e.choices[0]!.verdict).toBe('safe') // real ones are safe to accept
+        expect(e.choices[2]!.verdict).toBe('tempted') // saying no to a real one costs a little
+        expect((e.choices[2]!.cost ?? 0) + (e.choices[2]!.missed ?? 0)).toBeGreaterThan(0)
+      } else {
+        expect(e.choices[0]!.verdict).toBe('fall')
+        expect(e.choices[0]!.loss).toBeGreaterThan(0)
+      }
     }
+  })
+
+  it('each payday mixes real and scam by building, bank and post office mostly real; demo is fixed', () => {
+    const ids = FIRST_PAYDAY.sita
+    let bankReal = 0
+    let marketReal = 0
+    for (let seed = 0; seed < 200; seed++) {
+      const mix = mixRound(ids, 1, seed, false)
+      if (mix[0] === 'genuine_bank') bankReal++
+      if (mix[1] === 'genuine_market') marketReal++
+    }
+    expect(bankReal).toBeGreaterThan(140) // about 80%
+    expect(marketReal).toBeGreaterThan(70) // about half
+    expect(marketReal).toBeLessThan(130)
+    expect(mixRound(ids, 1, 5, true)).toEqual(mixRound(ids, 1, 99, true)) // demo: the same every time
+    expect(mixRound(ids, 1, 5, true)[0]).toBe('bank') // the demo opens with the bank-call scam
+    // The same building can be real one payday and a scam the next.
+    const both = Array.from({ length: 40 }, (_, seed) => [mixRound(ids, 1, seed, false)[1], mixRound(ids, 2, seed, false)[1]])
+    expect(both.some(([a, b]) => a !== b)).toBe(true)
+  })
+
+  it('real money moves through Income and Expenses; scams through ScamLoss; bank and post scams ring the phone', () => {
+    const enc = localEncounters('USD', 'sita')
+    const answers = [
+      { encounterId: 'genuine_bank', choiceId: 'accept' }, // refund in
+      { encounterId: 'genuine_post', choiceId: 'verify' }, // fee out
+      { encounterId: 'genuine_market', choiceId: 'refuse' }, // missed sale: nothing booked
+    ]
+    const l = townLedger(800, answers, enc)
+    const refund = enc.find((e) => e.id === 'genuine_bank')!.amounts.refund!
+    const fee = enc.find((e) => e.id === 'genuine_post')!.amounts.fee!
+    expect(l.balance).toBeCloseTo(800 + refund - fee)
+    expect(l.accounts.Expenses).toBeCloseTo(fee)
+    expect(l.accounts.ScamLoss).toBe(0)
+    expect(enc.find((e) => e.id === 'bank')!.via).toBe('phone')
+    expect(enc.find((e) => e.id === 'post')!.via).toBe('phone')
+    expect(enc.find((e) => e.id === 'market')!.via).toBeUndefined()
+    expect(enc.find((e) => e.id === 'genuine_bank')!.via).toBeUndefined()
   })
 
   it('every scam building has a start cue, and every cue text exists', () => {
@@ -107,7 +157,7 @@ describe('realistic local money (no exchange-rate conversion)', () => {
   it('scam amounts are shares of the character’s own pay, rounded to local numbers', () => {
     const rider = localEncounters('NPR', 'bikash')
     const clerk = localEncounters('NPR', 'aarav')
-    const bank = (l: typeof rider) => l.find((e) => e.id === 'bank')!.choices.find((c) => c.id === 'fall')!.loss
+    const bank = (l: typeof rider) => l.find((e) => e.id === 'bank')!.choices.find((c) => c.id === 'accept')!.loss
     expect(bank(rider)).toBe(1_750)
     expect(bank(clerk)).toBe(7_000)
     for (const e of rider) for (const v of Object.values(e.amounts)) expect(v % 1 === 0 || v === ECONOMIES.NPR.fee).toBe(true)
@@ -118,9 +168,9 @@ describe('realistic local money (no exchange-rate conversion)', () => {
 describe('the gauntlet loop: paydays as rounds', () => {
   it('pay lands every round and the balance carries over', () => {
     const a: Answer[] = [
-      { encounterId: 'bank', choiceId: 'fall', round: 1 },
-      { encounterId: 'home', choiceId: 'safe', round: 2 },
-      { encounterId: 'cafe', choiceId: 'fall', round: 2 },
+      { encounterId: 'bank', choiceId: 'accept', round: 1 },
+      { encounterId: 'home', choiceId: 'verify', round: 2 },
+      { encounterId: 'cafe', choiceId: 'accept', round: 2 },
     ]
     const l = townLedger(800, a, EVERY, 2)
     const bank = EVERY.find((e) => e.id === 'bank')!.choices[0]!.loss
@@ -132,15 +182,15 @@ describe('the gauntlet loop: paydays as rounds', () => {
 
   it('the same building in a new payday is a new answer', () => {
     const a: Answer[] = [
-      { encounterId: 'bank', choiceId: 'fall', round: 1 },
-      { encounterId: 'bank', choiceId: 'safe', round: 3 },
+      { encounterId: 'bank', choiceId: 'accept', round: 1 },
+      { encounterId: 'bank', choiceId: 'verify', round: 3 },
     ]
     expect(immunity(a, EVERY, 1).score).toBe(0)
     expect(immunity(a, EVERY, 3).score).toBe(100)
   })
 
   it('the score is out of 100 even with six scams in a payday', () => {
-    const six: Answer[] = SECOND_PAYDAY.map((id) => ({ encounterId: id, choiceId: 'safe', round: 2 }))
+    const six: Answer[] = SECOND_PAYDAY.map((id) => ({ encounterId: id, choiceId: 'verify', round: 2 }))
     expect(immunity(six, EVERY, 2)).toMatchObject({ score: 100, tier: 'proof' })
   })
 
@@ -169,7 +219,7 @@ describe('the gauntlet loop: paydays as rounds', () => {
     const list = (ids: string[]) => ids.map((id) => ({ id }))
     const ORDER = ['bank', 'market', 'post', 'job', 'invest']
     const first = list(ORDER)
-    const safe = (id: string, round = 1): Answer => ({ encounterId: id, choiceId: `${id}_safe`, round })
+    const safe = (id: string, round = 1): Answer => ({ encounterId: id, choiceId: 'verify', round })
     expect(currentEncounter(first, [], 1)?.id).toBe('bank')
     expect(currentEncounter(first, [safe('bank')], 1)?.id).toBe('market')
     expect(currentEncounter(first, ORDER.slice(0, 4).map((id) => safe(id)), 1)?.id).toBe('invest')
@@ -198,12 +248,12 @@ describe('real stakes: rent and food are due at the end of every payday', () => 
         const bills = billsFor(cur, c.id).total
         const own = FIRST_PAYDAY[c.id]
         for (const id of own) {
-          const one = townLedger(pay, [{ encounterId: id, choiceId: 'fall' }], enc).balance
+          const one = townLedger(pay, [{ encounterId: id, choiceId: 'accept' }], enc).balance
           expect(rentCheck(one, bills).win, `${cur} ${c.id} one fall: ${id}`).toBe(true)
         }
         for (let i = 0; i < own.length; i++)
           for (let j = i + 1; j < own.length; j++) {
-            const two = townLedger(pay, [{ encounterId: own[i]!, choiceId: 'fall' }, { encounterId: own[j]!, choiceId: 'fall' }], enc).balance
+            const two = townLedger(pay, [{ encounterId: own[i]!, choiceId: 'accept' }, { encounterId: own[j]!, choiceId: 'accept' }], enc).balance
             expect(rentCheck(two, bills).win, `${cur} ${c.id} two falls: ${own[i]} + ${own[j]}`).toBe(false)
           }
       }
@@ -213,11 +263,11 @@ describe('real stakes: rent and food are due at the end of every payday', () => 
     const enc = localEncounters('USD', 'sita')
     const bills = billsFor('USD', 'sita').total
     // Payday 1 all safe: pay 800, rent and food paid when payday 2 starts.
-    const safe = FIRST_PAYDAY.sita.map((id) => ({ encounterId: id, choiceId: 'safe', round: 1 }))
+    const safe = FIRST_PAYDAY.sita.map((id) => ({ encounterId: id, choiceId: 'verify', round: 1 }))
     expect(townLedger(800, safe, enc, 2, bills).balance).toBe(800 - bills + 800)
     expect(townLedger(800, safe, enc, 2, bills).accounts.Bills).toBe(bills)
     // Payday 1 falls for everything: not enough for the bills, so payday 2 starts from its own pay.
-    const fall = FIRST_PAYDAY.sita.map((id) => ({ encounterId: id, choiceId: 'fall', round: 1 }))
+    const fall = FIRST_PAYDAY.sita.map((id) => ({ encounterId: id, choiceId: 'accept', round: 1 }))
     expect(rentCheck(townLedger(800, fall, enc, 1, bills).balance, bills).win).toBe(false)
     expect(townLedger(800, fall, enc, 2, bills).balance).toBe(800)
     expect(rentCheck(500, 580)).toEqual({ win: false, leftOver: 0, shortBy: 80 })

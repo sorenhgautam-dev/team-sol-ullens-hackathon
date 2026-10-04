@@ -8,7 +8,7 @@
  */
 import { subRng } from './rng'
 /** The accounts of a payday's double-entry ledger. */
-export type Account = 'Wallet' | 'Income' | 'ScamLoss' | 'Bills'
+export type Account = 'Wallet' | 'Income' | 'Expenses' | 'ScamLoss' | 'Bills'
 
 export interface Posting {
   account: Account
@@ -23,12 +23,22 @@ export interface ChoiceDef {
   verdict: Verdict
   labelKey: string
   outcomeKey: string
-  /** US dollars lost if chosen. */
+  /** Lost to a scam if chosen (ScamLoss). */
   loss: number
+  /** Real money in if chosen (a refund, a sale, pay). */
+  gain?: number
+  /** Real money out if chosen (a fee, a purchase, a late fee). */
+  cost?: number
+  /** Real money not received because the player said no (shown in the record, not booked). */
+  missed?: number
 }
 
 export interface EncounterDef {
   id: string
+  /** A real, safe interaction (money moves normally) rather than a scam. */
+  real?: boolean
+  /** Arrives on the phone while walking, not inside a building (scams pretending to be the bank or post office). */
+  via?: 'phone'
   /** Building on the town map. */
   building: 'bank' | 'market' | 'post' | 'job' | 'invest' | 'home' | 'cafe' | 'tech' | 'gov' | 'rental' | 'shop'
   /** Existing scammer art revealed after the decision. */
@@ -57,7 +67,7 @@ export interface Answer {
 }
 
 export interface TownEntry {
-  kind: 'payday' | 'scam_loss' | 'bills'
+  kind: 'payday' | 'scam_loss' | 'bills' | 'income' | 'expense'
   amount: number
   round: number
   encounterId?: string
@@ -68,7 +78,7 @@ export interface TownLedger {
   start: number
   balance: number
   entries: TownEntry[]
-  accounts: { Wallet: number; Income: number; ScamLoss: number; Bills: number }
+  accounts: { Wallet: number; Income: number; Expenses: number; ScamLoss: number; Bills: number }
 }
 
 export const POINTS: Record<Verdict, number> = { safe: 20, tempted: 10, fall: 0 }
@@ -93,7 +103,7 @@ export function firstAnswers(answers: Answer[], round?: number): Answer[] {
  * there is not enough, everything left goes to them. The wallet never goes below zero.
  */
 export function townLedger(payday: number, answers: Answer[], encounters: EncounterDef[], rounds = 1, bills = 0): TownLedger {
-  const accounts = { Wallet: 0, Income: 0, ScamLoss: 0, Bills: 0 }
+  const accounts = { Wallet: 0, Income: 0, Expenses: 0, ScamLoss: 0, Bills: 0 }
   const entries: TownEntry[] = []
   const book = (e: TownEntry) => {
     for (const p of e.postings) accounts[p.account as keyof typeof accounts] += p.delta
@@ -103,7 +113,12 @@ export function townLedger(payday: number, answers: Answer[], encounters: Encoun
     book({ kind: 'payday', amount: payday, round, postings: [{ account: 'Wallet', delta: payday }, { account: 'Income', delta: -payday }] })
     for (const a of firstAnswers(answers, round)) {
       const c = choiceOf(encounters, a)
-      if (!c || c.loss <= 0) continue
+      if (!c) continue
+      // Real interactions move money normally: money in to Income, money out to Expenses.
+      if (c.gain && c.gain > 0) book({ kind: 'income', amount: c.gain, round, encounterId: a.encounterId, postings: [{ account: 'Wallet', delta: c.gain }, { account: 'Income', delta: -c.gain }] })
+      const cost = Math.min(c.cost ?? 0, accounts.Wallet)
+      if (cost > 0) book({ kind: 'expense', amount: -cost, round, encounterId: a.encounterId, postings: [{ account: 'Wallet', delta: -cost }, { account: 'Expenses', delta: cost }] })
+      if (c.loss <= 0) continue
       // Never take more than is left: a scam empties the wallet, it does not create debt here.
       const loss = Math.min(c.loss, accounts.Wallet)
       if (loss <= 0) continue

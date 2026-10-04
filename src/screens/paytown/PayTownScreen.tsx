@@ -156,6 +156,8 @@ export function PayTownScreen() {
   const [cue, setCue] = useState<ShownCue | null>(null)
   const cueRef = useRef<ShownCue | null>(null)
   cueRef.current = cue && cue.id === current?.id ? cue : null
+  // Scams pretending to be the bank or post office ring the phone instead of a building.
+  const phoneScam = cue && current && cue.id === current.id && current.via === 'phone' ? current : null
   // True once a scam is finished, so the next cue waits about two seconds after the rule card.
   const finished = useRef(false)
 
@@ -266,8 +268,8 @@ export function PayTownScreen() {
       }
       let found: EncounterDef | null = null
       for (const e of encountersRef.current) {
-        // Only the current scam (once its cue is up) and finished ones can be entered.
-        if (!doneRef.current.has(e.id) && e.id !== cueRef.current?.id) continue
+        // Only the current scam (once its cue is up) and finished ones can be entered; phone ones have no door.
+        if (e.via === 'phone' || (!doneRef.current.has(e.id) && e.id !== cueRef.current?.id)) continue
         const d = doorOf(e.building).door
         if (Math.hypot(d.x - w.x, d.y - w.y) <= DOOR_RADIUS) found = e
       }
@@ -349,7 +351,7 @@ export function PayTownScreen() {
     let target: Point = p
     let enter: string | null = null
     for (const enc of encountersRef.current) {
-      if (doneRef.current.has(enc.id) || enc.id !== cueRef.current?.id) continue
+      if (enc.via === 'phone' || doneRef.current.has(enc.id) || enc.id !== cueRef.current?.id) continue
       const place = doorOf(enc.building)
       const a = cueAnchor(place)
       const b = place.body
@@ -388,18 +390,24 @@ export function PayTownScreen() {
           <div className="truncate text-[12px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size, total: thisRound.length })}</div>
           <div className={`truncate text-[12px] font-bold ${ledger.balance < bills.total ? 'text-danger' : 'text-ink/70'}`}>{t('town.billsDue', { amount: cash(bills.total) })}</div>
         </div>
-        <button className="relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft" onClick={() => {
+        <button className={`relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft ${phoneScam ? 'animate-pulse' : ''}`} onClick={() => {
+            if (phoneScam) return setOpen(phoneScam)
             setRealOpen(pendingReal)
             setPhone(pendingReal ? 'real' : 'checker')
           }} aria-label={pendingReal ? t('town.newMessage') : t('town.phone')}>
           <PxIcon name="message" />
-          {pendingReal && <span className="absolute -right-1 -top-1 h-4 w-4 bg-danger blink" aria-hidden />}
+          {(pendingReal || phoneScam) && <span className="absolute -right-1 -top-1 h-4 w-4 bg-danger blink" aria-hidden />}
         </button>
       </header>
 
       <div ref={holderRef} className="relative min-h-0 flex-1" onPointerDown={unlockAudio}>
         <canvas ref={canvasRef} width={vw * SCALE} height={vh * SCALE} className="block touch-none" style={{ width: vw * SCALE, height: vh * SCALE }} role="img" aria-label={t('paytown.title')} onPointerDown={onTap} />
-        {pendingReal && !busy && (
+        {phoneScam && !busy && (
+          <button className="absolute right-2 top-2 bg-marigold px-2 py-1 text-[13px] font-bold pixel-frame-soft" onClick={() => setOpen(phoneScam)}>
+            <PxIcon name="phone" size={12} /> {phoneScam.channel === 'call' ? t('town.phoneCall') : t('town.phoneText')}
+          </button>
+        )}
+        {pendingReal && !phoneScam && !busy && (
           <button
             className="absolute right-2 top-2 bg-card px-2 py-1 text-[13px] font-bold pixel-frame-soft"
             onClick={() => {
@@ -527,6 +535,7 @@ function render(
   }
 
   for (const e of encounters) {
+    if (e.via === 'phone') continue
     const place = doorOf(e.building)
     const dx = place.door.x - camX
     const dy = place.door.y - camY
@@ -590,7 +599,7 @@ function render(
   for (const p of folk) if (p.y > w.y) drawTownsperson(ctx, p, p.x - camX, p.y - camY)
 
   // The current scam's cue, drawn over everything so it is never hidden.
-  if (cue) {
+  if (cue && !encounters.find((e) => e.id === cue.id)?.via) {
     const place = doorOf(cue.building)
     const a = cueAnchor(place)
     drawCue(ctx, CUES[cue.building].kind, a.x - camX, a.y - camY, place.door.x - camX, place.door.y - camY, frame, frame - cue.at, cue.label, reduced)
@@ -612,7 +621,7 @@ function render(
 
   // The current scam off screen: an arrow at the edge points the way.
   for (const e of encounters) {
-    if (done.has(e.id) || cue?.id !== e.id) continue
+    if (done.has(e.id) || cue?.id !== e.id || e.via === 'phone') continue
     const d = doorOf(e.building).door
     const x = d.x - camX
     const y = d.y - camY - 10

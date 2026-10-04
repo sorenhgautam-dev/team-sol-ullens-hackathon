@@ -33,6 +33,8 @@ export function PayResultsScreen() {
     const ids = [...new Set(firstAnswers(answers).map((a) => a.encounterId))]
     return ids.map((id) => encounters.find((e) => e.id === id)).filter((e): e is EncounterDef => !!e)
   }, [encounters, answers])
+  // The Family Warning Card keeps the rules from the scams (real ones taught a money tip instead).
+  const scamsSeen = seen.filter((e) => !e.real)
   const params = usePersonaParams()
   const ledger = useMemo(() => townLedger(payday, answers, encounters, round, bills.total), [payday, answers, encounters, round, bills.total])
   const check = rentCheck(ledger.balance, bills.total)
@@ -61,7 +63,7 @@ export function PayResultsScreen() {
   }, [imm.score, imm.tier, reduced])
 
   const share = async () => {
-    const text = familyWarningText(seen)
+    const text = familyWarningText(scamsSeen)
     try {
       if (navigator.share) await navigator.share({ title: t('results2.familyTitle'), text })
       else {
@@ -74,7 +76,7 @@ export function PayResultsScreen() {
   }
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(familyWarningText(seen))
+      await navigator.clipboard.writeText(familyWarningText(scamsSeen))
       toast(t('results2.copied'), 'good')
     } catch {
       toast(t('results2.copyFailed'), 'bad')
@@ -119,7 +121,7 @@ export function PayResultsScreen() {
             return (
               <li key={e.id} className={`p-1 ${v === 'safe' ? 'bg-teal text-white' : v === 'tempted' ? 'bg-marigold' : 'bg-danger text-white'}`}>
                 <div className="font-bold">{t(`town.building.${e.building}`)}</div>
-                <div>{v ? t(`town.verdict.${v}`) : '-'}</div>
+                <div>{v ? (e.real && v === 'tempted' ? t('town.verdict.missed') : t(`town.verdict.${v}`)) : '-'}</div>
               </li>
             )
           })}
@@ -159,7 +161,7 @@ export function PayResultsScreen() {
           <h2 className="text-[15px]">{t('results2.familyTitle')}</h2>
         </div>
         <ol className="mt-2 list-decimal space-y-1 pl-5 text-[15px] leading-snug">
-          {seen.map((e) => (
+          {scamsSeen.map((e) => (
             <li key={e.id}>{t(e.rule.ruleKey)}</li>
           ))}
         </ol>
