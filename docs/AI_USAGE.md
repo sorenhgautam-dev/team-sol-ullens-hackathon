@@ -8,11 +8,17 @@ This project was built with Claude Code (Claude) as an AI coding assistant. Ever
 - The scam-awareness spec: the five core traps and their rules, real messages mixed in, results tiers, Family Warning Card, Scam Checker.
 - Decisions during the build: English-only text, realistic local pay with no currency conversion, each character's own everyday scams, a shuffled order, the gauntlet loop, fences and working paths, tap to walk, editable names, the name Scam Town, a wider view, more realistic sprites, commit size rules, what to cut.
 
+## Built together
+- **The scam encounters beyond the first five:** the team asked for everyday scams for each character, set the direction (scams that really happen, not dramatic ones) and playtested them; Claude Code drafted the scenarios and wording.
+- **Local pay per currency:** the team set the rule (typical local pay, no currency conversion, no one paid lakhs) and tested it; Claude Code picked the figures.
+- **The walk grid, south district and people scripts:** the team asked for working paths and fences, a bigger map and more realistic sprites, and tested each one; Claude Code wrote the scripts.
+- **Character select:** the team designed the mockup and the editable names; Claude Code built the screen.
+- **App icon:** the team named the game Scam Town; Claude Code drew the icon.
+
 ## Claude Code
 - Code implementation: engine, content data files, UI, state, PWA setup.
 - Tests (Vitest), refactoring, animation and effect code, placeholder art (the people, portraits, cues and reveal scene), CI and Pages workflows.
 - Documentation drafts: README, this file, docs/UI_NOTES.md, docs/SPRITES_NEEDED.md, docs/DEMO.md.
-- The scam encounters beyond the team's first five and their wording, the local pay figures per currency, the walk grid, south district and people scripts, the character-select screen built from the team's mockup, the app icon.
 
 ## Reviewed by the team (fill in)
 - [ ] The scam encounters, their losses and rule cards (`src/content/scamTown.ts`, `town.*` strings)
