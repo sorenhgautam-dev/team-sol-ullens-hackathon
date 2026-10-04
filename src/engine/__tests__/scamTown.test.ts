@@ -78,19 +78,22 @@ describe('encounter content', () => {
     }
   })
 
-  it('each payday mixes real and scam by building, mostly scams; demo is fixed', () => {
-    const ids = FIRST_PAYDAY.sita
+  it('each payday is mostly scams: one or two real ones, the rest scams; demo is fixed', () => {
     let bankReal = 0
     let marketReal = 0
-    for (let seed = 0; seed < 200; seed++) {
-      const mix = mixRound(ids, 1, seed, false)
+    for (let seed = 0; seed < 300; seed++) {
+      for (const [list, round] of [[FIRST_PAYDAY.sita, 1], [FIRST_PAYDAY.aarav, 1], [SECOND_PAYDAY, 2]] as const) {
+        const real = mixRound([...list], round, seed, false).filter((id) => id.startsWith('genuine_')).length
+        expect(real, `seed ${seed} round ${round}`).toBeGreaterThanOrEqual(1)
+        expect(real, `seed ${seed} round ${round}`).toBeLessThanOrEqual(2)
+      }
+      const mix = mixRound(FIRST_PAYDAY.sita, 1, seed, false)
       if (mix[0] === 'genuine_bank') bankReal++
       if (mix[1] === 'genuine_market') marketReal++
     }
-    expect(bankReal).toBeGreaterThan(70) // about half
-    expect(bankReal).toBeLessThan(130)
-    expect(marketReal).toBeGreaterThan(35) // about 30%: scams are most of it
-    expect(marketReal).toBeLessThan(85)
+    expect(bankReal).toBeGreaterThan(marketReal) // a real bank branch is more often safe
+    expect(marketReal).toBeGreaterThan(20) // but any building can be real
+    const ids = FIRST_PAYDAY.sita
     expect(mixRound(ids, 1, 5, true)).toEqual(mixRound(ids, 1, 99, true)) // demo: the same every time
     expect(mixRound(ids, 1, 5, true)[0]).toBe('bank') // the demo opens with the bank-call scam
     // The same building can be real one payday and a scam the next.

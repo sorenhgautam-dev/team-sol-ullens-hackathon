@@ -97,6 +97,9 @@ export const REAL_SPECS: EncounterSpec[] = [
 
 /** How often each building is real on a payday (the rest are scams). A real bank branch is a safe place. */
 const REAL_ODDS: Partial<Record<EncounterDef['building'], number>> = { bank: 0.5, post: 0.5 }
+/** Real interactions per payday: at least one to spot, never more than two, so scams are most of it. */
+const MIN_REAL = 1
+const MAX_REAL = 2
 /** Demo mode is fixed and predictable: the same mix every time (the bank's call is a scam, first). */
 export const DEMO_MIX: Record<EncounterDef['building'], 'real' | 'scam'> = { bank: 'scam', market: 'real', post: 'real', job: 'scam', invest: 'scam', home: 'scam', cafe: 'real', tech: 'scam', gov: 'real', rental: 'scam', shop: 'real', pharmacy: 'real', bakery: 'real', school: 'real' }
 
@@ -106,12 +109,24 @@ export const DEMO_MIX: Record<EncounterDef['building'], 'real' | 'scam'> = { ban
  * safe one payday and a trap the next.
  */
 export function mixRound(ids: string[], round: number, seed: number, demo: boolean): string[] {
-  return ids.map((id) => {
-    const building = ENCOUNTER_SPECS.find((x) => x.id === id)?.building
-    if (!building) return id
-    const real = demo ? DEMO_MIX[building] === 'real' : subRng(seed, `mix:${round}:${building}`)() < (REAL_ODDS[building] ?? 0.3)
-    return real ? `genuine_${building}` : id
+  const buildingOf = (id: string) => ENCOUNTER_SPECS.find((x) => x.id === id)?.building
+  if (demo)
+    return ids.map((id) => {
+      const b = buildingOf(id)
+      return b && DEMO_MIX[b] === 'real' ? `genuine_${b}` : id
+    })
+  // Roll each building against its odds; the lower the roll compared with the odds, the more "real" it is.
+  const rolls = ids.map((id, i) => {
+    const b = buildingOf(id)
+    const odds = b ? (REAL_ODDS[b] ?? 0.3) : 0
+    const u = b ? subRng(seed, `mix:${round}:${b}`)() : 1
+    return { i, b, score: odds > 0 ? u / odds : Infinity }
   })
+  // Scams stay the main event: every payday has at least one real interaction and never more than two.
+  const ranked = [...rolls].filter((r) => r.b).sort((a, b) => a.score - b.score)
+  const n = Math.min(MAX_REAL, Math.max(MIN_REAL, ranked.filter((r) => r.score < 1).length))
+  const real = new Set(ranked.slice(0, n).map((r) => r.i))
+  return ids.map((id, i) => (real.has(i) ? `genuine_${rolls[i]!.b}` : id))
 }
 
 /**
