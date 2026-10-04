@@ -331,8 +331,26 @@ function TypingDots() {
 }
 
 /** What the scammer shows: a request to approve, a "payment successful" screenshot, or a card form. */
-function PayScreen({ kind, text }: { kind: 'request' | 'screenshot' | 'form'; text: string }) {
+function PayScreen({ kind, text }: { kind: 'request' | 'screenshot' | 'form' | 'received'; text: string }) {
   const frame = { boxShadow: '0 0 0 2px var(--frame-dark), 4px 4px 0 0 rgba(0,0,0,0.35)' }
+  if (kind === 'received')
+    return (
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="self-stretch bg-[#fffaf0] p-2 text-ink" style={frame}>
+        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wide text-ink/50">
+          <span>{t('town.phone.yourApp')}</span>
+          <span>12:31</span>
+        </div>
+        <div className="mt-1 flex items-center gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-teal text-white">
+            <PxIcon name="check" />
+          </span>
+          <div>
+            <div className="font-pixel text-[11px] uppercase text-teal">{t('town.phone.received')}</div>
+            <div className="text-[14px] font-bold">{text}</div>
+          </div>
+        </div>
+      </motion.div>
+    )
   if (kind === 'screenshot')
     return (
       <motion.div initial={{ scale: 0.9, opacity: 0, rotate: 0 }} animate={{ scale: 1, opacity: 1, rotate: -2 }} className="ml-2 w-[74%] self-start bg-[#fffaf0] p-2 text-center text-ink" style={frame}>

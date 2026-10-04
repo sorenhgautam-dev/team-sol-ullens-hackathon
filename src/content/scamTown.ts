@@ -23,7 +23,9 @@ export interface EncounterSpec {
   lines: number
   timerSeconds: number
   /** A payment screen in the message: a request to approve, a fake screenshot, or a card form. */
-  pay?: 'request' | 'screenshot' | 'form'
+  pay?: 'request' | 'screenshot' | 'form' | 'received'
+  /** Arrives on the phone while walking (real ones can too, so the phone is not a giveaway). */
+  phone?: boolean
   money: Record<string, Money>
   /** Loss for each risky choice: a money key, or a share of the payday (0 = no money lost). */
   loss: { fall: string | number; tempted: string | number }
@@ -79,8 +81,8 @@ export const SCAMMER_COLOUR: Record<string, string> = {
 const R = (id: string, building: EncounterDef['building'], lines: number, money: EncounterSpec['money'], real: NonNullable<EncounterSpec['real']>): EncounterSpec => ({ id, building, scammer: '', channel: 'chat', lines, timerSeconds: 22, money, loss: { fall: 0, tempted: 0 }, real })
 export const REAL_SPECS: EncounterSpec[] = [
   R('genuine_bank', 'bank', 3, { refund: 0.05 }, { gain: 'refund', refuseMissed: 'refund' }),
-  R('genuine_market', 'market', 2, { price: 0.06 }, { gain: 'price', refuseMissed: 'price' }),
-  R('genuine_post', 'post', 2, { fee: 'fee', late: 0.03 }, { cost: 'fee', refuseCost: 'late' }),
+  { ...R('genuine_market', 'market', 2, { price: 0.06 }, { gain: 'price', refuseMissed: 'price' }), pay: 'received' },
+  { ...R('genuine_post', 'post', 2, { fee: 'fee', late: 0.03 }, { cost: 'fee', refuseCost: 'late' }), channel: 'text', phone: true },
   R('genuine_job', 'job', 2, { shift: 0.05 }, { gain: 'shift', refuseMissed: 'shift' }),
   R('genuine_invest', 'invest', 2, { pass: 0.04, singles: 0.06 }, { cost: 'pass', refuseCost: 'singles' }),
   R('genuine_home', 'home', 2, { back: 0.04 }, { gain: 'back', refuseMissed: 'back' }),
@@ -176,7 +178,7 @@ export function localEncounters(currency: Currency, character: CharacterId, spec
       id: s.id,
       real: !!s.real,
       // Scams pretending to be the bank or the post office arrive on the phone while you walk.
-      via: !s.real && (s.building === 'bank' || s.building === 'post') ? 'phone' : undefined,
+      via: s.phone || (!s.real && (s.building === 'bank' || s.building === 'post')) ? 'phone' : undefined,
       building: s.building,
       scammer: s.scammer,
       channel: s.channel,

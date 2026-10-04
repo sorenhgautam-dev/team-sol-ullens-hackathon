@@ -118,6 +118,9 @@ describe('encounter content', () => {
     expect(enc.find((e) => e.id === 'post')!.via).toBe('phone')
     expect(enc.find((e) => e.id === 'market')!.via).toBeUndefined()
     expect(enc.find((e) => e.id === 'genuine_bank')!.via).toBeUndefined()
+    // Real ones can ring the phone too, so the phone itself is never the giveaway.
+    expect(enc.find((e) => e.id === 'genuine_post')!.via).toBe('phone')
+    expect(enc.find((e) => e.id === 'genuine_market')!.payStyle).toBe('received')
   })
 
   it('every scam building has a start cue, and every cue text exists', () => {
