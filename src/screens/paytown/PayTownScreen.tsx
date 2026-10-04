@@ -141,7 +141,9 @@ export function PayTownScreen() {
   // The opened real message stays on screen until closed, even once it counts as handled.
   const [realOpen, setRealOpen] = useState<(typeof REAL_MESSAGES)[number] | null>(null)
 
-  const { encounters, thisRound, round, payday, bills } = useEncounters()
+  const { encounters, thisRound, extras, round, payday, bills } = useEncounters()
+  const extrasRef = useRef(extras)
+  extrasRef.current = extras
   const cash = useCash()
   const encountersRef = useRef(thisRound)
   encountersRef.current = thisRound
@@ -149,8 +151,9 @@ export function PayTownScreen() {
   const done = useMemo(() => new Set(firstAnswers(answers, round).map((a) => a.encounterId)), [answers, round])
   const doneRef = useRef(done)
   doneRef.current = done
-  const pendingReal = REAL_MESSAGES.find((m) => m.round === Math.min(round, 2) && done.size >= m.after && !real[`${round}:${m.id}`]) ?? null
-  const allDone = done.size === thisRound.length
+  const doneCount = thisRound.filter((e) => done.has(e.id)).length
+  const pendingReal = REAL_MESSAGES.find((m) => m.round === Math.min(round, 2) && doneCount >= m.after && !real[`${round}:${m.id}`]) ?? null
+  const allDone = doneCount === thisRound.length
   // One scam at a time, in the payday's fixed order.
   const current = useMemo(() => currentEncounter(thisRound, answers, round), [thisRound, answers, round])
   const [cue, setCue] = useState<ShownCue | null>(null)
@@ -273,6 +276,11 @@ export function PayTownScreen() {
         const d = doorOf(e.building).door
         if (Math.hypot(d.x - w.x, d.y - w.y) <= DOOR_RADIUS) found = e
       }
+      // Main Street's pharmacy, bakery and school are always open.
+      for (const e of extrasRef.current) {
+        const d = DISTRICT_SIGNS[e.building as keyof typeof DISTRICT_SIGNS]
+        if (d && Math.hypot(d.x - w.x, d.y - w.y) <= DOOR_RADIUS) found = e
+      }
       if ((found?.id ?? null) !== nearId) {
         nearId = found?.id ?? null
         setNear(found)
@@ -387,7 +395,7 @@ export function PayTownScreen() {
             {name} · {t('town.payday', { n: round })}
           </div>
           <Balance amount={ledger.balance} state={ledger.balance < bills.total ? 'danger' : ledger.balance < bills.total * 1.15 ? 'warn' : 'safe'} size="md" />
-          <div className="truncate text-[12px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size, total: thisRound.length })}</div>
+          <div className="truncate text-[12px] font-bold text-ink/70">{t('town.scamsFaced', { n: doneCount, total: thisRound.length })}</div>
           <div className={`truncate text-[12px] font-bold ${ledger.balance < bills.total ? 'text-danger' : 'text-ink/70'}`}>{t('town.billsDue', { amount: cash(bills.total) })}</div>
         </div>
         <button className={`relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft ${phoneScam ? 'animate-pulse' : ''}`} onClick={() => {

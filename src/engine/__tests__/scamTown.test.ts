@@ -58,7 +58,7 @@ describe('scam immunity score', () => {
 
 describe('encounter content', () => {
   it('every encounter offers do it / check first / say no, all with text', () => {
-    expect(EVERY).toHaveLength(32) // 21 scams and 11 real interactions
+    expect(EVERY).toHaveLength(35) // 21 scams, 11 real interactions and 3 Main Street money moments
     for (const e of EVERY) {
       expect(e.choices.map((c) => c.id)).toEqual(['accept', 'verify', 'refuse'])
       const keys = [e.thoughtKey, e.senderKey, ...e.lineKeys, e.rule.whyKey, e.rule.ruleKey, e.rule.lessonKey, ...e.choices.flatMap((c) => [c.labelKey, c.outcomeKey])]

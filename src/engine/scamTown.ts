@@ -40,7 +40,7 @@ export interface EncounterDef {
   /** Arrives on the phone while walking, not inside a building (scams pretending to be the bank or post office). */
   via?: 'phone'
   /** Building on the town map. */
-  building: 'bank' | 'market' | 'post' | 'job' | 'invest' | 'home' | 'cafe' | 'tech' | 'gov' | 'rental' | 'shop'
+  building: 'bank' | 'market' | 'post' | 'job' | 'invest' | 'home' | 'cafe' | 'tech' | 'gov' | 'rental' | 'shop' | 'pharmacy' | 'bakery' | 'school'
   /** Existing scammer art revealed after the decision. */
   scammer: string
   channel: 'call' | 'text' | 'chat' | 'payment'

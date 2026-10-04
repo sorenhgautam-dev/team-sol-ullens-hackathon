@@ -89,12 +89,16 @@ export const REAL_SPECS: EncounterSpec[] = [
   R('genuine_gov', 'gov', 2, { refund: 0.05 }, { gain: 'refund', refuseMissed: 'refund' }),
   R('genuine_rental', 'rental', 2, { back: 0.06 }, { gain: 'back', refuseMissed: 'back' }),
   R('genuine_shop', 'shop', 2, { price: 0.05, more: 0.07 }, { cost: 'price', refuseCost: 'more' }),
+  // Main Street: open any time, one quick money choice each (needs before wants, paying on time).
+  R('extra_pharmacy', 'pharmacy', 2, { medicine: 0.02, later: 0.05 }, { cost: 'medicine', refuseCost: 'later' }),
+  R('extra_bakery', 'bakery', 2, { bread: 0.01, cake: 0.02, later: 0.03 }, { cost: 'bread', refuseCost: 'later' }),
+  R('extra_school', 'school', 2, { fee: 0.03, late: 0.05 }, { cost: 'fee', refuseCost: 'late' }),
 ]
 
 /** How often each building is real on a payday (the rest are scams). A real bank branch is a safe place. */
 const REAL_ODDS: Partial<Record<EncounterDef['building'], number>> = { bank: 0.8, post: 0.8 }
 /** Demo mode is fixed and predictable: the same mix every time (the bank's call is a scam, first). */
-export const DEMO_MIX: Record<EncounterDef['building'], 'real' | 'scam'> = { bank: 'scam', market: 'real', post: 'real', job: 'scam', invest: 'scam', home: 'scam', cafe: 'real', tech: 'scam', gov: 'real', rental: 'scam', shop: 'real' }
+export const DEMO_MIX: Record<EncounterDef['building'], 'real' | 'scam'> = { bank: 'scam', market: 'real', post: 'real', job: 'scam', invest: 'scam', home: 'scam', cafe: 'real', tech: 'scam', gov: 'real', rental: 'scam', shop: 'real', pharmacy: 'real', bakery: 'real', school: 'real' }
 
 /**
  * Each payday the seed decides, building by building, whether what happens there is real or
@@ -198,6 +202,9 @@ export const CUES: Record<EncounterDef['building'], Cue> = {
   gov: { kind: 'letter', textKey: 'town.cue.gov', sound: 'thud' },
   rental: { kind: 'shout', textKey: 'town.cue.rental', sound: 'chime' },
   shop: { kind: 'tag', textKey: 'town.cue.shop', sound: 'coin' },
+  pharmacy: { kind: 'tag', sound: 'pop' },
+  bakery: { kind: 'tag', sound: 'pop' },
+  school: { kind: 'letter', sound: 'pop' },
 }
 
 /** Real messages that are safe to act on: the lesson is "verify", not "everything is a scam". */

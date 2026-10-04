@@ -19,6 +19,8 @@ export function useEncounters() {
     // Each payday the seed decides which buildings are real and which are scams (demo mode: a fixed mix).
     const ids = mixRound(roundIds(round, FIRST_PAYDAY[characterId], SECOND_PAYDAY, seed, !demo), round, seed, demo)
     const thisRound = ids.map((id) => encounters.find((e) => e.id === id)!).filter(Boolean)
-    return { encounters, thisRound, round, payday: paydayFor(currency, characterId), bills: billsFor(currency, characterId) }
+    // Main Street's money moments: open any time, not part of the payday's list.
+    const extras = encounters.filter((e) => e.id.startsWith('extra_'))
+    return { encounters, thisRound, extras, round, payday: paydayFor(currency, characterId), bills: billsFor(currency, characterId) }
   }, [currency, characterId, round, seed, demo])
 }

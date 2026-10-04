@@ -19,8 +19,8 @@ import { t } from '@/i18n'
 import { play } from '@/audio/sfx'
 import confetti from 'canvas-confetti'
 
-export function familyWarningText(encounters: EncounterDef[]): string {
-  return [t('results2.familyTitle'), ...encounters.map((e, i) => `${i + 1}. ${t(e.rule.ruleKey)}`), t('results2.familyFooter')].join('\n')
+export function familyWarningText(encounters: EncounterDef[], lessons: string[] = []): string {
+  return [t('results2.familyTitle'), ...encounters.map((e, i) => `${i + 1}. ${t(e.rule.ruleKey)}`), ...(lessons.length ? [t('results2.moneyTips') + ':', ...lessons.map((l) => `- ${l}`)] : []), t('results2.familyFooter')].join('\n')
 }
 
 export function PayResultsScreen() {
@@ -35,13 +35,15 @@ export function PayResultsScreen() {
   }, [encounters, answers])
   // The Family Warning Card keeps the rules from the scams (real ones taught a money tip instead).
   const scamsSeen = seen.filter((e) => !e.real)
+  // Money tips from everything met this payday (the rule cards show the same tip).
+  const lessons = [...new Set(seen.map((e) => t(e.rule.lessonKey)))].slice(0, 4)
   const params = usePersonaParams()
   const ledger = useMemo(() => townLedger(payday, answers, encounters, round, bills.total), [payday, answers, encounters, round, bills.total])
   const check = rentCheck(ledger.balance, bills.total)
   const rows = useMemo(() => paydayRecord(answers, encounters, round), [answers, encounters, round])
   const tips = useMemo(() => paydayTips(rows), [rows])
   const [verdict, setVerdict] = useState(true)
-  const imm = useMemo(() => immunity(answers, encounters, round), [answers, encounters, round])
+  const imm = useMemo(() => immunity(answers, thisRound, round), [answers, thisRound, round])
   const lostThisRound = ledger.entries.filter((e) => e.kind === 'scam_loss' && e.round === round).reduce((n, e) => n - e.amount, 0)
   const [shown, setShown] = useState(0)
 
@@ -65,7 +67,7 @@ export function PayResultsScreen() {
   }, [imm.score, imm.tier, reduced])
 
   const share = async () => {
-    const text = familyWarningText(scamsSeen)
+    const text = familyWarningText(scamsSeen, lessons)
     try {
       if (navigator.share) await navigator.share({ title: t('results2.familyTitle'), text })
       else {
@@ -78,7 +80,7 @@ export function PayResultsScreen() {
   }
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(familyWarningText(scamsSeen))
+      await navigator.clipboard.writeText(familyWarningText(scamsSeen, lessons))
       toast(t('results2.copied'), 'good')
     } catch {
       toast(t('results2.copyFailed'), 'bad')
@@ -191,6 +193,16 @@ export function PayResultsScreen() {
             <li key={e.id}>{t(e.rule.ruleKey)}</li>
           ))}
         </ol>
+        {lessons.length > 0 && (
+          <>
+            <p className="mt-2 font-bold">{t('results2.moneyTips')}</p>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-[15px] leading-snug">
+              {lessons.map((l) => (
+                <li key={l}>{l}</li>
+              ))}
+            </ul>
+          </>
+        )}
         <p className="mt-2 text-[13px] text-ink/70">{t('results2.familyFooter')}</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Button variant="primary" onClick={() => void share()}>
