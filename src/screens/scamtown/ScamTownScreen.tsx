@@ -400,7 +400,7 @@ export function ScamTownScreen() {
       </header>
 
       <div ref={holderRef} className="relative min-h-0 flex-1" onPointerDown={unlockAudio}>
-        <canvas ref={canvasRef} width={vw * SCALE} height={vh * SCALE} className="block touch-none" style={{ width: vw * SCALE, height: vh * SCALE }} role="img" aria-label={t('scamtown.title')} onPointerDown={onTap} />
+        <canvas ref={canvasRef} width={vw * SCALE} height={vh * SCALE} className="pixelated block touch-none" style={{ width: vw * SCALE, height: vh * SCALE }} role="img" aria-label={t('scamtown.title')} onPointerDown={onTap} />
         {phoneScam && !busy && (
           <button className="absolute right-2 top-2 bg-marigold px-2 py-1 text-[13px] font-bold pixel-frame-soft" onClick={() => setOpen(phoneScam)}>
             <PxIcon name="phone" size={12} /> {phoneScam.channel === 'call' ? t('town.phoneCall') : t('town.phoneText')}
