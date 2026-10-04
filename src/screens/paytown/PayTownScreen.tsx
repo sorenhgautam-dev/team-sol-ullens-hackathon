@@ -84,11 +84,17 @@ function buildDistrict(tiles: HTMLImageElement): HTMLCanvasElement {
   const ctx = c.getContext('2d')!
   ctx.imageSmoothingEnabled = false
   const draw = (i: number, col: number, row: number) => ctx.drawImage(tiles, (i % 12) * TILE, Math.floor(i / 12) * TILE, TILE, TILE, col * TILE, row * TILE, TILE, TILE)
+  // 1. Ground.
+  for (let r = 0; r < DISTRICT_ROWS; r++) for (let col = 0; col < DISTRICT_COLS; col++) draw(DISTRICT_GROUND[r]![col]!, col, r)
+  // 2. Painted grass, like the team's map: a few darker and lighter flecks on every grass tile.
   for (let r = 0; r < DISTRICT_ROWS; r++)
     for (let col = 0; col < DISTRICT_COLS; col++) {
-      draw(DISTRICT_GROUND[r]![col]!, col, r)
-      const o = DISTRICT_OBJECTS[r]![col]!
-      if (o >= 0) draw(o, col, r)
+      if (DISTRICT_GROUND[r]![col]! > 2) continue
+      const h = (r * 131 + col * 197) % 251
+      ctx.fillStyle = 'rgba(46,92,40,0.55)'
+      for (let k = 0; k < 4; k++) ctx.fillRect(col * TILE + ((h + k * 7) % 14), r * TILE + ((h * 3 + k * 5) % 14), 2, 1)
+      ctx.fillStyle = 'rgba(170,205,120,0.45)'
+      for (let k = 0; k < 2; k++) ctx.fillRect(col * TILE + ((h * 5 + k * 9) % 15), r * TILE + ((h + k * 11) % 15), 1, 1)
     }
   // The roads get soft edges where they meet the grass, and a few pebbles, so they read as paths.
   const isRoad = (r: number, col: number) => r >= 0 && col >= 0 && r < DISTRICT_ROWS && col < DISTRICT_COLS && DISTRICT_GROUND[r]![col] === ROAD_TILE
@@ -109,6 +115,31 @@ function buildDistrict(tiles: HTMLImageElement): HTMLCanvasElement {
       const h = (r * 73 + col * 151) % 97
       ctx.fillRect(x + 3 + (h % 9), y + 4 + (h % 7), 1, 1)
       ctx.fillRect(x + 9 + (h % 5), y + 10 + (h % 4), 2, 1)
+    }
+  // 3. Light comes from the top-left, as on the team's map: every object casts a soft shadow
+  //    down and to the right, then the objects are drawn on top.
+  const shadow = document.createElement('canvas')
+  shadow.width = TILE
+  shadow.height = TILE
+  const sctx = shadow.getContext('2d')!
+  for (let r = 0; r < DISTRICT_ROWS; r++)
+    for (let col = 0; col < DISTRICT_COLS; col++) {
+      const o = DISTRICT_OBJECTS[r]![col]!
+      if (o < 0) continue
+      sctx.globalCompositeOperation = 'source-over'
+      sctx.clearRect(0, 0, TILE, TILE)
+      sctx.drawImage(tiles, (o % 12) * TILE, Math.floor(o / 12) * TILE, TILE, TILE, 0, 0, TILE, TILE)
+      sctx.globalCompositeOperation = 'source-in'
+      sctx.fillStyle = '#1e140a'
+      sctx.fillRect(0, 0, TILE, TILE)
+      ctx.globalAlpha = 0.32
+      ctx.drawImage(shadow, col * TILE + 3, r * TILE + 3)
+      ctx.globalAlpha = 1
+    }
+  for (let r = 0; r < DISTRICT_ROWS; r++)
+    for (let col = 0; col < DISTRICT_COLS; col++) {
+      const o = DISTRICT_OBJECTS[r]![col]!
+      if (o >= 0) draw(o, col, r)
     }
   // Match the team's map: its colours are deeper and warmer than the tiles. The gains come from
   // the map's own grass and dirt (measured), so the district reads as the same painted town.
