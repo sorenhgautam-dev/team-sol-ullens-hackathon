@@ -33,7 +33,6 @@ export const PALETTE = {
   skin: '#c98a5a',
 } as const
 
-export type PaletteName = keyof typeof PALETTE
 
 /** Whole-number scales only: pixel art is never drawn at fractional sizes. */
 export const PIXEL_SCALE = { ui: 2, world: 3, map: 2, town: 2 } as const
