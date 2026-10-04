@@ -12,7 +12,7 @@ import { DISTRICT_BLOCKED, DISTRICT_COLS, DISTRICT_ROWS, DISTRICT_TOP, TILE } fr
 export const MAP_W = 305
 export const MAP_H = 537
 /** The whole walkable world: the town plus the south district below it. */
-export const WORLD_W = MAP_W
+export const WORLD_W = Math.min(MAP_W, DISTRICT_COLS * TILE)
 export const WORLD_H = DISTRICT_TOP + DISTRICT_ROWS * TILE
 
 export interface Rect {
@@ -94,6 +94,10 @@ export function startWalker(): WalkerState {
 
 /** Move by a unit-ish vector, sliding along obstacles. Mutates and returns the state. */
 export function stepWalker(s: WalkerState, dx: number, dy: number, speed = WALK_SPEED): WalkerState {
+  // Never outside the world, on any edge (the narrower of the town and the district).
+  s.x = Math.min(WORLD_W - SITA_HALF_W - 1, Math.max(SITA_HALF_W + 1, s.x))
+  s.y = Math.min(WORLD_H - 1, Math.max(SITA_FEET_H + 1, s.y))
+  // Diagonals are normalised, so walking diagonally is no faster than straight.
   const len = Math.hypot(dx, dy)
   if (len < 0.15) {
     s.moving = false

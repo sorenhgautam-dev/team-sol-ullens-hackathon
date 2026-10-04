@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MAP_H, PLACES, WORLD_H, isWalkable, startWalker, stepWalker } from '../map'
+import { MAP_H, PLACES, WALK_SPEED, WORLD_H, WORLD_W, isWalkable, startWalker, stepWalker } from '../map'
 import { DISTRICT_DOORS, DISTRICT_SIGNS, DISTRICT_TOP, TILE } from '../district'
 import { findPath } from '../path'
 
@@ -94,6 +94,17 @@ describe('collision from the map: fences, trees and the district', () => {
     expect(at(9, 10), 'well').toBe(false)
     for (const [c, r] of [[8, 10], [10, 10], [9, 9], [9, 11]] as const) expect(at(c, r), `square ${c},${r}`).toBe(true)
     expect(at(0, 2), 'tree trunk by the loop').toBe(false)
+  })
+
+  it('diagonal steps are no faster than straight ones, and the walker never leaves the world', () => {
+    const a = { ...startWalker(), x: 150, y: 338 }
+    stepWalker(a, 1, 1)
+    expect(Math.hypot(a.x - 150, a.y - 338)).toBeLessThanOrEqual(WALK_SPEED + 1e-9)
+    const b = { ...startWalker(), x: 9999, y: -50 }
+    stepWalker(b, 0, 0)
+    expect(b.x).toBeLessThan(WORLD_W)
+    expect(b.y).toBeGreaterThan(0)
+    expect(WORLD_W).toBe(304) // the narrower of the town (305) and the district (304)
   })
 
   it('Main Street, south of the loop, has solid show buildings you can walk up to', () => {

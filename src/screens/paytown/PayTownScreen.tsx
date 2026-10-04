@@ -40,6 +40,8 @@ import { haptic, play, unlockAudio } from '@/audio/sfx'
 /** The town is drawn at 2x (not 3x) so the player sees more of the map around them. */
 const SCALE = PIXEL_SCALE.town
 const STEP_MS = 1000 / 60
+/** Keep a camera coordinate inside the world; centre it when the view is wider than the world. */
+const inside = (v: number, max: number) => (max <= 0 ? max / 2 : Math.min(max, Math.max(0, v)))
 const DOOR_RADIUS = 16
 /** How quickly the camera catches up with the walker each step (1 = locked on). */
 const CAM_EASE = 0.16
@@ -89,6 +91,7 @@ export function PayTownScreen() {
   const district = useRef<HTMLImageElement | null>(null)
   const walker = useRef<WalkerState>(startWalker())
   const input = useRef({ dx: 0, dy: 0 })
+  const heldKeys = useRef(new Set<string>())
   const cam = useRef<Point | null>(null)
   const route = useRef<Route | null>(null)
   const tapMark = useRef<(Point & { at: number }) | null>(null)
@@ -224,13 +227,13 @@ export function PayTownScreen() {
       }
       // The camera eases after the walker instead of snapping to it.
       const v = view.current
-      const tx = Math.min(WORLD_W - v.w, Math.max(0, w.x - v.w / 2))
-      const ty = Math.min(WORLD_H - v.h, Math.max(0, w.y - v.h * 0.55))
+      const tx = inside(w.x - v.w / 2, WORLD_W - v.w)
+      const ty = inside(w.y - v.h * 0.55, WORLD_H - v.h)
       const c = cam.current
       if (!c || reduced || Math.hypot(tx - c.x, ty - c.y) > 80) cam.current = { x: tx, y: ty }
       else {
-        c.x += (tx - c.x) * CAM_EASE
-        c.y += (ty - c.y) * CAM_EASE
+        c.x = inside(c.x + (tx - c.x) * CAM_EASE, WORLD_W - v.w)
+        c.y = inside(c.y + (ty - c.y) * CAM_EASE, WORLD_H - v.h)
       }
       if (w.odometer > 40 && !walkedRef.current) {
         walkedRef.current = true
@@ -260,13 +263,13 @@ export function PayTownScreen() {
       }
     }
     const loop = (now: number) => {
-      acc += Math.min(250, now - last)
+      // Speed follows the time passed (fixed 60 Hz steps), capped at 6 steps so a lag spike
+      // can't jump the walker; time beyond the cap is dropped, not caught up later.
+      acc = Math.min(acc + (now - last), 6 * STEP_MS)
       last = now
-      let n = 0
-      while (acc >= STEP_MS && n < 6) {
+      while (acc >= STEP_MS) {
         acc -= STEP_MS
         step()
-        n++
       }
       if (cam.current) render(ctx, view.current.w, view.current.h, cam.current, walker.current, frame.current, mapImg.current, district.current, doneRef.current, ch.look, reduced, encountersRef.current, cueRef.current, nearId ?? null, route.current ? tapMark.current : null)
       raf = requestAnimationFrame(loop)
@@ -275,9 +278,16 @@ export function PayTownScreen() {
     return () => cancelAnimationFrame(raf)
   }, [busy, ch.look, reduced])
 
-  // Keyboard for desktop demos.
+  // A sheet or popup stops the walker: forget held keys and the stick, so nothing carries on after it closes.
   useEffect(() => {
-    const held = new Set<string>()
+    if (!busy) return
+    heldKeys.current.clear()
+    input.current = { dx: 0, dy: 0 }
+  }, [busy])
+
+  // Keyboard for desktop demos. Held keys live in a ref so a re-render never drops one.
+  useEffect(() => {
+    const held = heldKeys.current
     const apply = () => {
       input.current = {
         dx: (held.has('ArrowRight') || held.has('d') ? 1 : 0) - (held.has('ArrowLeft') || held.has('a') ? 1 : 0),
@@ -287,6 +297,7 @@ export function PayTownScreen() {
     const down = (e: KeyboardEvent) => {
       if (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'a', 'd', 'w', 's'].includes(e.key)) {
         e.preventDefault()
+        if (busy) return
         held.add(e.key)
         apply()
       } else if (!e.repeat && (e.code === 'Space' || e.key === 'Enter')) {
@@ -298,11 +309,18 @@ export function PayTownScreen() {
       held.delete(e.key)
       apply()
     }
+    // Leaving the window (alt-tab, another app) loses the key-up, so let go of everything.
+    const blur = () => {
+      held.clear()
+      apply()
+    }
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
+    window.addEventListener('blur', blur)
     return () => {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', blur)
     }
   })
 
