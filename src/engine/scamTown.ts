@@ -8,7 +8,7 @@
  */
 import { subRng } from './rng'
 /** The accounts of a payday's double-entry ledger. */
-export type Account = 'Wallet' | 'Income' | 'ScamLoss'
+export type Account = 'Wallet' | 'Income' | 'ScamLoss' | 'Bills'
 
 export interface Posting {
   account: Account
@@ -57,7 +57,7 @@ export interface Answer {
 }
 
 export interface TownEntry {
-  kind: 'payday' | 'scam_loss'
+  kind: 'payday' | 'scam_loss' | 'bills'
   amount: number
   round: number
   encounterId?: string
@@ -68,7 +68,7 @@ export interface TownLedger {
   start: number
   balance: number
   entries: TownEntry[]
-  accounts: { Wallet: number; Income: number; ScamLoss: number }
+  accounts: { Wallet: number; Income: number; ScamLoss: number; Bills: number }
 }
 
 export const POINTS: Record<Verdict, number> = { safe: 20, tempted: 10, fall: 0 }
@@ -87,9 +87,13 @@ export function firstAnswers(answers: Answer[], round?: number): Answer[] {
   })
 }
 
-/** Book `rounds` paydays, each followed by that payday's losses. The wallet never goes below zero. */
-export function townLedger(payday: number, answers: Answer[], encounters: EncounterDef[], rounds = 1): TownLedger {
-  const accounts = { Wallet: 0, Income: 0, ScamLoss: 0 }
+/**
+ * Book `rounds` paydays, each followed by that payday's losses. When a payday closes (every
+ * round before the current one), its rent and food (`bills`) are paid from what is left; if
+ * there is not enough, everything left goes to them. The wallet never goes below zero.
+ */
+export function townLedger(payday: number, answers: Answer[], encounters: EncounterDef[], rounds = 1, bills = 0): TownLedger {
+  const accounts = { Wallet: 0, Income: 0, ScamLoss: 0, Bills: 0 }
   const entries: TownEntry[] = []
   const book = (e: TownEntry) => {
     for (const p of e.postings) accounts[p.account as keyof typeof accounts] += p.delta
@@ -105,8 +109,15 @@ export function townLedger(payday: number, answers: Answer[], encounters: Encoun
       if (loss <= 0) continue
       book({ kind: 'scam_loss', amount: -loss, round, encounterId: a.encounterId, postings: [{ account: 'Wallet', delta: -loss }, { account: 'ScamLoss', delta: loss }] })
     }
+    const paid = round < rounds ? Math.min(bills, accounts.Wallet) : 0
+    if (paid > 0) book({ kind: 'bills', amount: -paid, round, postings: [{ account: 'Wallet', delta: -paid }, { account: 'Bills', delta: paid }] })
   }
   return { start: payday * rounds, balance: accounts.Wallet, entries, accounts }
+}
+
+/** The end of a payday: does what is left cover rent and food? */
+export function rentCheck(balance: number, bills: number): { win: boolean; leftOver: number; shortBy: number } {
+  return { win: balance >= bills, leftOver: Math.max(0, balance - bills), shortBy: Math.max(0, bills - balance) }
 }
 
 export type Tier = 'proof' | 'wiser' | 'easy'

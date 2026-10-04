@@ -33,7 +33,7 @@ interface Props {
 export function EncounterSheet({ encounter: e, onClose }: Props) {
   const { characterId, seed, answers, answer, shown } = useScam()
   const cash = useCash()
-  const { encounters, payday, round } = useEncounters()
+  const { encounters, payday, round, bills } = useEncounters()
   const persona = usePersonaParams()
   const [step, setStep] = useState<Step>('thought')
   const [attempt, setAttempt] = useState(0)
@@ -94,10 +94,10 @@ export function EncounterSheet({ encounter: e, onClose }: Props) {
     if (answered) return
     setAnswered(true)
     setPicked(c)
-    const before = townLedger(payday, answers, encounters, round).balance
+    const before = townLedger(payday, answers, encounters, round, bills.total).balance
     setShownBalance(before)
     if (!practice) answer({ encounterId: e.id, choiceId: c.id, round })
-    const after = practice ? before : townLedger(payday, [...answers, { encounterId: e.id, choiceId: c.id, round }], encounters, round).balance
+    const after = practice ? before : townLedger(payday, [...answers, { encounterId: e.id, choiceId: c.id, round }], encounters, round, bills.total).balance
     setStep('outcome')
     window.setTimeout(() => setShownBalance(after), 450)
     play(c.loss > 0 ? 'thud' : 'coin')

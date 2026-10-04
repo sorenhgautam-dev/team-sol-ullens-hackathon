@@ -40,3 +40,17 @@ export function nice(value: number, currency: Currency): number {
 export function paydayFor(currency: Currency, character: CharacterId): number {
   return ECONOMIES[currency].payday[character]
 }
+
+/**
+ * What every payday has to cover before the next one: rent and food, as shares of that
+ * character's own pay. That leaves about 28%: one scam still leaves enough for rent,
+ * two or three do not.
+ */
+export const BILL_SHARES = { rent: 0.45, food: 0.27 }
+
+export function billsFor(currency: Currency, character: CharacterId): { rent: number; food: number; total: number } {
+  const pay = paydayFor(currency, character)
+  const rent = nice(pay * BILL_SHARES.rent, currency)
+  const food = nice(pay * BILL_SHARES.food, currency)
+  return { rent, food, total: rent + food }
+}

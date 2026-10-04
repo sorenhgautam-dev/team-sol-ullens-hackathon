@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameShallow } from '@/state/gameStore'
 import { useScam } from '@/state/scamStore'
-import { firstAnswers, immunity, townLedger } from '@/engine/scamTown'
+import { firstAnswers, immunity, rentCheck, townLedger } from '@/engine/scamTown'
 import { useEncounters } from './useEncounters'
 import type { EncounterDef } from '@/engine/scamTown'
 import { Button } from '@/ui/Button'
@@ -27,14 +27,16 @@ export function PayResultsScreen() {
   const { go, toast, reduced } = useGameShallow((s) => ({ go: s.go, toast: s.toast, reduced: s.settings.reducedMotion }))
   const { answers, nextRound } = useScam()
   const cash = useCash()
-  const { encounters, thisRound, round, payday } = useEncounters()
+  const { encounters, thisRound, round, payday, bills } = useEncounters()
   // Rule cards collected over every payday so far, in the order they were played.
   const seen = useMemo(() => {
     const ids = [...new Set(firstAnswers(answers).map((a) => a.encounterId))]
     return ids.map((id) => encounters.find((e) => e.id === id)).filter((e): e is EncounterDef => !!e)
   }, [encounters, answers])
   const params = usePersonaParams()
-  const ledger = useMemo(() => townLedger(payday, answers, encounters, round), [payday, answers, encounters, round])
+  const ledger = useMemo(() => townLedger(payday, answers, encounters, round, bills.total), [payday, answers, encounters, round, bills.total])
+  const check = rentCheck(ledger.balance, bills.total)
+  const [verdict, setVerdict] = useState(true)
   const imm = useMemo(() => immunity(answers, encounters, round), [answers, encounters, round])
   const lostThisRound = ledger.entries.filter((e) => e.kind === 'scam_loss' && e.round === round).reduce((n, e) => n - e.amount, 0)
   const [shown, setShown] = useState(0)
@@ -78,6 +80,22 @@ export function PayResultsScreen() {
       toast(t('results2.copyFailed'), 'bad')
     }
   }
+
+  // First, the end of the payday: did the money cover rent and food?
+  if (verdict)
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 bg-paper px-6 text-center text-ink">
+        <motion.div initial={{ scale: 0.6, rotate: -6, opacity: 0 }} animate={{ scale: 1, rotate: -2, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 16 }} className={`px-4 py-3 font-pixel text-[22px] uppercase text-white ${check.win ? 'bg-teal' : 'bg-danger'}`} style={{ boxShadow: '0 0 0 3px var(--frame-dark), 6px 6px 0 3px var(--frame-dark)' }}>
+          {check.win ? t('results2.win') : t('results2.lose')}
+        </motion.div>
+        <p className="text-[17px]">{t('results2.billsLine', { balance: cash(ledger.balance), bills: cash(bills.total) })}</p>
+        <p className={`font-pixel text-[20px] ${check.win ? 'text-teal' : 'text-danger'}`}>{check.win ? t('results2.leftOver', { amount: cash(check.leftOver) }) : t('results2.shortBy', { amount: cash(check.shortBy) })}</p>
+        <p className="text-[14px] text-ink/70">{check.win ? t('results2.winNote') : t('results2.loseNote')}</p>
+        <Button variant="primary" size="lg" className="w-full" onClick={() => setVerdict(false)}>
+          {t('results2.seeResults')}
+        </Button>
+      </div>
+    )
 
   const tierColor = imm.tier === 'proof' ? 'text-teal' : imm.tier === 'wiser' ? 'text-honey' : 'text-danger'
   return (

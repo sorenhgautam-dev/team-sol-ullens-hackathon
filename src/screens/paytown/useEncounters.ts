@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 import { useGame } from '@/state/gameStore'
 import { useScam } from '@/state/scamStore'
 import { FIRST_PAYDAY, SECOND_PAYDAY, localEncounters } from '@/content/scamTown'
-import { paydayFor } from '@/content/economy'
+import { billsFor, paydayFor } from '@/content/economy'
 import { roundIds } from '@/engine/scamTown'
 
 export function useEncounters() {
@@ -18,6 +18,6 @@ export function useEncounters() {
     // A new order every run; demo mode keeps the listed order so the pitch starts at the bank.
     const ids = roundIds(round, FIRST_PAYDAY[characterId], SECOND_PAYDAY, seed, !demo)
     const thisRound = ids.map((id) => encounters.find((e) => e.id === id)!).filter(Boolean)
-    return { encounters, thisRound, round, payday: paydayFor(currency, characterId) }
+    return { encounters, thisRound, round, payday: paydayFor(currency, characterId), bills: billsFor(currency, characterId) }
   }, [currency, characterId, round, seed, demo])
 }

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { currentEncounter, immunity, roundIds, shuffledChoices, timerFactor, townLedger, type Answer } from '../scamTown'
+import { currentEncounter, immunity, rentCheck, roundIds, shuffledChoices, timerFactor, townLedger, type Answer } from '../scamTown'
 import { CUES, FIRST_PAYDAY, SECOND_PAYDAY, localEncounters, REAL_MESSAGES } from '@/content/scamTown'
 import { CHARACTERS } from '@/content/characters'
-import { ECONOMIES, paydayFor } from '@/content/economy'
+import { ECONOMIES, billsFor, paydayFor } from '@/content/economy'
 import { CURRENCIES } from '@/i18n/currency'
 
 const EVERY = localEncounters('USD', 'sita')
@@ -186,6 +186,41 @@ describe('the gauntlet loop: paydays as rounds', () => {
     expect(timerFactor(1)).toBe(1)
     expect(timerFactor(2)).toBeCloseTo(0.85)
     expect(timerFactor(9)).toBe(0.6)
+  })
+})
+
+describe('real stakes: rent and food are due at the end of every payday', () => {
+  it('one scam still leaves enough for rent and food; any two do not, in every currency', () => {
+    for (const cur of CURRENCIES)
+      for (const c of CHARACTERS) {
+        const enc = localEncounters(cur, c.id)
+        const pay = paydayFor(cur, c.id)
+        const bills = billsFor(cur, c.id).total
+        const own = FIRST_PAYDAY[c.id]
+        for (const id of own) {
+          const one = townLedger(pay, [{ encounterId: id, choiceId: 'fall' }], enc).balance
+          expect(rentCheck(one, bills).win, `${cur} ${c.id} one fall: ${id}`).toBe(true)
+        }
+        for (let i = 0; i < own.length; i++)
+          for (let j = i + 1; j < own.length; j++) {
+            const two = townLedger(pay, [{ encounterId: own[i]!, choiceId: 'fall' }, { encounterId: own[j]!, choiceId: 'fall' }], enc).balance
+            expect(rentCheck(two, bills).win, `${cur} ${c.id} two falls: ${own[i]} + ${own[j]}`).toBe(false)
+          }
+      }
+  })
+
+  it('bills are paid when a payday closes, and a short payday leaves nothing to carry over', () => {
+    const enc = localEncounters('USD', 'sita')
+    const bills = billsFor('USD', 'sita').total
+    // Payday 1 all safe: pay 800, rent and food paid when payday 2 starts.
+    const safe = FIRST_PAYDAY.sita.map((id) => ({ encounterId: id, choiceId: 'safe', round: 1 }))
+    expect(townLedger(800, safe, enc, 2, bills).balance).toBe(800 - bills + 800)
+    expect(townLedger(800, safe, enc, 2, bills).accounts.Bills).toBe(bills)
+    // Payday 1 falls for everything: not enough for the bills, so payday 2 starts from its own pay.
+    const fall = FIRST_PAYDAY.sita.map((id) => ({ encounterId: id, choiceId: 'fall', round: 1 }))
+    expect(rentCheck(townLedger(800, fall, enc, 1, bills).balance, bills).win).toBe(false)
+    expect(townLedger(800, fall, enc, 2, bills).balance).toBe(800)
+    expect(rentCheck(500, 580)).toEqual({ win: false, leftOver: 0, shortBy: 80 })
   })
 })
 

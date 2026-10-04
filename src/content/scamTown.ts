@@ -31,17 +31,17 @@ export interface EncounterSpec {
 export const ENCOUNTER_SPECS: EncounterSpec[] = [
   { id: 'bank', building: 'bank', scammer: 'otp_snatcher', channel: 'call', lines: 3, timerSeconds: 25, money: {}, loss: { fall: 0.25, tempted: 0 } },
   { id: 'market', building: 'market', scammer: 'impersonator', channel: 'chat', lines: 3, timerSeconds: 25, pay: 'request', money: { price: 0.15 }, loss: { fall: 'price', tempted: 0.05 } },
-  { id: 'post', building: 'post', scammer: 'phisher', channel: 'text', lines: 2, timerSeconds: 20, money: { fee: 'fee' }, loss: { fall: 0.1, tempted: 0 } },
+  { id: 'post', building: 'post', scammer: 'phisher', channel: 'text', lines: 2, timerSeconds: 20, money: { fee: 'fee' }, loss: { fall: 0.18, tempted: 0 } },
   { id: 'job', building: 'job', scammer: 'job_recruiter', channel: 'chat', lines: 3, timerSeconds: 25, money: { hourly: 'hourly', kit: 0.2, small: 0.05 }, loss: { fall: 'kit', tempted: 'small' } },
   { id: 'invest', building: 'invest', scammer: 'investment_guru', channel: 'chat', lines: 3, timerSeconds: 25, money: { stake: 0.2, gain: 0.15, small: 0.05 }, loss: { fall: 'stake', tempted: 'small' } },
   // Sita's own: a fake payment screenshot from a "customer", a prize she never entered.
-  { id: 'overpay', building: 'market', scammer: 'impersonator', channel: 'chat', lines: 3, timerSeconds: 25, pay: 'screenshot', money: { price: 0.08, extra: 0.12, paid: { plus: ['price', 'extra'] } }, loss: { fall: 'extra', tempted: 'price' } },
-  { id: 'prize', building: 'invest', scammer: 'prize_ghost', channel: 'chat', lines: 3, timerSeconds: 22, money: { charge: 0.08, half: 0.04 }, loss: { fall: 'charge', tempted: 'half' } },
+  { id: 'overpay', building: 'market', scammer: 'impersonator', channel: 'chat', lines: 3, timerSeconds: 25, pay: 'screenshot', money: { price: 0.08, extra: 0.15, paid: { plus: ['price', 'extra'] } }, loss: { fall: 'extra', tempted: 'price' } },
+  { id: 'prize', building: 'invest', scammer: 'prize_ghost', channel: 'chat', lines: 3, timerSeconds: 22, money: { charge: 0.15, half: 0.07 }, loss: { fall: 'charge', tempted: 'half' } },
   // Bikash's own: a loan with a fee first, a fake delivery-app alert, a job abroad, a savings club.
-  { id: 'loanfee', building: 'bank', scammer: 'loan_shark', channel: 'call', lines: 3, timerSeconds: 25, money: { loan: 3, procfee: 0.1 }, loss: { fall: 'procfee', tempted: 0 } },
+  { id: 'loanfee', building: 'bank', scammer: 'loan_shark', channel: 'call', lines: 3, timerSeconds: 25, money: { loan: 3, procfee: 0.15 }, loss: { fall: 'procfee', tempted: 0 } },
   { id: 'apphold', building: 'post', scammer: 'phisher', channel: 'text', lines: 2, timerSeconds: 20, money: {}, loss: { fall: 0.25, tempted: 0 } },
   { id: 'abroad', building: 'job', scammer: 'job_recruiter', channel: 'chat', lines: 3, timerSeconds: 25, money: { abroadPay: 8, agentfee: 0.2, small: 0.05 }, loss: { fall: 'agentfee', tempted: 'small' } },
-  { id: 'chain', building: 'invest', scammer: 'investment_guru', channel: 'chat', lines: 3, timerSeconds: 25, money: { weekly: 0.1, double: { times: 'weekly', by: 2 }, small: 0.05 }, loss: { fall: 'weekly', tempted: 'small' } },
+  { id: 'chain', building: 'invest', scammer: 'investment_guru', channel: 'chat', lines: 3, timerSeconds: 25, money: { weekly: 0.15, double: { times: 'weekly', by: 2 }, small: 0.05 }, loss: { fall: 'weekly', tempted: 'small' } },
   // Aarav's own: a "bank details" call, a second-hand laptop, a tax refund text, a task job.
   { id: 'kyc', building: 'bank', scammer: 'phisher', channel: 'call', lines: 3, timerSeconds: 25, money: {}, loss: { fall: 0.15, tempted: 0 } },
   { id: 'token', building: 'market', scammer: 'impersonator', channel: 'chat', lines: 3, timerSeconds: 25, money: { price: 0.25, token: 0.04 }, loss: { fall: 'price', tempted: 'token' } },
@@ -49,11 +49,11 @@ export const ENCOUNTER_SPECS: EncounterSpec[] = [
   { id: 'tasks', building: 'job', scammer: 'job_recruiter', channel: 'chat', lines: 3, timerSeconds: 25, money: { perTask: 0.005, topup: 0.15, small: 0.03 }, loss: { fall: 'topup', tempted: 'small' } },
   // Everyday traps, met from the second payday on.
   { id: 'home', building: 'home', scammer: 'impersonator', channel: 'text', lines: 3, timerSeconds: 22, money: { ask: 0.15, small: 0.05 }, loss: { fall: 'ask', tempted: 'small' } },
-  { id: 'cafe', building: 'cafe', scammer: 'fine_print', channel: 'payment', lines: 2, timerSeconds: 18, pay: 'form', money: { coffee: 'coffee' }, loss: { fall: 0.12, tempted: 0.04 } },
-  { id: 'tech', building: 'tech', scammer: 'loan_shark', channel: 'call', lines: 3, timerSeconds: 22, money: { fix: 0.08 }, loss: { fall: 0.2, tempted: 0.08 } },
-  { id: 'gov', building: 'gov', scammer: 'otp_snatcher', channel: 'call', lines: 3, timerSeconds: 22, money: { fine: 0.2, half: { times: 'fine', by: 0.5 } }, loss: { fall: 'fine', tempted: 'half' } },
-  { id: 'rental', building: 'rental', scammer: 'prize_ghost', channel: 'chat', lines: 3, timerSeconds: 25, money: { rent: 0.2, deposit: 0.2, small: 0.05 }, loss: { fall: 'deposit', tempted: 'small' } },
-  { id: 'shop', building: 'shop', scammer: 'phisher', channel: 'chat', lines: 3, timerSeconds: 20, money: { price: 0.1, small: 0.05 }, loss: { fall: 'price', tempted: 'small' } },
+  { id: 'cafe', building: 'cafe', scammer: 'fine_print', channel: 'payment', lines: 2, timerSeconds: 18, pay: 'form', money: { coffee: 'coffee' }, loss: { fall: 0.15, tempted: 0.04 } },
+  { id: 'tech', building: 'tech', scammer: 'loan_shark', channel: 'call', lines: 3, timerSeconds: 22, money: { fix: 0.08 }, loss: { fall: 0.17, tempted: 0.08 } },
+  { id: 'gov', building: 'gov', scammer: 'otp_snatcher', channel: 'call', lines: 3, timerSeconds: 22, money: { fine: 0.17, half: { times: 'fine', by: 0.5 } }, loss: { fall: 'fine', tempted: 'half' } },
+  { id: 'rental', building: 'rental', scammer: 'prize_ghost', channel: 'chat', lines: 3, timerSeconds: 25, money: { rent: 0.2, deposit: 0.16, small: 0.05 }, loss: { fall: 'deposit', tempted: 'small' } },
+  { id: 'shop', building: 'shop', scammer: 'phisher', channel: 'chat', lines: 3, timerSeconds: 20, money: { price: 0.15, small: 0.05 }, loss: { fall: 'price', tempted: 'small' } },
 ]
 
 /** Each scammer's colour in the reveal scene. */

@@ -23,6 +23,7 @@ import { drawPerson, PERSON_TOP, type PersonLook } from '@/ui/pixel/people'
 import { drawBirds, drawCloudShadows, drawFountainSparkle, drawTownsperson, townsfolk } from '@/ui/pixel/ambient'
 import { PIXEL_SCALE } from '@/ui/palette'
 import { Balance } from '@/ui/Balance'
+import { useCash } from '@/ui/useMoney'
 import { Button } from '@/ui/Button'
 import { PxIcon } from '@/ui/PxIcon'
 import { PixelPortrait } from '@/ui/pixel/PixelPortrait'
@@ -140,10 +141,11 @@ export function PayTownScreen() {
   // The opened real message stays on screen until closed, even once it counts as handled.
   const [realOpen, setRealOpen] = useState<(typeof REAL_MESSAGES)[number] | null>(null)
 
-  const { encounters, thisRound, round, payday } = useEncounters()
+  const { encounters, thisRound, round, payday, bills } = useEncounters()
+  const cash = useCash()
   const encountersRef = useRef(thisRound)
   encountersRef.current = thisRound
-  const ledger = useMemo(() => townLedger(payday, answers, encounters, round), [payday, answers, encounters, round])
+  const ledger = useMemo(() => townLedger(payday, answers, encounters, round, bills.total), [payday, answers, encounters, round, bills.total])
   const done = useMemo(() => new Set(firstAnswers(answers, round).map((a) => a.encounterId)), [answers, round])
   const doneRef = useRef(done)
   doneRef.current = done
@@ -382,8 +384,9 @@ export function PayTownScreen() {
           <div className="truncate font-pixel text-[12px]">
             {name} · {t('town.payday', { n: round })}
           </div>
-          <Balance amount={ledger.balance} state={ledger.balance < payday * round ? 'warn' : 'safe'} size="md" />
+          <Balance amount={ledger.balance} state={ledger.balance < bills.total ? 'danger' : ledger.balance < bills.total * 1.15 ? 'warn' : 'safe'} size="md" />
           <div className="truncate text-[12px] font-bold text-ink/70">{t('town.scamsFaced', { n: done.size, total: thisRound.length })}</div>
+          <div className={`truncate text-[12px] font-bold ${ledger.balance < bills.total ? 'text-danger' : 'text-ink/70'}`}>{t('town.billsDue', { amount: cash(bills.total) })}</div>
         </div>
         <button className="relative flex h-12 w-12 shrink-0 items-center justify-center bg-card pixel-frame-soft" onClick={() => {
             setRealOpen(pendingReal)
