@@ -32,6 +32,7 @@ Payday is when people have the most money in their account, and it is exactly wh
 - **Realistic money.** We called for typical local pay in every currency instead of converted amounts, so nobody is paid lakhs by accident.
 - **The look.** The town map, the character-select mockup and the art direction (ink text, warm paper panels, teal actions, amber warnings, pixel world with readable text) are ours. We picked the Kenney packs and pixelarticons to fill the gaps.
 - **The engine.** Soren and Rayan worked on the money engine with Claude Code. Its rules come from our spec: every loss is booked to ScamLoss, safe answers score 20, close calls 10 and falling for it 0, with three tiers.
+- **The later paydays and the bigger town.** We wrote the specs for the next round of features and Claude Code built them: rent and food due every payday with a win/lose screen, real messages mixed in with the scams (some ring the phone), a record of every decision with tips, Main Street's pharmacy, bakery and school for everyday money choices, a budget calculator, and smoother movement that stays inside the map. We asked for the south district and Main Street, then for their paths and props to match our map, so they are now painted with our own map's grass, cobblestones and trees.
 - **Playtesting.** We played the builds and sent them back with changes: fences you cannot walk through, paths that lead somewhere, a bigger map, names you can change, realistic pay, a cleaner character select.
 - **The pitch.** The one-line pitch above and the demo plan in [docs/DEMO.md](docs/DEMO.md).
 
@@ -70,7 +71,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 6. **The rule card.** Why it was a trap, the rule, and one money tip. **Try again** replays the same encounter as practice so you can see what the other choices would have done; your first answer still counts.
 7. **Two real messages** arrive on your phone along the way (your bank confirming your pay, a family member checking in). They are safe to act on: the lesson is *verify*, not *everything is a scam*.
 8. **Results.** What you kept of your pay, your **Scam Immunity Score** for that payday (safe 20, close call 10, fell for it 0, scaled to 100; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), every rule card you have collected (in the order you played), and a **Family Warning Card** with those rules and Share and Copy buttons.
-9. **The gauntlet loop.** **Next payday** starts the next round: pay lands again, your money carries over, and every countdown is 15% faster (down to 60%). Payday 2 opens the south district, a loop road built from Kenney Tiny Town tiles, with six everyday traps (and, further south, Main Street: a bakery, clinic, library, hotel, school and pharmacy, just for show):
+9. **The gauntlet loop.** **Next payday** starts the next round: pay lands again, your money carries over, and every countdown is 15% faster (down to 60%). Payday 2 opens the south district, a loop of cobbled streets painted with our own town map's grass, cobblestones and trees (the houses are recoloured Kenney Tiny Town tiles), with six everyday traps. Further south is Main Street: the pharmacy, bakery and school open any time for everyday money choices, and the clinic, library and hotel are just for show:
 
 | Place | The trap | The rule |
 |---|---|---|
