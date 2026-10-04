@@ -23,7 +23,7 @@ Built by Team Sol for the Ullens Hack-a-thon (FinTech). Mobile PWA, 390 × 844 p
 - People: 16×24 shaded pixel templates (`scripts/build-people.py` → `src/ui/pixel/peopleArt.ts`, assembled by `people.ts`).
 - Demo mode (long-press the title coin, or Settings): one character, first scam within 20 seconds.
 
-**Code map:** `src/engine/scamTown.ts` (ledger, rounds, score, shuffle), `src/content/scamTown.ts` (encounters, cues, real messages), `src/content/economy.ts`, `src/content/characters.ts`, `src/content/checker.ts`, `src/walk/*` (map, collision, district, path), `src/screens/paytown/*`, `src/ui/pixel/*`, `src/i18n/en.ts` (all text).
+**Code map:** `src/engine/scamTown.ts` (ledger, rounds, score, shuffle), `src/content/scamTown.ts` (encounters, cues, real messages), `src/content/economy.ts`, `src/content/characters.ts`, `src/content/checker.ts`, `src/walk/*` (map, collision, district, path), `src/screens/scamtown/*`, `src/ui/pixel/*`, `src/i18n/en.ts` (all text).
 
 ## Tech stack (do not change without asking)
 

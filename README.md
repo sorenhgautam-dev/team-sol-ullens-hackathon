@@ -10,15 +10,15 @@ A mobile game (installable PWA, fully offline, no account, no network calls) for
 
 | Title | Pick who you are | Scam Town | The call |
 |---|---|---|---|
-| ![title](docs/screenshots/paytown/1-title.png) | ![pick](docs/screenshots/paytown/2-pick.png) | ![town](docs/screenshots/paytown/3-town.png) | ![call](docs/screenshots/paytown/4-call.png) |
+| ![title](docs/screenshots/scamtown/1-title.png) | ![pick](docs/screenshots/scamtown/2-pick.png) | ![town](docs/screenshots/scamtown/3-town.png) | ![call](docs/screenshots/scamtown/4-call.png) |
 
 | What it cost | Who it really was | Rule card | Results |
 |---|---|---|---|
-| ![outcome](docs/screenshots/paytown/5-outcome.png) | ![reveal](docs/screenshots/paytown/6-reveal.png) | ![rule](docs/screenshots/paytown/7-rule-card.png) | ![results](docs/screenshots/paytown/8-results.png) |
+| ![outcome](docs/screenshots/scamtown/5-outcome.png) | ![reveal](docs/screenshots/scamtown/6-reveal.png) | ![rule](docs/screenshots/scamtown/7-rule-card.png) | ![results](docs/screenshots/scamtown/8-results.png) |
 
 | Family Warning Card | Scam Checker | Main Street, south of the loop |
 |---|---|---|
-| ![family card](docs/screenshots/paytown/9-family-card.png) | ![checker](docs/screenshots/paytown/10-checker.png) | ![district](docs/screenshots/paytown/11-district.png) |
+| ![family card](docs/screenshots/scamtown/9-family-card.png) | ![checker](docs/screenshots/scamtown/10-checker.png) | ![district](docs/screenshots/scamtown/11-district.png) |
 
 ## Why we made it
 

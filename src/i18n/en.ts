@@ -77,7 +77,7 @@ export const en = {
   'common.close': 'Close',
   'common.back': 'Back',
 
-  'paytown.title': 'Scam Town',
+  'scamtown.title': 'Scam Town',
   'town.scamsFaced': 'Done {n}/{total}',
   'town.payday': 'Payday {n}',
   'town.goHint': 'Something is happening! Tap the building to walk there, or use the stick.',

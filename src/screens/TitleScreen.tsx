@@ -5,7 +5,7 @@ import { useInstall, useUpdate } from '@/state/pwa'
 import { Button } from '@/ui/Button'
 import { PxIcon } from '@/ui/PxIcon'
 import { t } from '@/i18n'
-import { startRun } from '@/screens/paytown/PickScreen'
+import { startRun } from '@/screens/scamtown/PickScreen'
 import { haptic, play } from '@/audio/sfx'
 
 export function TitleScreen() {

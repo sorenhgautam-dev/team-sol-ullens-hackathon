@@ -22,7 +22,7 @@ import { play } from '@/audio/sfx'
 export function startRun(id: CharacterId) {
   const demo = useGame.getState().settings.demoMode
   useScam.getState().start(id, demo ? 1 : Date.now() % 100_000)
-  useGame.getState().go('paytown')
+  useGame.getState().go('town')
 }
 
 const FOCUS_ICON: Record<CharacterId, IconName> = { sita: 'phone', bikash: 'qr', aarav: 'trend' }

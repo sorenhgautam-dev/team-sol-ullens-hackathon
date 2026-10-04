@@ -78,7 +78,7 @@ function doorOf(b: EncounterDef['building']): { door: { x: number; y: number }; 
   return { door: d, body: { x: d.x - 24, y: d.y - TILE / 2 - 3 * TILE, w: 48, h: 3 * TILE } }
 }
 
-export function PayTownScreen() {
+export function ScamTownScreen() {
   const go = useGame((s) => s.go)
   const demo = useGame((s) => s.settings.demoMode)
   const { characterId, answers, real } = useScam()
@@ -330,7 +330,7 @@ export function PayTownScreen() {
   const act = useCallback(() => {
     unlockAudio()
     if (busy) return
-    if (allDone) return go('payresults')
+    if (allDone) return go('results')
     if (near) {
       play('pop')
       setOpen(near)
@@ -400,7 +400,7 @@ export function PayTownScreen() {
       </header>
 
       <div ref={holderRef} className="relative min-h-0 flex-1" onPointerDown={unlockAudio}>
-        <canvas ref={canvasRef} width={vw * SCALE} height={vh * SCALE} className="block touch-none" style={{ width: vw * SCALE, height: vh * SCALE }} role="img" aria-label={t('paytown.title')} onPointerDown={onTap} />
+        <canvas ref={canvasRef} width={vw * SCALE} height={vh * SCALE} className="block touch-none" style={{ width: vw * SCALE, height: vh * SCALE }} role="img" aria-label={t('scamtown.title')} onPointerDown={onTap} />
         {phoneScam && !busy && (
           <button className="absolute right-2 top-2 bg-marigold px-2 py-1 text-[13px] font-bold pixel-frame-soft" onClick={() => setOpen(phoneScam)}>
             <PxIcon name="phone" size={12} /> {phoneScam.channel === 'call' ? t('town.phoneCall') : t('town.phoneText')}

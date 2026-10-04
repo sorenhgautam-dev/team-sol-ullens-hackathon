@@ -5,9 +5,9 @@ import { PhoneFrame } from '@/ui/PhoneFrame'
 import { ErrorBoundary } from '@/ui/ErrorBoundary'
 import { TitleScreen } from '@/screens/TitleScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
-import { PickScreen } from '@/screens/paytown/PickScreen'
-import { PayTownScreen } from '@/screens/paytown/PayTownScreen'
-import { PayResultsScreen } from '@/screens/paytown/PayResultsScreen'
+import { PickScreen } from '@/screens/scamtown/PickScreen'
+import { ScamTownScreen } from '@/screens/scamtown/ScamTownScreen'
+import { ResultsScreen } from '@/screens/scamtown/ResultsScreen'
 
 export default function App() {
   const screen = useGame((s) => s.screen)
@@ -19,8 +19,8 @@ export default function App() {
         <ErrorBoundary key={screen} onReset={() => go('title')}>
           {screen === 'title' && <TitleScreen />}
           {screen === 'pick' && <PickScreen />}
-          {screen === 'paytown' && <PayTownScreen />}
-          {screen === 'payresults' && <PayResultsScreen />}
+          {screen === 'town' && <ScamTownScreen />}
+          {screen === 'results' && <ResultsScreen />}
           {screen === 'settings' && <SettingsScreen />}
         </ErrorBoundary>
       </PhoneFrame>

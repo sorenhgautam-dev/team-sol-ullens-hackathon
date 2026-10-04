@@ -23,7 +23,7 @@ export function familyWarningText(encounters: EncounterDef[], lessons: string[] 
   return [t('results2.familyTitle'), ...encounters.map((e, i) => `${i + 1}. ${t(e.rule.ruleKey)}`), ...(lessons.length ? [t('results2.moneyTips') + ':', ...lessons.map((l) => `- ${l}`)] : []), t('results2.familyFooter')].join('\n')
 }
 
-export function PayResultsScreen() {
+export function ResultsScreen() {
   const { go, toast, reduced } = useGameShallow((s) => ({ go: s.go, toast: s.toast, reduced: s.settings.reducedMotion }))
   const { answers, nextRound } = useScam()
   const cash = useCash()
@@ -171,7 +171,7 @@ export function PayResultsScreen() {
         onClick={() => {
           nextRound()
           play('coin')
-          go('paytown')
+          go('town')
         }}
       >
         {t('results2.next', { n: round + 1 })}

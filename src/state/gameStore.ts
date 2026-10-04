@@ -8,7 +8,7 @@ import { useShallow } from 'zustand/react/shallow'
 import type { Currency } from '@/i18n/currency'
 import { setHapticsEnabled, setSoundEnabled } from '@/audio/sfx'
 
-export type Screen = 'title' | 'settings' | 'pick' | 'paytown' | 'payresults'
+export type Screen = 'title' | 'settings' | 'pick' | 'town' | 'results'
 
 export interface Settings {
   sound: boolean
