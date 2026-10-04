@@ -103,7 +103,7 @@ const REAL_ODDS: Partial<Record<EncounterDef['building'], number>> = { bank: 0.5
 const MIN_REAL = 1
 const MAX_REAL = 2
 /** Demo mode is fixed and predictable: the same mix every time (the bank's call is a scam, first). */
-export const DEMO_MIX: Record<EncounterDef['building'], 'real' | 'scam'> = { bank: 'scam', market: 'real', post: 'real', job: 'scam', invest: 'scam', home: 'scam', cafe: 'real', tech: 'scam', gov: 'real', rental: 'scam', shop: 'real', pharmacy: 'real', bakery: 'real', school: 'real' }
+export const DEMO_MIX: Record<EncounterDef['building'], 'real' | 'scam'> = { bank: 'scam', market: 'real', post: 'real', job: 'scam', invest: 'scam', home: 'scam', cafe: 'real', tech: 'scam', gov: 'scam', rental: 'scam', shop: 'real', pharmacy: 'real', bakery: 'real', school: 'real' }
 
 /**
  * Each payday the seed decides, building by building, whether what happens there is real or

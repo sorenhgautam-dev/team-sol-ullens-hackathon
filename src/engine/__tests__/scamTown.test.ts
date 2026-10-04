@@ -96,6 +96,11 @@ describe('encounter content', () => {
     const ids = FIRST_PAYDAY.sita
     expect(mixRound(ids, 1, 5, true)).toEqual(mixRound(ids, 1, 99, true)) // demo: the same every time
     expect(mixRound(ids, 1, 5, true)[0]).toBe('bank') // the demo opens with the bank-call scam
+    for (const [list, round] of [[ids, 1], [SECOND_PAYDAY, 2]] as const) {
+      const real = mixRound([...list], round, 5, true).filter((id) => id.startsWith('genuine_')).length
+      expect(real, `demo payday ${round}`).toBeGreaterThanOrEqual(1) // the demo keeps the same rule
+      expect(real, `demo payday ${round}`).toBeLessThanOrEqual(2)
+    }
     // The same building can be real one payday and a scam the next.
     const both = Array.from({ length: 40 }, (_, seed) => [mixRound(ids, 1, seed, false)[1], mixRound(ids, 2, seed, false)[1]])
     expect(both.some(([a, b]) => a !== b)).toBe(true)
