@@ -31,6 +31,7 @@ Payday is when people have the most money in their account, and it is exactly wh
 - **The game design.** Payday as the moment of risk. Fall, close-call and safe choices with no villain shown until after you decide. The money changes first and the scammer is revealed second. "Try again" replays an encounter, a Scam Immunity Score with three tiers, a Family Warning Card to share, a Scam Checker on the phone, and a gauntlet loop of paydays.
 - **Realistic money.** We called for typical local pay in every currency instead of converted amounts, so nobody is paid lakhs by accident.
 - **The look.** The town map, the character-select mockup and the art direction (ink text, warm paper panels, teal actions, amber warnings, pixel world with readable text) are ours. We picked the Kenney packs and pixelarticons to fill the gaps.
+- **The engine.** Soren and Rayan worked on the money engine with Claude Code. Its rules come from our spec: every loss is booked to ScamLoss, safe answers score 20, close calls 10 and falling for it 0, with three tiers.
 - **Playtesting.** We played the builds and sent them back with changes: fences you cannot walk through, paths that lead somewhere, a bigger map, names you can change, realistic pay, a cleaner character select.
 - **The pitch.** The one-line pitch above and the demo plan in [docs/DEMO.md](docs/DEMO.md).
 
@@ -56,11 +57,11 @@ We wrote the specs and briefs (now kept in `CLAUDE.md`), made the designs, and w
 
 The rules, in the same order. Tailor: banks never ask for your one-time code; trust your own account, not a screenshot; never pay a fee through a link; real employers never charge you to start; a real prize never asks for a fee. Rider: never pay a fee to get a loan; you never approve a payment to receive money; never log in through a link; check a job agency's licence and get a contract; earning by recruiting people is a pyramid scheme. Office worker: update bank details only in the bank's own app; never send a "token" for something you have not seen; a tax refund never needs your card; a job that asks you to top up is a scam; a fee to withdraw is a warning sign.
 
-4. **The encounter.** A short thought, then the scam arrives as a realistic call, text or chat with a countdown and personal details. **No villain is shown yet.** Three choices in shuffled order: one falls for it, one is a close call, one is safe.
-5. **The outcome.** Your balance changes on screen (losses are booked in the ledger as ScamLoss). *Then* the sender is revealed in a pixel battle scene: a shield and a VERIFY stamp if you were safe, coins stolen if not.
+4. **The encounter.** A short thought, then the scam arrives on a realistic phone screen: a call, a text, a chat or a payment page (a request to approve, a fake "payment successful" screenshot, a card-and-PIN form), with a countdown and personal details. **No villain is shown yet.** Three choices in shuffled order: one falls for it, one is a close call, one is safe.
+5. **The outcome.** Your balance changes on screen (losses are booked in the ledger as ScamLoss): coins fly out of your wallet, or a shield pops up if you were safe. *Then* the sender is revealed in a pixel scene: a shield and a VERIFY stamp if you were safe, a CLOSE CALL stamp if you got away, or SCAMMED as they run off with your coins.
 6. **The rule card.** Why it was a trap, the rule, and one money tip. **Try again** replays the same encounter as practice so you can see what the other choices would have done; your first answer still counts.
 7. **Two real messages** arrive on your phone along the way (your bank confirming your pay, a family member checking in). They are safe to act on: the lesson is *verify*, not *everything is a scam*.
-8. **Results.** What you kept of your pay, your **Scam Immunity Score** for that payday (safe 20, close call 10, fell for it 0, scaled to 100; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), every rule card you have collected, and a **Family Warning Card** with those rules and Share and Copy buttons.
+8. **Results.** What you kept of your pay, your **Scam Immunity Score** for that payday (safe 20, close call 10, fell for it 0, scaled to 100; 80–100 "Scam-proof", 50–70 "Getting wiser", under 50 "Easy target"), every rule card you have collected (in the order you played), and a **Family Warning Card** with those rules and Share and Copy buttons.
 9. **The gauntlet loop.** **Next payday** starts the next round: pay lands again, your money carries over, and every countdown is 15% faster (down to 60%). Payday 2 opens the south district, a loop road built from Kenney Tiny Town tiles, with six everyday traps (and, further south, Main Street: a bakery, clinic, library, hotel, school and pharmacy, just for show):
 
 | Place | The trap | The rule |
@@ -81,10 +82,10 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 ## How it is built
 
 - **Vite + React 18 + TypeScript (strict)**, Tailwind, Framer Motion, Zustand (UI state only), Vitest, vite-plugin-pwa, NumberFlow. No backend, no login, no network calls, no API keys.
-- **The money is in an engine, not the UI.** `src/engine/scamTown.ts` books payday and every scam loss as balanced double-entry postings (Wallet, Income, ScamLoss), computes the Scam Immunity Score, and shuffles choices with a seeded random generator (never `Math.random`). Only the first answer per encounter counts, so practice replays never change your balance.
+- **The money is in an engine, not the UI.** `src/engine/scamTown.ts` books payday and every scam loss as balanced double-entry postings (Wallet, Income, ScamLoss), computes the Scam Immunity Score, and shuffles each payday's scam order and each scam's choices with a seeded random generator (never `Math.random`). Only the first answer per encounter counts, so practice replays never change your balance.
 - **Content is data.** The twenty-one traps (each citizen's own five, plus the everyday six), their three choices, losses (as shares of the character's pay), rule cards and the three real messages are in `src/content/scamTown.ts`; local pay and prices per currency in `src/content/economy.ts`; characters in `src/content/characters.ts`; all text in `src/i18n/en.ts`.
 - **The paths work.** `scripts/build-collision.py` reads the team's map into a 4-pixel walk grid (fences, trees, buildings, stalls and water blocked; roads, grass and the plaza open). `scripts/build-district.py` builds the south district from tiles with its own blocked tiles. The walker's whole foot box is checked, and they slide around posts and door frames toward gaps. An audit of every reachable spot found the bank roof and some tree tops walkable; they are now blocked by hand in the script. **Tap to walk** (`src/walk/path.ts`) finds a shortest path on the same grid with the same rule, then walks it in straight lines. The town is drawn at full screen resolution with the art at 2x, wide enough to see the streets around you, and the camera eases after the walker in screen-pixel steps. Townsfolk walk their rounds on real paths, cloud shadows drift over the map and birds fly over, just for show (`src/ui/pixel/ambient.ts`).
-- **51 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), each citizen's own five scams with fifteen different rules, every message filling its placeholders in every currency, collision (fences block, the gate opens, roofs and tree tops are solid, every door reachable on foot), tap to walk (the real walker reaches all 14 doors without touching a wall), editable names, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), and the currency helper.
+- **51 tests** (`npm test`): the Scam Town ledger, rounds and score, practice replays, local pay (no rupee pay reaches a lakh), each citizen's own five scams with fifteen different rules, every message filling its placeholders in every currency, collision (fences block, the gate opens, roofs and tree tops are solid, every door reachable on foot), tap to walk (the real walker reaches all 11 doors without touching a wall), the shuffled order (fixed in demo mode), every sprite frame building cleanly, editable names, no brand or local names in the scam text, the Scam Checker (always says verify, stores nothing), and the currency helper.
 
 ## Tools, libraries and assets
 
@@ -96,7 +97,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 | Node.js 20, npm | Running, testing and building the app |
 | Vite, React, TypeScript, Tailwind | The app itself (versions below) |
 | Vitest | 51 automated tests |
-| Python 3 + Pillow | Our asset scripts: recolouring the vendor art (`scripts/unify-assets.py`), building the walk grid from the town map (`scripts/build-collision.py`), building the south district from tiles (`scripts/build-district.py`) |
+| Python 3.13 + Pillow 12 | Our asset scripts: recolouring the vendor art (`scripts/unify-assets.py`), building the walk grid from the town map (`scripts/build-collision.py`), building the south district from tiles (`scripts/build-district.py`), the people sprites (`scripts/build-people.py`) |
 | Headless Chromium | Scripted playtests and the screenshots in this README |
 | Git, GitHub, GitHub Actions, GitHub Pages | Version control, CI (typecheck, tests, build) and the live site |
 
@@ -113,7 +114,7 @@ The rules, in the same order. Tailor: banks never ask for your one-time code; tr
 | @fontsource/nunito | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
 | @fontsource/silkscreen | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
 | @fontsource/pixelify-sans | 5.3.0 | OFL-1.1 | Font package (see Fonts) |
-| pixelarticons | 2.4.1 | MIT | Pixel UI icons (only the ~30 we use are bundled) |
+| pixelarticons | 2.4.1 | MIT | Pixel UI icons (only the 40 we use are bundled) |
 
 **Development tools** (not shipped)
 
@@ -164,7 +165,7 @@ CC0 needs no credit, but we credit Kenney anyway. We used no other stock images 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # Vitest engine tests
+npm test           # Vitest tests
 npm run typecheck
 npm run build && npm run preview
 ```
