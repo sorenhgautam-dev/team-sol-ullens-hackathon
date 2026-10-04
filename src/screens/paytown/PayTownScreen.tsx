@@ -15,8 +15,8 @@ import { useEncounters } from './useEncounters'
 import { CHARACTERS_BY_ID } from '@/content/characters'
 import { PLACES, WALK_SPEED, WORLD_H, WORLD_W, startWalker, stepWalker, type Rect, type WalkerState } from '@/walk/map'
 import { findPath, type Point } from '@/walk/path'
-import { DISTRICT_COLS, DISTRICT_DOORS, DISTRICT_GROUND, DISTRICT_OBJECTS, DISTRICT_ROWS, DISTRICT_SIGNS, DISTRICT_TOP, TILE } from '@/walk/district'
-import tilesUrl from '@/assets/pixel/tiles.png'
+import { DISTRICT_DOORS, DISTRICT_SIGNS, DISTRICT_TOP, TILE } from '@/walk/district'
+import districtUrl from '@/assets/pixel/district.png'
 import { drawText } from '@/ui/pixel/text'
 import { drawCue, drawDoorArrow } from '@/ui/pixel/cues'
 import { drawPerson, PERSON_TOP, type PersonLook } from '@/ui/pixel/people'
@@ -76,90 +76,6 @@ function doorOf(b: EncounterDef['building']): { door: { x: number; y: number }; 
   return { door: d, body: { x: d.x - 24, y: d.y - TILE / 2 - 3 * TILE, w: 48, h: 3 * TILE } }
 }
 
-/** The south district, drawn once from the recoloured Kenney tiles. */
-function buildDistrict(tiles: HTMLImageElement): HTMLCanvasElement {
-  const c = document.createElement('canvas')
-  c.width = DISTRICT_COLS * TILE
-  c.height = DISTRICT_ROWS * TILE
-  const ctx = c.getContext('2d')!
-  ctx.imageSmoothingEnabled = false
-  const draw = (i: number, col: number, row: number) => ctx.drawImage(tiles, (i % 12) * TILE, Math.floor(i / 12) * TILE, TILE, TILE, col * TILE, row * TILE, TILE, TILE)
-  // 1. Ground.
-  for (let r = 0; r < DISTRICT_ROWS; r++) for (let col = 0; col < DISTRICT_COLS; col++) draw(DISTRICT_GROUND[r]![col]!, col, r)
-  // 2. Painted grass, like the team's map: a few darker and lighter flecks on every grass tile.
-  for (let r = 0; r < DISTRICT_ROWS; r++)
-    for (let col = 0; col < DISTRICT_COLS; col++) {
-      if (DISTRICT_GROUND[r]![col]! > 2) continue
-      const h = (r * 131 + col * 197) % 251
-      ctx.fillStyle = 'rgba(46,92,40,0.55)'
-      for (let k = 0; k < 4; k++) ctx.fillRect(col * TILE + ((h + k * 7) % 14), r * TILE + ((h * 3 + k * 5) % 14), 2, 1)
-      ctx.fillStyle = 'rgba(170,205,120,0.45)'
-      for (let k = 0; k < 2; k++) ctx.fillRect(col * TILE + ((h * 5 + k * 9) % 15), r * TILE + ((h + k * 11) % 15), 1, 1)
-    }
-  // The roads get soft edges where they meet the grass, and a few pebbles, so they read as paths.
-  const isRoad = (r: number, col: number) => r >= 0 && col >= 0 && r < DISTRICT_ROWS && col < DISTRICT_COLS && DISTRICT_GROUND[r]![col] === ROAD_TILE
-  for (let r = 0; r < DISTRICT_ROWS; r++)
-    for (let col = 0; col < DISTRICT_COLS; col++) {
-      if (!isRoad(r, col) || DISTRICT_OBJECTS[r]![col]! >= 0) continue
-      const x = col * TILE
-      const y = r * TILE
-      ctx.fillStyle = '#a8885a'
-      if (!isRoad(r - 1, col)) ctx.fillRect(x, y, TILE, 1)
-      if (!isRoad(r + 1, col)) ctx.fillRect(x, y + TILE - 1, TILE, 1)
-      if (!isRoad(r, col - 1)) ctx.fillRect(x, y, 1, TILE)
-      if (!isRoad(r, col + 1)) ctx.fillRect(x + TILE - 1, y, 1, TILE)
-      ctx.fillStyle = '#3e7a3a'
-      if (!isRoad(r - 1, col)) for (let i = (r * 7 + col * 3) % 5; i < TILE; i += 5) ctx.fillRect(x + i, y + 1, 2, 1)
-      if (!isRoad(r + 1, col)) for (let i = (r * 3 + col * 7) % 5; i < TILE; i += 6) ctx.fillRect(x + i, y + TILE - 2, 2, 1)
-      ctx.fillStyle = '#b89a68'
-      const h = (r * 73 + col * 151) % 97
-      ctx.fillRect(x + 3 + (h % 9), y + 4 + (h % 7), 1, 1)
-      ctx.fillRect(x + 9 + (h % 5), y + 10 + (h % 4), 2, 1)
-    }
-  // 3. Light comes from the top-left, as on the team's map: every object casts a soft shadow
-  //    down and to the right, then the objects are drawn on top.
-  const shadow = document.createElement('canvas')
-  shadow.width = TILE
-  shadow.height = TILE
-  const sctx = shadow.getContext('2d')!
-  for (let r = 0; r < DISTRICT_ROWS; r++)
-    for (let col = 0; col < DISTRICT_COLS; col++) {
-      const o = DISTRICT_OBJECTS[r]![col]!
-      if (o < 0) continue
-      sctx.globalCompositeOperation = 'source-over'
-      sctx.clearRect(0, 0, TILE, TILE)
-      sctx.drawImage(tiles, (o % 12) * TILE, Math.floor(o / 12) * TILE, TILE, TILE, 0, 0, TILE, TILE)
-      sctx.globalCompositeOperation = 'source-in'
-      sctx.fillStyle = '#1e140a'
-      sctx.fillRect(0, 0, TILE, TILE)
-      ctx.globalAlpha = 0.32
-      ctx.drawImage(shadow, col * TILE + 3, r * TILE + 3)
-      ctx.globalAlpha = 1
-    }
-  for (let r = 0; r < DISTRICT_ROWS; r++)
-    for (let col = 0; col < DISTRICT_COLS; col++) {
-      const o = DISTRICT_OBJECTS[r]![col]!
-      if (o >= 0) draw(o, col, r)
-    }
-  // Match the team's map: its colours are deeper and warmer than the tiles. The gains come from
-  // the map's own grass and dirt (measured), so the district reads as the same painted town.
-  const img = ctx.getImageData(0, 0, c.width, c.height)
-  const px = img.data
-  for (let i = 0; i < px.length; i += 4) {
-    if (px[i + 3] === 0) continue
-    const r = px[i]!
-    const g = px[i + 1]!
-    const b = px[i + 2]!
-    const [kr, kg, kb] = g > r && g > b ? [0.96, 0.79, 0.64] : [0.88, 0.8, 0.7]
-    px[i] = r * kr
-    px[i + 1] = g * kg
-    px[i + 2] = b * kb
-  }
-  ctx.putImageData(img, 0, 0)
-  return c
-}
-const ROAD_TILE = 25
-
 export function PayTownScreen() {
   const go = useGame((s) => s.go)
   const demo = useGame((s) => s.settings.demoMode)
@@ -170,7 +86,7 @@ export function PayTownScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const holderRef = useRef<HTMLDivElement>(null)
   const mapImg = useRef<HTMLImageElement | null>(null)
-  const district = useRef<HTMLCanvasElement | null>(null)
+  const district = useRef<HTMLImageElement | null>(null)
   const walker = useRef<WalkerState>(startWalker())
   const input = useRef({ dx: 0, dy: 0 })
   const cam = useRef<Point | null>(null)
@@ -236,9 +152,10 @@ export function PayTownScreen() {
     const img = new Image()
     img.src = `${import.meta.env.BASE_URL}sprites/town-map.png`
     img.onload = () => (mapImg.current = img)
-    const tiles = new Image()
-    tiles.src = tilesUrl
-    tiles.onload = () => (district.current = buildDistrict(tiles))
+    // The south district, painted by scripts/build-district.py from the map's own grass, cobbles and trees.
+    const art = new Image()
+    art.src = districtUrl
+    art.onload = () => (district.current = art)
   }, [])
 
   useEffect(() => {
@@ -547,7 +464,7 @@ function render(
   w: WalkerState,
   frame: number,
   map: HTMLImageElement | null,
-  district: HTMLCanvasElement | null,
+  district: HTMLImageElement | null,
   done: Set<string>,
   look: PersonLook,
   reduced: boolean,

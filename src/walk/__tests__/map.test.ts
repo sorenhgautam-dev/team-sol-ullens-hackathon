@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { MAP_H, PLACES, WORLD_H, isWalkable, startWalker, stepWalker } from '../map'
-import { DISTRICT_DOORS, DISTRICT_SIGNS } from '../district'
+import { DISTRICT_DOORS, DISTRICT_SIGNS, DISTRICT_TOP, TILE } from '../district'
 import { findPath } from '../path'
 
 describe('town map', () => {
@@ -87,6 +87,13 @@ describe('collision from the map: fences, trees and the district', () => {
     for (let i = 0; i < 60; i++) stepWalker(s, 0, 1)
     expect(s.y).toBeGreaterThan(485) // out of the garden
     expect(s.x).toBeLessThan(58) // slid toward the gap
+  })
+
+  it('the district square has a solid well with open cobbles around it, and its trees are solid', () => {
+    const at = (c: number, r: number) => isWalkable(c * TILE + TILE / 2, DISTRICT_TOP + r * TILE + TILE / 2)
+    expect(at(9, 10), 'well').toBe(false)
+    for (const [c, r] of [[8, 10], [10, 10], [9, 9], [9, 11]] as const) expect(at(c, r), `square ${c},${r}`).toBe(true)
+    expect(at(0, 2), 'tree trunk by the loop').toBe(false)
   })
 
   it('Main Street, south of the loop, has solid show buildings you can walk up to', () => {
