@@ -47,8 +47,14 @@ export function PayResultsScreen() {
   const lostThisRound = ledger.entries.filter((e) => e.kind === 'scam_loss' && e.round === round).reduce((n, e) => n - e.amount, 0)
   const [shown, setShown] = useState(0)
 
-  // The score counts up; a celebration only for "Scam-proof".
+  // The rent verdict lands with a sound: coins when the money covered it, a thud when it didn't.
   useEffect(() => {
+    if (verdict) play(check.win ? 'coin' : 'bad')
+  }, [verdict, check.win])
+
+  // The score counts up once the player moves past the verdict; a celebration only for "Scam-proof".
+  useEffect(() => {
+    if (verdict) return
     if (reduced) return setShown(imm.score)
     let v = 0
     const id = window.setInterval(() => {
@@ -64,7 +70,7 @@ export function PayResultsScreen() {
       }
     }, 40)
     return () => window.clearInterval(id)
-  }, [imm.score, imm.tier, reduced])
+  }, [imm.score, imm.tier, reduced, verdict])
 
   const share = async () => {
     const text = familyWarningText(scamsSeen, lessons)
