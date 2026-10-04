@@ -233,6 +233,8 @@ export function PayTownScreen() {
       setCue({ id: current.id, building: current.building, at: frame.current, label: c.textKey ? t(c.textKey, { name }) : '' })
       play(c.sound)
       if (c.vibrate) haptic(c.vibrate)
+      // A scam that arrives by phone rings and then opens by itself, so it is never missed.
+      if (current.via === 'phone') window.setTimeout(() => setOpen((o) => o ?? current), 1100)
     }, finished.current ? NEXT_CUE_MS : FIRST_CUE_MS)
     return () => window.clearTimeout(id)
   }, [current, busy, cue?.id, name])
